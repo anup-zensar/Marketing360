@@ -111,6 +111,7 @@ backend/
 ├── internal/platform/database/migrations/00028_reports.sql
 ├── internal/platform/database/queries/measure_views.sql
 ├── internal/access/routes_measure.go      # every wave A rule; routes.go gains measureRoutes()
+├── internal/app/history_access.go         # reportView entries: the owner and activityLog.viewAll (R5)
 ├── internal/app/measure.go                # wiring hub: registry + one call per report
 ├── internal/app/measure_{planbudget,approvals,purchasereport,plandetails,gsaplink,useraccess}.go  # stubs
 ├── internal/app/contract_routes_test.go   # notYetServed: wave A groups, one comment line per feature
@@ -143,6 +144,8 @@ and F2; the hub files are written once here so the other lanes never edit them (
 | Catalogue order, availability, extra rules (FR-001, FR-003) | `measure/catalogue.go` | `TestCatalogue_FR001_FR003` |
 | `reports.view` in Table A; built-in roles that view plans hold it (FR-002) | `authz`, `seed/access.go` | `TestCatalogue_ReportsView_039_FR002`, `TestSeedRoles_ReportsView_039_FR002` |
 | Saved views: name rules, per report, default per report, update, delete, owner only (FR-024–FR-029) | `measure/views.go` | `TestViews_FR024_FR029` |
+| Views versioned (409 on a stale version) and every change logged; entries seen by the owner and `activityLog.viewAll` (FR-028, R5) | `measure/views.go`, `app/history_access.go` | `TestViews_VersionAndLog_FR028`, `TestHistoryAccess_ReportView_039_FR028` |
+| Today marker: actual, in progress, planned per period of the plan year (FR-019) | `shared/periods.ts` | `periods.test.ts` |
 | Views limited to their person in SQL (FR-025) | `measure/store_postgres.go` | `TestPostgresStoreReportViewsPersonIsolation_039_FR025` |
 | Export: sheets, About this export, CSV needs a widget, file names, values as screen (FR-022) | `measure/export.go` | `TestExport_FR022`, contract `TestReportsExport_FR022` |
 | Route rules for every wave A operation, fail closed | `access/routes_measure.go` | existing route-table tests |
@@ -158,5 +161,5 @@ and F2; the hub files are written once here so the other lanes never edit them (
 
 | Violation | Why needed | Simpler alternative rejected because |
 |---|---|---|
-| Saved report views carry no `record.Meta`, write no activity-log entry and are deleted outright (constitution's "every new record type"; R5) | A saved view is a private bookmark only its owner sees; 010's saved views set this pattern | A version, a log line and a recycle-bin entry for a private bookmark add work and screens nobody else ever sees |
-| 039 changes files outside its package: `allwork/match.go` (new file), `authz`, `ids`, `access/routes.go`, `seed` | One filter engine (R1) and the permission (R3) live where the rest of their kind lives | Copies inside `measure` would drift from All work and from 014's permission catalogue |
+| Saved report views are deleted outright with Undo instead of through `history.MoveToBin` (CLAUDE.md "every new record type"; R5). They are versioned and every change is logged, as constitution VII requires | Constitution VII sends **business records** to the recycle bin; a saved view is a personal preference that only its owner may see or restore | A recycle-bin entry for a private bookmark gives a second restore path beside Undo that nobody else may use |
+| 039 changes files outside its package: `allwork/match.go` (new file), `authz`, `ids`, `access/routes.go`, `app/history_access.go` (one case for `reportView`), `seed` | One filter engine (R1), the permission (R3) and the log rule (R5) live where the rest of their kind lives | Copies inside `measure` would drift from All work, from 014's permission catalogue and from the activity log's visibility rules |

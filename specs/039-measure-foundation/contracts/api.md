@@ -10,10 +10,10 @@ envelope; every operation answers 401 when signed out and 403 `forbidden` when t
 |---|---|---|
 | `GET /api/v1/reports` | `need(authz.ReportsView)` | 200 `ReportCatalogue` |
 | `GET /api/v1/reports/frame` | `need(authz.ReportsView)` | 200 `ReportFrame`; 400 problems for a malformed filter; 404 unknown `report` |
-| `GET /api/v1/reports/{report}/export` | `need(authz.DataExport)` | 200 file (`.xlsx` or `.csv`); 400 `format=csv` without `widget`, unknown `widget`; 404 unknown report or a report not available |
+| `GET /api/v1/reports/{report}/export` | `need(authz.DataExport)` | 200 file (`.xlsx` or `.csv`); 400 `format=csv` without `widget`, unknown `widget`; 404 unknown report. A report not built yet exports its **In view** and **About this export** sheets only |
 | `GET /api/v1/reports/{report}/views` | `need(authz.ReportsView)` | 200 `ReportViewPage` (the person's views of the report) |
 | `POST /api/v1/reports/{report}/views` | `need(authz.ReportsView)` | 201 `ReportView`; 400 problems (name, query) |
-| `PATCH /api/v1/reports/{report}/views/{viewId}` | `need(authz.ReportsView)` | 200 `ReportView`; 400 problems; 404 another person's or missing view |
+| `PATCH /api/v1/reports/{report}/views/{viewId}` | `need(authz.ReportsView)` | 200 `ReportView`; 400 problems; 404 another person's or missing view; 409 `version_conflict` for a stale `version` |
 | `DELETE /api/v1/reports/{report}/views/{viewId}` | `need(authz.ReportsView)` | 200 `ReportView` (the deleted view, for Undo); 404 as above |
 
 `{report}` is the path of data-model §3 (`plan-budget`, `approvals`, …). The frame takes `report` as the key
@@ -66,11 +66,12 @@ ReportView:
   name: string
   isDefault: boolean
   query: string                     # canonical filter query string
+  version: int                      # record.Meta
   createdAt: date-time
   updatedAt: date-time
 ReportViewPage: { items: ReportView[], total: int }
 ReportViewCreate: { name: string, query: string, isDefault?: boolean }
-ReportViewUpdate: { name?: string, query?: string, isDefault?: boolean }
+ReportViewUpdate: { version: int, name?: string, query?: string, isDefault?: boolean }
 ```
 
 Export query: the report filter plus `format` (`xlsx` default, `csv`) and `widget` (a key the report declares;

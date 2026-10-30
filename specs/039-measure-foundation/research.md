@@ -69,16 +69,24 @@ A table of its own keeps All work's `saved_views` and its `ViewState` untouched 
 **Alternatives considered**: a `report` column on `saved_views` (changes All work's table, unique indexes and
 `ViewState`); structured JSON state (a second schema to keep in step with the address).
 
-## R5 — Saved views are preferences, not records
+## R5 — Saved views: versioned and logged, deleted outright
 
-**Decision**: like 010's saved views, report views carry no version, write no activity-log entry and are deleted
-outright; Undo re-creates. Recorded under Complexity Tracking.
+**Decision** (revised after `/speckit-analyze` finding C1): a report view embeds `record.Meta` (version, created
+and updated by and at); an update carries the version it was read at and a stale one is refused (409
+`version_conflict`, "This view was changed in another tab — reload it to see the latest"); every create,
+update, star and delete writes one `history.Log` entry inside the same `Write`, under a registered
+`history.Kind` "reportView" ("saved report view"). The activity log shows those entries to the view's owner (the
+entry's actor) and to holders of `activityLog.viewAll` — one case added to `app/history_access.go`, which
+otherwise hides an unknown kind from everyone but `activityLog.viewAll` (fail closed). A delete is immediate and
+does not go to the recycle bin; **Undo** re-creates the view (logged as created).
 
-**Rationale**: a saved view is visible only to its owner and changes nothing anyone else sees; 010 set this
-pattern (saved views: no `record.Meta`, no `history.Kind`) and the activity log is about records others share.
+**Rationale**: constitution VII writes **every change** to the activity log with who, what and when, and new code
+follows the constitution in full (Governance); 010's unlogged saved views predate constitution 2.0 and are not a
+precedent for new code. The recycle bin is for **business records** (VII), and a saved view is a personal
+preference, so deleting outright stays within the rule. The version also answers the spec's two-tab edge case.
 
-**Alternatives considered**: `record.Meta`, `history.Log` and `MoveToBin` (a recycle-bin entry and a log line for a
-private bookmark, visible to nobody but its owner).
+**Alternatives considered**: no version and no log, as 010 (breaks VII); `history.MoveToBin` (a recycle-bin entry
+for a private bookmark that nobody else may restore, and a second restore path beside Undo).
 
 ## R6 — The registry: how reports plug in without editing the hub
 

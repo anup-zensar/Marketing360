@@ -146,7 +146,7 @@ the report as Excel, and compare every exported value with the screen.
    currency, exporter and date and time.
 3. **Given** a report, **When** Priya chooses **Export**, **Then** one Excel file "SP&A One – <report> – <year> –
    <date>" downloads with one sheet per widget and the "About this export" sheet.
-4. **Given** a person without `data.export` in a plan of the report, **When** they look at the export actions,
+4. **Given** a person without `data.export`, **When** they look at the export actions,
    **Then** the actions are shown unavailable with "Exporting isn't part of your role" and the reason in a tip.
 5. **Given** any export, **When** it is compared with the screen, **Then** every value equals the value shown,
    figures the person may not see are "—" in both, and nothing about the export is stored, logged or sent.
@@ -184,7 +184,8 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
 - The year changes the plan list; plans selected in the old year are dropped and the panel says how many.
 - A past year has no "in progress" period: every period is actual; a future year has no actual period.
 - A deleted record in the recycle bin is not in view (as All work).
-- Two tabs open on different filters keep their own state; only saved views are shared across tabs.
+- Two tabs open on different filters keep their own state; only saved views are shared across tabs. If both
+  change the same saved view, the second change is refused with "This view was changed in another tab" (FR-028).
 - A saved view whose report is no longer offered to the person stays theirs and returns when access returns.
 
 ## Requirements *(mandatory)*
@@ -199,8 +200,8 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
   name and a one-line purpose; a report not yet available in the release shows "Coming soon" without a link, and a
   report the person may not open (FR-003) is not listed.
 - **FR-002**: A new scoped permission `reports.view` ("See reports", refusal noun "Seeing reports") MUST be added to
-  014 Table A in the Plans and planning group. It MUST be granted to every built-in role and every existing role
-  that holds `plans.view`, so nobody's access changes until an administrator removes it in Settings › Access (D-367).
+  014 Table A in the Plans and planning group. It MUST be granted to every role, built-in or not, that holds
+  `plans.view`, so nobody's access changes until an administrator removes it in Settings › Access (D-367).
 - **FR-003**: Every report page MUST need `reports.view` for the plans it covers; a report with a stronger rule
   states it (the User access report needs `access.manage`, D-367). Every figure, count, list entry and filter
   choice MUST cover only plans in the person's scope (014); a plan outside it, its records and its people MUST
@@ -278,15 +279,15 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
   Excel file with one sheet per widget. Every file MUST state, before the data (CSV) or on an "About this export"
   sheet (Excel), the report, year, filters in words, period, currency, exporter and date and time; money is
   exported as numbers with the currency in the column heading; file names are "SP&A One – <report> [– <widget>] –
-  <year> – <date>". Exports need `data.export` in the plans they cover (D-343), hold exactly the values shown, and
-  are never stored, logged or sent.
+  <year> – <date>". Exports need `data.export`, as the dashboards' exports do (D-343), hold exactly the values
+  shown, and are never stored, logged or sent.
 - **FR-023**: Each widget MUST load, fail and retry on its own: a skeleton while loading, and on failure "This part
   of the report couldn't be loaded" with **Try again**, without blanking the other widgets.
 
 **Saved views**
 
-- **FR-024**: A person MUST be able to save the applied filters, period, currency and Show choice of a report under
-  a name of at most 60 characters, unique for that person and that report ignoring letter case; a view belongs
+- **FR-024**: A person MUST be able to save a report's whole address — its applied filters, period, currency, Show
+  and each widget's chart or table choice — under a name of at most 60 characters, unique for that person and that report ignoring letter case; a view belongs
   to one report (039-C2); saving under a name in use asks before replacing it.
 - **FR-025**: Saved views MUST be personal: nobody else sees them, and an address naming another person's view
   opens the reader's own default instead.
@@ -296,7 +297,10 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
 - **FR-027**: A person MUST be able to star one view per report as their default; opening the report with no
   filters in the address applies it; starring another moves the star; unstarring returns to FR-030's defaults.
 - **FR-028**: A person MUST be able to rename and delete their views; deleting removes the view at once and the
-  toast offers **Undo**, which restores it with its star.
+  toast offers **Undo**, which restores it with its star. Every save, change, star and delete of a view MUST be
+  written to the activity log with who and when (constitution VII), seen by the view's owner and by people who
+  may see the whole activity log; a change made from a page that shows an older version of the view MUST be
+  refused with "This view was changed in another tab — reload it to see the latest" instead of overwriting.
 - **FR-029**: A view that names something that no longer exists or is outside the person's scope MUST apply the
   rest and say what was left out.
 
@@ -324,7 +328,9 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
   activity statuses, the chosen values of each Shell-attribute group, period, currency, Show and each widget's
   chart or table choice. It lives in the page address; it is never stored except inside a saved view.
 - **Saved report view**: a person's named report filter for one report — owner, report, name, the filter, whether
-  it is their default; created, renamed, updated and deleted only by its owner, with Undo on delete.
+  it is their default, its version and who changed it when; created, renamed, updated and deleted only by its
+  owner, each change in the activity log, with Undo on delete. A personal preference, not a business record, so
+  a delete does not go to the recycle bin.
 - **Widget**: one part of a report — title, the figures it shows and their definitions, a table equivalent, and
   its export.
 

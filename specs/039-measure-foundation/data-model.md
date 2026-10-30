@@ -15,8 +15,9 @@ A person's named report filter for one report (spec FR-024–FR-029; research R4
 | `name` | text | Not null, trimmed, 1–60 characters (check `name <> ''` and `char_length(name) <= 60`) |
 | `is_default` | boolean | Not null |
 | `query` | text | Not null, the canonical report-filter query string, at most 4,000 characters (check) |
-| `created_at` | timestamptz | Not null |
-| `updated_at` | timestamptz | Not null |
+| `version` | integer | Not null, at least 1 (`record.Meta`: 1 on create, +1 on every change) |
+| `created_at`, `created_by_id`, `created_by_name` | timestamptz, text, text | Not null (`record.Meta`) |
+| `updated_at`, `updated_by_id`, `updated_by_name` | timestamptz, text, text | Not null (`record.Meta`) |
 
 Indexes: `report_views_name_key` unique on `(person_id, report, lower(name COLLATE "C"))`;
 `report_views_default_key` unique on `(person_id, report) WHERE is_default`; `report_views_person_key` on
@@ -32,8 +33,13 @@ Indexes: `report_views_name_key` unique on `(person_id, report, lower(name COLLA
   reload the page and try again."); it is stored canonicalised (§2).
 - Starring a view unstars the person's other view of the same report in the same write.
 - Only the owner lists, reads, changes or deletes a view; another person's ID answers 404 like a missing one.
-- No version, no activity-log entry, no recycle bin: a view is a personal preference like 010's saved views
-  (research R5, plan Complexity Tracking). Delete is immediate; **Undo** re-creates it.
+- An update carries the version it was read at; a stale one is refused (409 `version_conflict`, "This view was
+  changed in another tab — reload it to see the latest"), and the record is `Touch`ed on every change.
+- Every create, update, star and delete writes one activity-log entry (`history.Log`) in the same `Write`, kind
+  `reportView` ("saved report view", "saved report views"), seen by the view's owner and by holders of
+  `activityLog.viewAll` (research R5).
+- No recycle bin: a view is a personal preference, not a business record (constitution VII). Delete is
+  immediate; **Undo** re-creates it.
 
 ## 2. Report filter (not stored, except as a saved view's `query`)
 
