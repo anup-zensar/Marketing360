@@ -36,10 +36,10 @@ rules, the wiring hub with one stub per report, the migration, the routes and st
   not null, `query` "at most 4,000 characters", `version` "at least 1", `created_at`, `created_by_id`,
   `created_by_name`, `updated_at`, `updated_by_id`, `updated_by_name` (`record.Meta`); indexes `report_views_name_key`
   unique `(person_id, report, lower(name COLLATE "C"))`, `report_views_default_key` unique `(person_id, report)
-  WHERE is_default`, `report_views_person_key`; `roles_permissions_check` widened with `'reports.view'`; grant
+  WHERE is_default`; `roles_permissions_check` widened with `'reports.view'`; grant
   to every role with `plans.view` (data-model §4); Down drops the table and restores the check. Queries in
   `backend/internal/platform/database/queries/measure_views.sql` (`ListReportViews` by person and report,
-  `GetReportView`, `PutReportView` upsert, `DeleteReportView`, `UnsetReportDefault` by person and report); run
+  `GetReportView`, `PutReportView` upsert, `DeleteReportView`; starring unsets the other default in the service); run
   `sqlc generate && sqlc vet`
 - [ ] T006 [P] Test first `TestSeedRoles_ReportsView_039_FR002` in `backend/seed/access_test.go`, then give
   `authz.ReportsView` to every built-in role that holds `PlansView` in `backend/seed/access.go`
@@ -56,8 +56,9 @@ rules, the wiring hub with one stub per report, the migration, the routes and st
   `registerApprovals(w)`, `registerPurchaseRequests(w)`, `registerPlanDetails(w)`, `registerGsapLink(w)`,
   `registerUserAccess(w)`, `registerSummary(w)`, `registerRevenue(w)`, `registerFunnel(w)`; one file each,
   `backend/internal/app/measure_{planbudget,approvals,purchasereport,plandetails,gsaplink,useraccess,summary,revenue,funnel}.go`,
-  registering `measure.Stub(key)`; the adapters `Planning` over `allWorkSource`, `Plans` over
-  `plan.Store.ListInScope(ctx, authz.PermissionScopeOf(ctx, authz.ReportsView))`; wire in `app.go` once
+  registering `measure.Stub(key)`; called once from `areas.go` (the adapters `Planning` over `allWorkSource` and
+  `Plans` over `plan.Store.ListInScope(ctx, authz.PermissionScopeOf(ctx, authz.ReportsView))` come with the frame
+  service in T025, so nothing unused lands before it)
 - [ ] T010 `notYetServed` in `backend/internal/app/contract_routes_test.go`: 039's seven operations under the
   comment line `// 039 Measure foundation`, removed story by story as they are served
 - [ ] T011 Web hub: **Reports** (icon `ChartColumnIncreasing`, permission `reports.view`) right after **Dashboards**
@@ -172,7 +173,7 @@ views as one person; another person never sees them.
 ### Implementation
 
 - [ ] T036 [US2] `backend/internal/measure/store.go` (`Store`: `ListViews(person, report)`, `GetView`,
-  `PutView`, `DeleteView`, `UnsetDefault`), `store_postgres.go` over the T005 queries, the fake in
+  `PutView`, `DeleteView`), `store_postgres.go` over the T005 queries, the fake in
   `store_fake_test.go` and `backend/internal/measure/measuretest/`; add the store to `internal/stores`; the view
   embeds `record.Meta`
 - [ ] T037 [US2] `backend/internal/measure/views.go`: list, create, update, delete as 010's `allwork/views.go`,

@@ -20,8 +20,8 @@ A person's named report filter for one report (spec FR-024–FR-029; research R4
 | `updated_at`, `updated_by_id`, `updated_by_name` | timestamptz, text, text | Not null (`record.Meta`) |
 
 Indexes: `report_views_name_key` unique on `(person_id, report, lower(name COLLATE "C"))`;
-`report_views_default_key` unique on `(person_id, report) WHERE is_default`; `report_views_person_key` on
-`(person_id, report)` for the list.
+`report_views_default_key` unique on `(person_id, report) WHERE is_default`. The name index also serves the list by
+person and report.
 
 **Rules** (service, each with its message as 010's views):
 

@@ -115,6 +115,8 @@ tags:
     description: "Delegation of approval authority for a date range (feature 017)"
   - name: Dashboards
     description: "Executive and regional planning dashboards and the export of plans and dashboards to PowerPoint and PDF (feature 036)"
+  - name: Reports
+    description: "The Reports area of the Measure module: the catalogue, the report frame, saved report views and the export (features 039–050)"
 paths:
   /healthz:
     get:
@@ -7747,6 +7749,231 @@ paths:
           $ref: "#/components/responses/NotFound"
         default:
           $ref: "#/components/responses/Error"
+  # Feature 039 Measure foundation: the Reports area, the report frame, saved report views and the export
+  /api/v1/reports:
+    get:
+      tags:
+        - Reports
+      operationId: listReports
+      summary: The reports the person may open, in the catalogue's order (feature 039, FR-001)
+      description: >-
+        A report not built yet is listed with available false ("Coming soon"); a report needing more than
+        reports.view (User access needs access.manage) is listed only to people who hold it.
+      responses:
+        "200":
+          description: The catalogue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportCatalogue"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/reports/frame:
+    get:
+      tags:
+        - Reports
+      operationId: getReportFrame
+      summary: What every report page shares - the filter as applied, its choices and what is in view (feature 039, FR-006 – FR-019)
+      description: |
+        Records match by All work's rules (010 FR-005, 016 FR-039), so "in view" equals All work's counts for the
+        same year and filters. Only plans in the person's reports.view scope count. A filter value that no longer
+        exists, is inactive or is outside the scope is left out and counted in leftOut, never named (FR-015).
+      parameters:
+        - $ref: "#/components/parameters/ReportKey"
+        - $ref: "#/components/parameters/AllWorkYear"
+        - $ref: "#/components/parameters/AllWorkPlan"
+        - $ref: "#/components/parameters/AllWorkPlanType"
+        - $ref: "#/components/parameters/AllWorkTeam"
+        - $ref: "#/components/parameters/AllWorkOwner"
+        - $ref: "#/components/parameters/AllWorkActivityType"
+        - $ref: "#/components/parameters/AllWorkActivityStatus"
+        - $ref: "#/components/parameters/AllWorkAttr"
+        - $ref: "#/components/parameters/ReportPeriod"
+        - $ref: "#/components/parameters/ReportShow"
+        - $ref: "#/components/parameters/ReportCurrency"
+        - $ref: "#/components/parameters/ReportTable"
+      responses:
+        "200":
+          description: The frame.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportFrame"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/reports/{report}/export:
+    get:
+      tags:
+        - Reports
+      operationId: exportReport
+      summary: A report as an Excel workbook, or one of its widgets as Excel or CSV (feature 039, FR-022)
+      description: >-
+        Excel holds one sheet per widget, then In view and About this export (report, year, filters in words,
+        period, currency, exporter, date and time, rates used). CSV needs a widget and puts the notes before the
+        rows. A report not built yet exports In view and About this export only. Nothing is stored or logged.
+      parameters:
+        - $ref: "#/components/parameters/ReportPath"
+        - $ref: "#/components/parameters/ReportFormat"
+        - $ref: "#/components/parameters/ReportWidget"
+        - $ref: "#/components/parameters/AllWorkYear"
+        - $ref: "#/components/parameters/AllWorkPlan"
+        - $ref: "#/components/parameters/AllWorkPlanType"
+        - $ref: "#/components/parameters/AllWorkTeam"
+        - $ref: "#/components/parameters/AllWorkOwner"
+        - $ref: "#/components/parameters/AllWorkActivityType"
+        - $ref: "#/components/parameters/AllWorkActivityStatus"
+        - $ref: "#/components/parameters/AllWorkAttr"
+        - $ref: "#/components/parameters/ReportPeriod"
+        - $ref: "#/components/parameters/ReportShow"
+        - $ref: "#/components/parameters/ReportCurrency"
+      responses:
+        "200":
+          description: The file, named "SP&A One – <report> [– <widget>] – <year> – <date>".
+          headers:
+            Content-Disposition:
+              description: attachment with filename (ASCII) and filename* (UTF-8).
+              schema:
+                type: string
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/reports/{report}/views:
+    get:
+      tags:
+        - Reports
+      operationId: listReportViews
+      summary: The signed-in person's saved views of a report (feature 039, FR-024 – FR-026)
+      parameters:
+        - $ref: "#/components/parameters/ReportPath"
+      responses:
+        "200":
+          description: Only the signed-in person's views of this report.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportViewPage"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags:
+        - Reports
+      operationId: createReportView
+      summary: Save a report's address under a name (feature 039, FR-024, FR-027, FR-028)
+      parameters:
+        - $ref: "#/components/parameters/ReportPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportViewCreate"
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportView"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/reports/{report}/views/{viewId}:
+    patch:
+      tags:
+        - Reports
+      operationId: updateReportView
+      summary: Rename a saved report view, replace its address, or star or unstar it (feature 039, FR-026 – FR-028)
+      parameters:
+        - $ref: "#/components/parameters/ReportPath"
+        - $ref: "#/components/parameters/ReportViewId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportViewUpdate"
+      responses:
+        "200":
+          description: The view as saved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportView"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags:
+        - Reports
+      operationId: deleteReportView
+      summary: Delete a saved report view; the answer is the deleted view, for Undo (feature 039, FR-028)
+      parameters:
+        - $ref: "#/components/parameters/ReportPath"
+        - $ref: "#/components/parameters/ReportViewId"
+      responses:
+        "200":
+          description: The deleted view.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportView"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     sessionCookie:
@@ -7755,6 +7982,95 @@ components:
       name: mapp_session
       description: HttpOnly session cookie set by sign-in.
   parameters:
+    # Feature 039 Measure foundation
+    ReportKey:
+      name: report
+      in: query
+      required: true
+      description: The report the frame is for.
+      schema:
+        $ref: "#/components/schemas/ReportKey"
+    ReportPath:
+      name: report
+      in: path
+      required: true
+      description: The report's path in the web app's address.
+      schema:
+        type: string
+        enum:
+          - plan-budget
+          - approvals
+          - purchase-requests
+          - plan-details
+          - gsap-link
+          - user-access
+          - summary
+          - revenue
+          - funnel
+    ReportViewId:
+      name: viewId
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: ^RV-[0-9]+$
+      example: RV-1001
+    ReportPeriod:
+      name: period
+      in: query
+      description: Time widgets by month (default) or quarter of the plan year.
+      schema:
+        type: string
+        enum:
+          - month
+          - quarter
+        default: month
+    ReportShow:
+      name: show
+      in: query
+      description: The level a report that ranks records shows.
+      schema:
+        type: string
+        enum:
+          - plan
+          - campaign
+          - initiative
+          - activity
+    ReportCurrency:
+      name: currency
+      in: query
+      description: The display currency; default the person's. An unknown or inactive code falls back to the default.
+      schema:
+        type: string
+        pattern: ^[A-Z]{3}$
+    ReportTable:
+      name: table
+      in: query
+      description: Keys of the widgets shown as a table instead of a chart.
+      style: form
+      explode: true
+      schema:
+        type: array
+        maxItems: 50
+        items:
+          type: string
+          pattern: ^[a-z][A-Za-z0-9]{0,39}$
+    ReportFormat:
+      name: format
+      in: query
+      schema:
+        type: string
+        enum:
+          - xlsx
+          - csv
+        default: xlsx
+    ReportWidget:
+      name: widget
+      in: query
+      description: One widget of the report; required for CSV.
+      schema:
+        type: string
+        pattern: ^[a-z][A-Za-z0-9]{0,39}$
     # Feature 032 Purchase requests
     PurchaseRequestId:
       name: purchaseRequestId
@@ -8632,6 +8948,341 @@ components:
           schema:
             $ref: "#/components/schemas/Error"
   schemas:
+    # Feature 039 Measure foundation
+    ReportKey:
+      type: string
+      enum:
+        - planBudget
+        - approvals
+        - purchaseRequests
+        - planDetails
+        - gsapLink
+        - userAccess
+        - summary
+        - revenue
+        - funnel
+    ReportEntry:
+      type: object
+      additionalProperties: false
+      required: [key, path, name, purpose, available]
+      properties:
+        key:
+          $ref: "#/components/schemas/ReportKey"
+        path:
+          type: string
+          example: plan-budget
+        name:
+          type: string
+          example: Plan budget
+        purpose:
+          type: string
+        available:
+          type: boolean
+          description: False while the report is not built ("Coming soon").
+    ReportCatalogue:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportEntry"
+    ReportLevel:
+      type: string
+      enum:
+        - plan
+        - campaign
+        - initiative
+        - activity
+        - lineItem
+    ReportAttributeFilter:
+      type: object
+      additionalProperties: false
+      required: [attributeId, values]
+      properties:
+        attributeId:
+          type: string
+          example: SA-1022
+        values:
+          type: array
+          description: Option IDs, yes, no, or none (Not filled in).
+          items:
+            type: string
+    ReportFilter:
+      type: object
+      additionalProperties: false
+      required: [year, plans, planTypes, teams, owners, activityTypes, activityStatuses, attributes, period, show, currency, tables]
+      properties:
+        year:
+          type: integer
+        plans:
+          type: array
+          items:
+            type: string
+        planTypes:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlanType"
+        teams:
+          type: array
+          items:
+            type: string
+        owners:
+          type: array
+          items:
+            type: string
+        activityTypes:
+          type: array
+          items:
+            type: string
+        activityStatuses:
+          type: array
+          items:
+            type: string
+            enum: [created, submitted, declined, approved, inProgress, complete]
+        attributes:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportAttributeFilter"
+        period:
+          type: string
+          enum: [month, quarter]
+        show:
+          type: [string, "null"]
+          enum: [plan, campaign, initiative, activity, null]
+        currency:
+          type: string
+        tables:
+          type: array
+          items:
+            type: string
+    ReportNamedChoice:
+      type: object
+      additionalProperties: false
+      required: [id, name]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    ReportPlanChoice:
+      type: object
+      additionalProperties: false
+      required: [id, name, planType, teamIds]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        planType:
+          $ref: "#/components/schemas/PlanType"
+        teamIds:
+          type: array
+          items:
+            type: string
+    ReportTeamChoice:
+      type: object
+      additionalProperties: false
+      required: [id, name, mine]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        mine:
+          type: boolean
+    ReportAttributeValue:
+      type: object
+      additionalProperties: false
+      required: [id, label, active]
+      properties:
+        id:
+          type: string
+          description: An option ID, yes, no, or none (Not filled in).
+        label:
+          type: string
+        active:
+          type: boolean
+    ReportAttributeGroup:
+      type: object
+      additionalProperties: false
+      required: [level, attributeId, label, values]
+      properties:
+        level:
+          $ref: "#/components/schemas/ReportLevel"
+        attributeId:
+          type: string
+        label:
+          type: string
+        values:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportAttributeValue"
+    ReportCurrencyChoice:
+      type: object
+      additionalProperties: false
+      required: [code, name]
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+    ReportChoices:
+      type: object
+      additionalProperties: false
+      required: [years, plans, planTypes, teams, owners, activityTypes, activityStatuses, attributeGroups, currencies]
+      properties:
+        years:
+          type: array
+          items:
+            type: integer
+        plans:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportPlanChoice"
+        planTypes:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlanType"
+        teams:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportTeamChoice"
+        owners:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportNamedChoice"
+        activityTypes:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportNamedChoice"
+        activityStatuses:
+          type: array
+          items:
+            type: string
+            enum: [created, submitted, declined, approved, inProgress, complete]
+        attributeGroups:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportAttributeGroup"
+        currencies:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportCurrencyChoice"
+    ReportInView:
+      type: object
+      additionalProperties: false
+      required: [plans, campaigns, initiatives, activities, lineItems]
+      properties:
+        plans:
+          type: integer
+        campaigns:
+          type: integer
+        initiatives:
+          type: integer
+        activities:
+          type: integer
+        lineItems:
+          type: integer
+    ReportFinanceCoverage:
+      type: object
+      additionalProperties: false
+      required: [plans, of]
+      properties:
+        plans:
+          type: integer
+          description: Plans in view whose financial data the person may see.
+        of:
+          type: integer
+          description: Plans in view.
+    ReportFrame:
+      type: object
+      additionalProperties: false
+      required: [report, filter, choices, inView, finance, leftOut, displayCurrency, generatedAt, financeAsOf]
+      properties:
+        report:
+          $ref: "#/components/schemas/ReportKey"
+        filter:
+          $ref: "#/components/schemas/ReportFilter"
+        choices:
+          $ref: "#/components/schemas/ReportChoices"
+        inView:
+          $ref: "#/components/schemas/ReportInView"
+        finance:
+          $ref: "#/components/schemas/ReportFinanceCoverage"
+        leftOut:
+          type: integer
+          minimum: 0
+          description: Filter values left out because they no longer exist, are inactive or are out of scope.
+        displayCurrency:
+          type: string
+        generatedAt:
+          type: string
+          format: date-time
+        financeAsOf:
+          type: [string, "null"]
+          format: date-time
+    ReportView:
+      type: object
+      additionalProperties: false
+      required: [id, report, name, isDefault, query, version, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          example: RV-1001
+        report:
+          $ref: "#/components/schemas/ReportKey"
+        name:
+          type: string
+        isDefault:
+          type: boolean
+        query:
+          type: string
+          description: The report's canonical address query.
+        version:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ReportViewPage:
+      type: object
+      additionalProperties: false
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportView"
+        total:
+          type: integer
+    ReportViewCreate:
+      type: object
+      additionalProperties: false
+      required: [name, query]
+      properties:
+        name:
+          type: string
+        query:
+          type: string
+        isDefault:
+          type: boolean
+    ReportViewUpdate:
+      type: object
+      additionalProperties: false
+      required: [version]
+      properties:
+        version:
+          type: integer
+        name:
+          type: string
+        query:
+          type: string
+        isDefault:
+          type: boolean
     # Feature 037 Overspend control
     OverspendMode:
       type: string
@@ -19573,6 +20224,7 @@ components:
         - activities.delete
         - activities.submit
         - data.export
+        - reports.view
         - finance.view
         - finance.link
         - finance.import

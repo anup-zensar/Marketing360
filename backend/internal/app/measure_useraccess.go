@@ -1,0 +1,8 @@
+package app
+
+import "mapp/internal/measure"
+
+// registerUserAccess registers the report of feature 045; its lane replaces the stub with the built report.
+func registerUserAccess(_ *wiring, r *measure.Registry) error {
+	return r.Register(measure.Stub(measure.KeyUserAccess))
+}

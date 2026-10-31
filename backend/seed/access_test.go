@@ -31,12 +31,12 @@ func TestSeed_RolesAssignmentsAndRules_FR040(t *testing.T) {
 		}
 	}
 	wantRoles := []role{
-		{"RL-1001", "Administrator", authz.BuiltInAdministrator, 29, authz.ScopeAll},
-		{"RL-1002", "Global planner", authz.BuiltInGlobalPlanner, 19, authz.ScopeAll},
-		{"RL-1003", "Planner", authz.BuiltInPlanner, 14, authz.ScopeMyTeams},
-		{"RL-1004", "Approver", authz.BuiltInApprover, 4, authz.ScopeMyTeams},
-		{"RL-1005", "Viewer", authz.BuiltInViewer, 3, authz.ScopeMyTeams},
-		{"RL-1006", "Requisitioner", "", 3, authz.ScopeAll},
+		{"RL-1001", "Administrator", authz.BuiltInAdministrator, 30, authz.ScopeAll},
+		{"RL-1002", "Global planner", authz.BuiltInGlobalPlanner, 20, authz.ScopeAll},
+		{"RL-1003", "Planner", authz.BuiltInPlanner, 15, authz.ScopeMyTeams},
+		{"RL-1004", "Approver", authz.BuiltInApprover, 5, authz.ScopeMyTeams},
+		{"RL-1005", "Viewer", authz.BuiltInViewer, 4, authz.ScopeMyTeams},
+		{"RL-1006", "Requisitioner", "", 4, authz.ScopeAll},
 	}
 	if !slices.Equal(roles, wantRoles) {
 		t.Errorf("roles =\n%v\nwant\n%v", roles, wantRoles)
@@ -56,6 +56,7 @@ func TestSeed_RolesAssignmentsAndRules_FR040(t *testing.T) {
 		{authz.PlansDelete, true, true, false, false, false},
 		{authz.ActivitiesSubmit, true, true, true, false, false},
 		{authz.DataExport, true, true, true, true, true},
+		{authz.ReportsView, true, true, true, true, true},
 		{authz.FinanceView, true, true, true, true, true},
 		{authz.FinanceLink, true, false, false, false, false},
 		{authz.FinanceImport, true, false, false, false, false},
@@ -97,5 +98,16 @@ func TestSeed_RolesAssignmentsAndRules_FR040(t *testing.T) {
 
 	if !d.accessRules.NoSelfApproval || d.accessRules.NewPersonRoleID != "RL-1005" || d.accessRules.Version != 1 {
 		t.Errorf("access rules = %+v, want segregation of duties on and the Viewer role for new people", d.accessRules)
+	}
+}
+
+func TestSeedRoles_ReportsView_039_FR002(t *testing.T) {
+	t.Parallel()
+	d := loadDemo(t)
+	for _, r := range d.roles {
+		if slices.Contains(r.Permissions, authz.PlansView) != slices.Contains(r.Permissions, authz.ReportsView) {
+			t.Errorf("role %s %s: holds plans.view %v but reports.view %v, want both or neither", r.ID, r.Name,
+				slices.Contains(r.Permissions, authz.PlansView), slices.Contains(r.Permissions, authz.ReportsView))
+		}
 	}
 }
