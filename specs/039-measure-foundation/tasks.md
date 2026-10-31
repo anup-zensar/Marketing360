@@ -14,7 +14,7 @@ state, an end-to-end test for each P1 story (US1–US3). Write each test first a
 
 ## Phase 1: Setup (governance)
 
-- [ ] T001 Add `reports.view` to 014's Table A in `specs/014-access-control/spec.md` (group Plans and planning,
+- [X] T001 Add `reports.view` to 014's Table A in `specs/014-access-control/spec.md` (group Plans and planning,
   after `data.export`: label "See reports", scoped "Yes", refusal noun "Seeing reports") with "(039, D-367)"
 
 ## Phase 2: Foundational — the backend hub first (blocking; merge into `measure-module` by hour 16)
@@ -22,15 +22,15 @@ state, an end-to-end test for each P1 story (US1–US3). Write each test first a
 **Purpose**: everything lanes C and D import or rely on: the permission, the `measure` types and registry, the
 rules, the wiring hub with one stub per report, the migration, the routes and stub pages.
 
-- [ ] T002 Contract first: add 039's seven operations and the `Report*` schemas of `contracts/api.md` to
+- [X] T002 Contract first: add 039's seven operations and the `Report*` schemas of `contracts/api.md` to
   `backend/api/openapi.yaml` (tag Reports), `reports.view` to the `Permission` enum; run `pnpm run api:types`
   in `frontend/`
-- [ ] T003 [P] Test first, then add `ReportsView Permission = "reports.view"` and its catalogue row
+- [X] T003 [P] Test first, then add `ReportsView Permission = "reports.view"` and its catalogue row
   `{ReportsView, GroupPlanning, "See reports", "Seeing reports", true}` after `DataExport` in
   `backend/internal/platform/authz/catalogue.go`; test `TestCatalogue_ReportsView_039_FR002` in
   `catalogue_test.go`
-- [ ] T004 [P] Add `PrefixReportView = "RV"` in `backend/internal/platform/ids/ids.go`
-- [ ] T005 Migration `backend/internal/platform/database/migrations/00028_reports.sql`: table `report_views`
+- [X] T004 [P] Add `PrefixReportView = "RV"` in `backend/internal/platform/ids/ids.go`
+- [X] T005 Migration `backend/internal/platform/database/migrations/00028_reports.sql`: table `report_views`
   exactly as data-model §1 — `id` "`^RV-[0-9]+$`", `person_id` "references people (id), deferrable",
   `report` "one of the report keys of §3", `name` "`name <> ''` and `char_length(name) <= 60`", `is_default`
   not null, `query` "at most 4,000 characters", `version` "at least 1", `created_at`, `created_by_id`,
@@ -41,27 +41,27 @@ rules, the wiring hub with one stub per report, the migration, the routes and st
   `backend/internal/platform/database/queries/measure_views.sql` (`ListReportViews` by person and report,
   `GetReportView`, `PutReportView` upsert, `DeleteReportView`; starring unsets the other default in the service); run
   `sqlc generate && sqlc vet`
-- [ ] T006 [P] Test first `TestSeedRoles_ReportsView_039_FR002` in `backend/seed/access_test.go`, then give
+- [X] T006 [P] Test first `TestSeedRoles_ReportsView_039_FR002` in `backend/seed/access_test.go`, then give
   `authz.ReportsView` to every built-in role that holds `PlansView` in `backend/seed/access.go`
-- [ ] T007 Test first `TestCatalogue_FR001_FR003` in `backend/internal/measure/catalogue_test.go` (nine reports
+- [X] T007 Test first `TestCatalogue_FR001_FR003` in `backend/internal/measure/catalogue_test.go` (nine reports
   in data-model §3 order with key, path, name, purpose of contracts/ui.md; a registered stub is not available;
   `userAccess` needs `access.manage`); then `backend/internal/measure/model.go` (API types of contracts/api.md),
   `catalogue.go` (the `Report` interface `Key`, `Available`, `Sheets`; `Registry` with `Register`, `Get`,
   `Catalogue(ctx)`; `Stub(key)`), `ports.go` (`Transactor`; `Planning`: `Years`, `Year`, `Choices`,
   `Attributes`, `Currency`, `RatesUsed`; `Plans`: `InReportsScope(ctx) ([]string, error)`; `Currencies`)
-- [ ] T008 Rules in `backend/internal/access/routes_measure.go` — the seven of contracts/api.md
+- [X] T008 Rules in `backend/internal/access/routes_measure.go` — the seven of contracts/api.md
   (`need(authz.ReportsView)` ×6, `need(authz.DataExport)` for the export) — and `measureRoutes()` joined in
   `backend/internal/access/routes.go`
-- [ ] T009 Wiring hub `backend/internal/app/measure.go`: builds the `Registry`, calls `registerPlanBudget(w)`,
+- [X] T009 Wiring hub `backend/internal/app/measure.go`: builds the `Registry`, calls `registerPlanBudget(w)`,
   `registerApprovals(w)`, `registerPurchaseRequests(w)`, `registerPlanDetails(w)`, `registerGsapLink(w)`,
   `registerUserAccess(w)`, `registerSummary(w)`, `registerRevenue(w)`, `registerFunnel(w)`; one file each,
   `backend/internal/app/measure_{planbudget,approvals,purchasereport,plandetails,gsaplink,useraccess,summary,revenue,funnel}.go`,
   registering `measure.Stub(key)`; called once from `areas.go` (the adapters `Planning` over `allWorkSource` and
   `Plans` over `plan.Store.ListInScope(ctx, authz.PermissionScopeOf(ctx, authz.ReportsView))` come with the frame
   service in T025, so nothing unused lands before it)
-- [ ] T010 `notYetServed` in `backend/internal/app/contract_routes_test.go`: 039's seven operations under the
+- [X] T010 `notYetServed` in `backend/internal/app/contract_routes_test.go`: 039's seven operations under the
   comment line `// 039 Measure foundation`, removed story by story as they are served
-- [ ] T011 Web hub: **Reports** (icon `ChartColumnIncreasing`, permission `reports.view`) right after **Dashboards**
+- [X] T011 Web hub: **Reports** (icon `ChartColumnIncreasing`, permission `reports.view`) right after **Dashboards**
   in `frontend/src/app/navigation.ts` (039-C3, FR-034); `/reports` and the nine report routes of contracts/ui.md
   in `frontend/src/app/pages.tsx` and `router.tsx` (or a `measure-routes.tsx` beside `dashboard-routes.tsx` if
   `router.tsx` is at its line limit); `frontend/src/features/measure/index.ts` exporting `ReportsPage` and one

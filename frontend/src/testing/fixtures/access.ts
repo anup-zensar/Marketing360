@@ -80,6 +80,7 @@ const PLANNER_KEYS: PermissionKey[] = [
   'activities.edit',
   'activities.submit',
   'data.export',
+  'reports.view',
   'finance.view',
 ];
 

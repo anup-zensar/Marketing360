@@ -38,6 +38,7 @@ export const VIEWER: CurrentUser = testUser({
     permissions: [
       { key: 'plans.view', all: false, teams: [] },
       { key: 'data.export', all: false, teams: [] },
+      { key: 'reports.view', all: false, teams: [] },
       { key: 'finance.view', all: false, teams: [] },
     ],
     administrators: [
