@@ -67,6 +67,20 @@ describe('PlanBudgetReport (040 US1)', () => {
     await expectNoAxeViolations();
   });
 
+  it('shortens a large amount on its card and keeps the full amount at hand (FR-002)', async () => {
+    const usd = (amount: string) => ({ amount, currency: 'USD' });
+    renderPage({
+      body: planBudgetReport({
+        cards: { ...planBudgetReport().cards, budget: usd('2000000.00') },
+      }),
+    });
+
+    const cards = await screen.findByLabelText('Summary');
+    expect(
+      within(cards).getByRole('button', { name: /^\$2(\.0)?M \(\$2,000,000\.00\)$/ }),
+    ).toBeInTheDocument();
+  });
+
   it('charts spend by month with today marked, and lists every period in the table (FR-004, FR-007)', async () => {
     const { user } = renderPage();
 

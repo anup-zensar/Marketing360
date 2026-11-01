@@ -45,6 +45,11 @@ test('039 US1: a report opens on the defaults, filters on Apply and keeps everyt
   await page.goto(REPORT);
   await expect(inView(page)).toContainText(` ${allWork.count.total} activit`);
   await expectNoAxeViolations(page);
+  const levels = page.getByRole('tablist', { name: 'Shell attributes by level' });
+  await levels.scrollIntoViewIfNeeded();
+  for (const level of ['Plan', 'Campaign', 'Initiative', 'Activity']) {
+    await expect(levels.getByRole('tab', { name: level })).toBeInViewport({ ratio: 1 });
+  }
 
   const status = page.getByRole('group', { name: /^Activity status/ });
   await status.getByRole('checkbox', { name: 'Created' }).uncheck();

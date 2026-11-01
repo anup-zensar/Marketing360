@@ -158,3 +158,9 @@
     display: none;
   }
 }
+
+/* The panel is narrower than the four level tabs: they wrap instead of hiding behind a sideways scroll. */
+.levels [role='tablist'] {
+  flex-wrap: wrap;
+  column-gap: var(--space-4);
+}

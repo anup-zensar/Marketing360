@@ -26,40 +26,42 @@ export function LevelTabs({ groups, ticked, onChange }: LevelTabsProps) {
     onChange(Object.fromEntries(ofLevel.map((g) => [attrKey(g.attributeId), value])));
 
   return (
-    <Tabs
-      label="Shell attributes by level"
-      tabs={LEVELS.map((value) => ({ value, label: LEVEL_WORDS[value] ?? value }))}
-      value={level}
-      onChange={setLevel}
-    >
-      {ofLevel.length === 0 ? (
-        <p className={styles.muted}>
-          No {(LEVEL_WORDS[level] ?? level).toLowerCase()} attributes to filter by.
-        </p>
-      ) : (
-        <>
-          <div className={styles.groupActions}>
-            <Button type="button" size="sm" variant="tertiary" onClick={() => setAll(null)}>
-              Select all
-            </Button>
-            <Button type="button" size="sm" variant="tertiary" onClick={() => setAll([])}>
-              Clear all
-            </Button>
-          </div>
-          {ofLevel.map((group) => (
-            <FilterGroup
-              key={group.attributeId}
-              title={group.label}
-              options={group.values.map((v) => ({
-                id: v.id,
-                label: v.active ? v.label : `${v.label} (inactive)`,
-              }))}
-              ticked={ticked[attrKey(group.attributeId)] ?? null}
-              onChange={(next) => onChange({ [attrKey(group.attributeId)]: next })}
-            />
-          ))}
-        </>
-      )}
-    </Tabs>
+    <div className={styles.levels}>
+      <Tabs
+        label="Shell attributes by level"
+        tabs={LEVELS.map((value) => ({ value, label: LEVEL_WORDS[value] ?? value }))}
+        value={level}
+        onChange={setLevel}
+      >
+        {ofLevel.length === 0 ? (
+          <p className={styles.muted}>
+            No {(LEVEL_WORDS[level] ?? level).toLowerCase()} attributes to filter by.
+          </p>
+        ) : (
+          <>
+            <div className={styles.groupActions}>
+              <Button type="button" size="sm" variant="tertiary" onClick={() => setAll(null)}>
+                Select all
+              </Button>
+              <Button type="button" size="sm" variant="tertiary" onClick={() => setAll([])}>
+                Clear all
+              </Button>
+            </div>
+            {ofLevel.map((group) => (
+              <FilterGroup
+                key={group.attributeId}
+                title={group.label}
+                options={group.values.map((v) => ({
+                  id: v.id,
+                  label: v.active ? v.label : `${v.label} (inactive)`,
+                }))}
+                ticked={ticked[attrKey(group.attributeId)] ?? null}
+                onChange={(next) => onChange({ [attrKey(group.attributeId)]: next })}
+              />
+            ))}
+          </>
+        )}
+      </Tabs>
+    </div>
   );
 }
