@@ -63,7 +63,7 @@ func (s *Service) CreateView(ctx context.Context, a actor.Actor, report string, 
 		}
 		var problems errs.Problems
 		name := checkViewName(&problems, in.Name, own, "")
-		query := checkViewQuery(&problems, in.Query)
+		query := checkViewQuery(&problems, in.Query, s.paramsOf(report))
 		if err := problems.Err(); err != nil {
 			return err
 		}
@@ -98,7 +98,7 @@ func (s *Service) UpdateView(ctx context.Context, a actor.Actor, ref ViewRef, in
 		if err != nil {
 			return err
 		}
-		after, err := changedView(before, in, own)
+		after, err := changedView(before, in, own, s.paramsOf(before.Report))
 		if err != nil || after.logView() == before.logView() {
 			updated = before.view()
 			return err
@@ -168,13 +168,13 @@ func (s *Service) saveView(ctx context.Context, a actor.Actor, v StoredView, own
 	return s.deps.Views.PutView(ctx, v)
 }
 
-func changedView(v StoredView, in ViewUpdate, own []StoredView) (StoredView, error) {
+func changedView(v StoredView, in ViewUpdate, own []StoredView, keep []string) (StoredView, error) {
 	var problems errs.Problems
 	if in.Name != nil {
 		v.Name = checkViewName(&problems, *in.Name, own, v.ID)
 	}
 	if in.Query != nil {
-		v.Query = checkViewQuery(&problems, *in.Query)
+		v.Query = checkViewQuery(&problems, *in.Query, keep)
 	}
 	if in.IsDefault != nil {
 		v.IsDefault = *in.IsDefault
@@ -203,20 +203,41 @@ func checkViewName(problems *errs.Problems, name string, own []StoredView, excep
 	return name
 }
 
-// checkViewQuery keeps the address in the API's canonical form, so a saved view and the page it was saved
-// from always give the same report.
-func checkViewQuery(problems *errs.Problems, query string) string {
+// checkViewQuery keeps the address in the API's canonical form, then the report's own parameters it keeps, so a
+// saved view and the page it was saved from always give the same report.
+func checkViewQuery(problems *errs.Problems, query string, keep []string) string {
 	values, err := url.ParseQuery(query)
 	if err != nil {
 		problems.Add("query", msgViewQuery)
 		return ""
 	}
 	f, err := ParseFilter(values)
-	canonical := Canonical(f)
+	canonical := withOwn(Canonical(f), f.Own, keep)
 	if err != nil || utf8.RuneCountInString(canonical) > maxViewQuery {
 		problems.Add("query", msgViewQuery)
 	}
 	return canonical
+}
+
+func withOwn(canonical string, own url.Values, keep []string) string {
+	parts := []string{}
+	if canonical != "" {
+		parts = append(parts, canonical)
+	}
+	for _, name := range slices.Sorted(slices.Values(keep)) {
+		for _, v := range slices.Sorted(slices.Values(own[name])) {
+			parts = append(parts, url.QueryEscape(name)+"="+url.QueryEscape(v))
+		}
+	}
+	return strings.Join(parts, "&")
+}
+
+func (s *Service) paramsOf(report string) []string {
+	r, found := s.registry.Get(report)
+	if p, parameterised := r.(Parameterised); found && parameterised {
+		return p.Params()
+	}
+	return nil
 }
 
 func knownReport(report string) error {

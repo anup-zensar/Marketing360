@@ -1,6 +1,7 @@
 package measure_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -24,14 +25,20 @@ var (
 	danielSaves = actor.Actor{ID: "U-1003", Name: "Daniel Okoro"}
 )
 
-func viewService(t *testing.T) (*measure.Service, *history.Service) {
+func viewService(t *testing.T, reports ...measure.Report) (*measure.Service, *history.Service) {
 	t.Helper()
 	db := fake.NewDB()
 	generator := ids.NewGenerator(fake.NewCounters(db))
 	now := func() time.Time { return time.Date(2026, 10, 30, 9, 0, 0, 0, time.UTC) }
 	log := history.NewService(db, historytest.NewStore(db), generator, now)
+	registry := measure.NewRegistry()
+	for _, r := range reports {
+		if err := registry.Register(r); err != nil {
+			t.Fatalf("Register(%s): %v", r.Key(), err)
+		}
+	}
 	s := measure.NewService(history.Tools{Tx: db, IDs: generator, Log: log, Now: now},
-		measure.Deps{Views: measuretest.NewStore(db)}, measure.NewRegistry())
+		measure.Deps{Views: measuretest.NewStore(db)}, registry)
 	if err := log.Register(s.ViewKind()); err != nil {
 		t.Fatalf("Register: %v", err)
 	}
@@ -176,5 +183,33 @@ func TestViews_VersionAndLog_FR028(t *testing.T) {
 	}
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("log entries (-want +got):\n%s", diff)
+	}
+}
+
+type sortedReport struct{}
+
+func (sortedReport) Key() string     { return measure.KeyApprovals }
+func (sortedReport) Available() bool { return true }
+func (sortedReport) Params() []string {
+	return []string{"status", "sort"}
+}
+
+func (sortedReport) Sheets(context.Context, actor.Actor, measure.Filter) ([]measure.WidgetSheet, error) {
+	return nil, nil
+}
+
+func TestViews_KeepTheReportsOwnParameters_039_B4(t *testing.T) {
+	t.Parallel()
+	s, _ := viewService(t, sortedReport{})
+	query := "status=open&page=3&sort=name&status=declined&owner=U-1002&junk=1"
+
+	approvals := create(t, s, priyaSaves, measure.KeyApprovals, measure.ViewCreate{Name: "Open", Query: query})
+	budget := create(t, s, priyaSaves, measure.KeyPlanBudget, measure.ViewCreate{Name: "Open", Query: query})
+
+	if want := "owner=U-1002&sort=name&status=declined&status=open"; approvals.Query != want {
+		t.Errorf("Approvals view query = %q, want %q: its own parameters kept, page and unknown ones dropped", approvals.Query, want)
+	}
+	if budget.Query != "owner=U-1002" {
+		t.Errorf("Plan budget view query = %q: a report without parameters of its own keeps only the filter", budget.Query)
 	}
 }

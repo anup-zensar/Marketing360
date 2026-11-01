@@ -40,10 +40,10 @@ type File struct {
 // Export writes the report, or one widget of it, as the screen shows it: Excel holds the widgets' sheets, In view
 // and About this export; a CSV is one widget with the notes before its rows (FR-022, research R7). Nothing is kept.
 func (s *Service) Export(ctx context.Context, a actor.Actor, report string, req ExportRequest) (File, error) {
-	name, found := nameOf(report)
-	if !found {
-		return File{}, errs.NotFound(msgNoReport)
+	if err := openable(ctx, report); err != nil {
+		return File{}, err
 	}
+	name, _ := nameOf(report)
 	req, err := checked(req)
 	if err != nil {
 		return File{}, err

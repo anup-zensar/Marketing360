@@ -41,7 +41,7 @@ func ParseFilter(values url.Values) (Filter, error) {
 		return Filter{}, err
 	}
 	f := controls(values, &problems)
-	f.Query = q
+	f.Query, f.Own = q, ownParams(values)
 	if err := problems.Err(); err != nil {
 		return Filter{}, err
 	}
@@ -99,6 +99,18 @@ func Canonical(f Filter) string {
 	add("currency", nonEmpty(f.Currency)...)
 	add("table", f.Tables...)
 	return strings.Join(parts, "&")
+}
+
+// ownParams are the parameters the shared filter does not read: a report's own, such as a tab or a sort.
+func ownParams(values url.Values) url.Values {
+	shared := append(allWorkParams(), "period", "show", "currency", "table", "report")
+	own := url.Values{}
+	for name, v := range values {
+		if !slices.Contains(shared, name) {
+			own[name] = v
+		}
+	}
+	return own
 }
 
 func listed(value string, allowed []string) bool {
