@@ -238,3 +238,22 @@ func (s *Service) log(ctx context.Context, a actor.Actor, src Source, e logEntry
 	})
 	return err
 }
+
+func (s *Service) Source(ctx context.Context, _ actor.Actor, id string) (SourceView, error) {
+	if err := authz.Require(ctx, authz.PlansView); err != nil {
+		return SourceView{}, err
+	}
+	var found []SourceView
+	err := s.tx.Read(ctx, func(ctx context.Context) error {
+		var readErr error
+		found, readErr = s.repo.ListSources(ctx, id)
+		return readErr
+	})
+	if err != nil {
+		return SourceView{}, fmt.Errorf("get performance source %s: %w", id, err)
+	}
+	if len(found) == 0 {
+		return SourceView{}, errs.NotFound(msgSourceNotFound)
+	}
+	return found[0], nil
+}

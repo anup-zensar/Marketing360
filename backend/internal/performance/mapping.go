@@ -149,3 +149,45 @@ func knownMeaning(m Meaning) bool {
 func knownMetric(w WebMetric) bool {
 	return w == MetricSessions || w == MetricVisits || w == MetricEngagementTouches
 }
+
+func (s *Service) UpdateMapping(ctx context.Context, a actor.Actor, id string, in MappingInput) (Mapping, error) {
+	if err := authz.Require(ctx, PermissionImport); err != nil {
+		return Mapping{}, err
+	}
+	if err := checkMapping(in); err != nil {
+		return Mapping{}, err
+	}
+	var saved Mapping
+	err := s.tx.Write(ctx, func(ctx context.Context) error {
+		stored, findErr := s.mapping(ctx, id)
+		if findErr != nil {
+			return findErr
+		}
+		if stored.Version != in.Version {
+			return errs.VersionConflict(mappingKindSingular, stored.UpdatedBy.Name, stored.UpdatedAt)
+		}
+		saved = stored
+		saved.ColumnName, saved.Meaning = strings.TrimSpace(in.ColumnName), in.Meaning
+		saved.Stage, saved.WebMetric, saved.ModelID = in.Stage, in.WebMetric, in.ModelID
+		saved.Version++
+		saved.UpdatedAt, saved.UpdatedBy = s.now(), a
+		return s.repo.PutMapping(ctx, saved)
+	})
+	if err != nil {
+		return Mapping{}, fmt.Errorf("update column mapping %s: %w", id, err)
+	}
+	return saved, nil
+}
+
+func (s *Service) mapping(ctx context.Context, id string) (Mapping, error) {
+	all, err := s.repo.ListMappings(ctx, nil)
+	if err != nil {
+		return Mapping{}, err
+	}
+	for _, m := range all {
+		if m.ID == id {
+			return m, nil
+		}
+	}
+	return Mapping{}, errs.NotFound(msgMappingNotFound)
+}
