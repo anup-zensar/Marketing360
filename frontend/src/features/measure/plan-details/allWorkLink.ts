@@ -1,5 +1,5 @@
-import { writeAddress } from '../shared/report-address';
-import type { ReportAddress } from '../shared/report-address';
+import { writeAddress } from '../shared';
+import type { ReportAddress } from '../shared';
 
 const ALL_WORK_PARAMS = [
   'year',

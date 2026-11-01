@@ -1,10 +1,11 @@
 import { useFormatters } from '@/format/useFormatters';
-import { LinkButton } from '@/ui/Button/Button';
+import { Button, LinkButton } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { SummaryCard } from '@/ui/SummaryCard/SummaryCard';
-import { ReportFrame } from '../shared';
+import { ReportFrame, useReportAddress } from '../shared';
+import { isRestricted, resetFilters } from '../shared/report-address';
 import type { ReportAddress } from '../shared';
 import { usePlanDetails } from './api';
 import type { PlanDetailsReport as Report } from './api';
@@ -34,20 +35,42 @@ function PlanDetails({ address }: { address: ReportAddress }) {
     );
   }
   if (report.data.cards.records === 0) {
-    const records = RECORDS[report.data.show].many;
+    return <NoRecords show={report.data.show} address={address} />;
+  }
+  return <Widgets report={report.data} address={address} />;
+}
+
+/** Why no record of the level is shown: the filters exclude them all, or there are none yet (FR-016). */
+function NoRecords({ show, address }: { show: Report['show']; address: ReportAddress }) {
+  const [, setAddress] = useReportAddress();
+  if (isRestricted(address)) {
     return (
       <EmptyState
-        title="No data yet"
-        text={`${records} create this report's data; there are none in view.`}
+        title="Your filters exclude everything"
+        text="No record matches every filter."
         action={
-          <LinkButton to="/plans" variant="secondary">
-            Open the plans
-          </LinkButton>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setAddress(resetFilters(address))}
+          >
+            Reset filters
+          </Button>
         }
       />
     );
   }
-  return <Widgets report={report.data} address={address} />;
+  return (
+    <EmptyState
+      title="No data yet"
+      text={`${RECORDS[show].many} create this report's data; there are none in view.`}
+      action={
+        <LinkButton to="/plans" variant="secondary">
+          Open the plans
+        </LinkButton>
+      }
+    />
+  );
 }
 
 function Widgets({ report, address }: { report: Report; address: ReportAddress }) {

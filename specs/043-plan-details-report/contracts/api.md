@@ -129,5 +129,5 @@ else from 039's `measure.Planning` (`Year` with columns `completeness` and `inq`
 (`InReportsScope`) and `allwork.Match` — the same three calls the frame makes. Amounts are summed in USD and
 converted once, as All work does.
 
-No exported function is added outside lane D's paths. Proposed to the integrator (research R2):
-`allwork.AttributeParts`, which would replace 043's local copy of 016's attribution rule.
+At the integrator's request, `allwork.AttributeParts` exports 016's attribution rule, which the Breakdown and 043 both
+call (research R2); 043 keeps no copy of it.

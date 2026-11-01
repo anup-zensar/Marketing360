@@ -62,6 +62,19 @@ describe('ValueWidget (043 FR-009 – FR-017)', () => {
     expect(screen.queryByRole('link', { name: 'Does not apply' })).not.toBeInTheDocument();
   });
 
+  it('draws Does not apply as a bar on a value widget, with no note about it', () => {
+    renderWidget(widget({ values: [value('EU', 12), value('doesNotApply', 8, undefined, false)] }));
+
+    expect(screen.getByText('Does not apply')).toBeInTheDocument();
+    expect(screen.queryByText(/where it does not apply are not counted/)).not.toBeInTheDocument();
+  });
+
+  it('shows a value that opens All work as a link', () => {
+    renderWidget(widget());
+
+    expect(screen.getByRole('link', { name: 'Not filled in' })).toHaveClass(/barLabel/);
+  });
+
   it('shows planned cost in the report currency, and says when records count in each value', () => {
     renderWidget(
       widget({

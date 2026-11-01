@@ -41,6 +41,11 @@
   white-space: nowrap;
 }
 
+/* A value that opens All work reads as a link. */
+a.barLabel {
+  color: var(--link);
+}
+
 .track {
   height: 12px;
   border-radius: var(--radius-pill);

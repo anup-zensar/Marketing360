@@ -23,12 +23,12 @@ function renderReport(
     reply('GET /api/v1/reports/plan-details', { body: report }),
     reply('GET /api/v1/reports/{report}/views', { body: { items: [], total: 0 } }),
   ]);
-  renderWithProviders(<PlanDetailsReport />, {
+  const { user } = renderWithProviders(<PlanDetailsReport />, {
     route,
     user: testUser(),
     path: '/reports/plan-details',
   });
-  return api;
+  return Object.assign(api, { user });
 }
 
 describe('PlanDetailsReport (043 US1, FR-005 – FR-016)', () => {
@@ -64,6 +64,32 @@ describe('PlanDetailsReport (043 US1, FR-005 – FR-016)', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Open the plans' })).toHaveAttribute('href', '/plans');
     expect(screen.queryByText('Activities by Company code')).not.toBeInTheDocument();
+  });
+
+  it('says the filters exclude every record of the level, and resets them (FR-016)', async () => {
+    const empty = planDetails({
+      cards: {
+        records: 0,
+        plannedCost: { amount: '0.00', currency: 'EUR' },
+        allFilledIn: 0,
+        allFilledInPercent: null,
+      },
+      builtIn: [],
+    });
+    const { user } = renderReport(
+      empty,
+      undefined,
+      '/reports/plan-details?activityStatus=declined',
+    );
+
+    expect(await screen.findByText('Your filters exclude everything')).toBeInTheDocument();
+    expect(screen.queryByText('No data yet')).not.toBeInTheDocument();
+    const reset = screen.getAllByRole('button', { name: 'Reset filters' }).at(-1);
+    if (!reset) {
+      throw new Error('No Reset filters button.');
+    }
+    await user.click(reset);
+    expect(await screen.findByText('No data yet')).toBeInTheDocument();
   });
 
   it('says when no attribute of the level is set up (FR-016)', async () => {

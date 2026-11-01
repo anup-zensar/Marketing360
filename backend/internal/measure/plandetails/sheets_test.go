@@ -61,7 +61,7 @@ func TestSheets_EmptyWidget_HeaderAndTotal_FR017(t *testing.T) {
 	if err != nil || len(sheets) != 3 {
 		t.Fatalf("Sheets() = %d sheets, %v; want the three of the attribute row", len(sheets), err)
 	}
-	if diff := cmp.Diff([]string{"Value,Activities", "Total,0"}, csvOf(t, sheets[0].Sheet.Rows)); diff != "" {
+	if diff := cmp.Diff([]string{"Value,Activities", "Not filled in,0", "Total,0"}, csvOf(t, sheets[0].Sheet.Rows)); diff != "" {
 		t.Errorf("empty count widget (-want +got):\n%s", diff)
 	}
 }
@@ -84,9 +84,9 @@ func TestSheets_EveryValueAndTotal_FR017(t *testing.T) {
 	}
 	cost := sheets[len(sheets)-2]
 	lines := csvOf(t, cost.Sheet.Rows)
-	if cost.Key != "attr1PlannedCost" || cost.Sheet.Name != "Planned cost by Company code" || len(lines) != 14 ||
-		lines[0] != "Value,Activities,Planned cost (USD)" || lines[13] != "Total,12,120.00" {
-		t.Errorf("sheet %s %q = %q, want the header, all twelve values and the total", cost.Key, cost.Sheet.Name, lines)
+	if cost.Key != "attr1PlannedCost" || cost.Sheet.Name != "Planned cost by Company code" || len(lines) != 15 ||
+		lines[0] != "Value,Activities,Planned cost (USD)" || lines[13] != "Not filled in,0,0.00" || lines[14] != "Total,12,120.00" {
+		t.Errorf("sheet %s %q = %q, want the header, all twelve values, Not filled in and the total", cost.Key, cost.Sheet.Name, lines)
 	}
 }
 

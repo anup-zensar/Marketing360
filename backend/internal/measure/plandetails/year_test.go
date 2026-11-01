@@ -183,11 +183,9 @@ type fakeScoped struct {
 
 func (f *fakeScoped) Matched(_ context.Context, _ actor.Actor, _ measure.Filter, columns []string) (Matching, error) {
 	f.columns = columns
-	return f.matching, nil
-}
-
-func (f *fakeScoped) Attributes(context.Context) ([]allwork.Attribute, error) {
-	return f.attributes, nil
+	m := f.matching
+	m.Attributes = f.attributes
+	return m, nil
 }
 
 type fakeTx struct{}

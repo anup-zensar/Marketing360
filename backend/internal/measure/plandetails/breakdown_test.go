@@ -94,11 +94,7 @@ func breakdownYear(t *testing.T) (*year, []allwork.Attribute) {
 func TestAttribution_EqualsAllWorkBreakdown_SC002(t *testing.T) {
 	t.Parallel()
 	y, attributes := breakdownYear(t)
-	db := fake.NewDB()
-	tools := history.Tools{Tx: db, IDs: ids.NewGenerator(fake.NewCounters(db)), Now: func() time.Time {
-		return time.Date(testYearNumber, time.October, 18, 14, 5, 0, 0, time.UTC)
-	}}
-	allWork := allwork.NewService(tools, allworktest.NewStore(db), yearSource{nodes: y.nodes, attributes: attributes})
+	allWork := allWorkOf(yearSource{nodes: y.nodes, attributes: attributes})
 
 	for _, a := range attributes {
 		t.Run(a.Label, func(t *testing.T) {
@@ -121,6 +117,9 @@ func TestAttribution_EqualsAllWorkBreakdown_SC002(t *testing.T) {
 					outside = outside.Add(*amount(t, text))
 				}
 				got["notFilledIn"] = outside.String()
+			}
+			if got["notFilledIn"] == "0.00" && want["notFilledIn"] == "" { // the Breakdown leaves out an empty group
+				delete(got, "notFilledIn")
 			}
 			if diff := cmp.Diff(want, got); diff != "" {
 				t.Errorf("planned cost by value against All work's Breakdown (-want +got):\n%s", diff)
@@ -169,4 +168,13 @@ func plannedCosts(t *testing.T, w Widget) map[string]string {
 		got["notFilledIn"] = *notFilledIn
 	}
 	return got
+}
+
+// allWorkOf is All work's own service over an in-memory year, for the tests that compare this report with it.
+func allWorkOf(source yearSource) *allwork.Service {
+	db := fake.NewDB()
+	tools := history.Tools{Tx: db, IDs: ids.NewGenerator(fake.NewCounters(db)), Now: func() time.Time {
+		return time.Date(testYearNumber, time.October, 18, 14, 5, 0, 0, time.UTC)
+	}}
+	return allwork.NewService(tools, allworktest.NewStore(db), source)
 }

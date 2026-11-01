@@ -4,7 +4,6 @@ import (
 	"context"
 	"slices"
 
-	"mapp/internal/allwork"
 	"mapp/internal/measure"
 	"mapp/internal/measure/plandetails"
 	"mapp/internal/platform/actor"
@@ -12,15 +11,15 @@ import (
 
 // registerPlanDetails registers and mounts the Plan details report (feature 043).
 func registerPlanDetails(w *wiring, r *measure.Registry) error {
-	service := plandetails.NewService(w.set.Tx, planDetailsScope{reports: w.reports, source: w.allWork})
+	service := plandetails.NewService(w.set.Tx, planDetailsScope{reports: w.reports})
 	mount(w.signedIn, plandetails.NewHandler(service))
 	return r.Register(service)
 }
 
-// planDetailsScope is the report frame's step (measure.Service.Scope, 039 research R1, R2) as 043 reads it.
+// planDetailsScope is the report frame's step (measure.Service.Scope, 039 research R1, R2) as 043 reads it,
+// attributes included, so they are not read twice.
 type planDetailsScope struct {
 	reports *measure.Service
-	source  allWorkSource
 }
 
 func (s planDetailsScope) Matched(ctx context.Context, a actor.Actor, f measure.Filter, columns []string) (
@@ -33,9 +32,5 @@ func (s planDetailsScope) Matched(ctx context.Context, a actor.Actor, f measure.
 		matched[id] = true
 	}
 	return plandetails.Matching{Year: sc.Year, Nodes: sc.Nodes, Matched: matched, ActivityTypes: sc.Choices.ActivityTypes,
-		Currency: sc.Currency}, err
-}
-
-func (s planDetailsScope) Attributes(ctx context.Context) ([]allwork.Attribute, error) {
-	return s.source.Attributes(ctx)
+		Currency: sc.Currency, Attributes: sc.Attributes}, err
 }

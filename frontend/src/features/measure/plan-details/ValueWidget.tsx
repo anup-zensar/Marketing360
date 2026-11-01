@@ -3,7 +3,6 @@ import { useFormatters } from '@/format/useFormatters';
 import { ReportWidget } from '../shared';
 import type { ReportAddress, ReportTableData } from '../shared';
 import { allWorkLink } from './allWorkLink';
-import type { FilterParam } from './allWorkLink';
 import type { PlanDetailsValue, PlanDetailsWidget } from './api';
 import { BarList } from './BarList';
 import type { Bar } from './BarList';
@@ -21,32 +20,61 @@ interface ValueWidgetProps {
   currency: string;
 }
 
+type Money = (value: PlanDetailsValue['plannedCost']) => string;
+
 /** Records or planned cost per value: the ten largest drawn with Other, every value in the table (FR-009, FR-017). */
 export function ValueWidget({ widget, level, address, attributeId, currency }: ValueWidgetProps) {
   const { money } = useFormatters();
-  const cost = widget.measure === 'plannedCost';
-  const figure = (v: PlanDetailsValue) =>
-    cost ? money(v.plannedCost) : v.count.toLocaleString('en-GB');
-  const param: FilterParam | null = widget.filterParam;
   const href = (v: PlanDetailsValue) =>
-    v.linkable && param ? allWorkLink(address, param, v.key, attributeId) : undefined;
+    v.linkable && widget.filterParam
+      ? allWorkLink(address, widget.filterParam, v.key, attributeId)
+      : undefined;
+  const note = noteOf(widget, level);
+  return (
+    <ReportWidget
+      report="planDetails"
+      widget={widget.key}
+      title={widget.title}
+      tip={tipOf(widget, level)}
+      note={note === '' ? undefined : note}
+      chart={<BarList title={widget.title} bars={barsOf(widget, money, href)} />}
+      table={tableOf(widget, RECORDS[level].many, currency, money)}
+    />
+  );
+}
+
+/** The ten largest values, Other, then Not filled in, Does not apply and the date values. */
+function barsOf(
+  widget: PlanDetailsWidget,
+  money: Money,
+  href: (v: PlanDetailsValue) => string | undefined,
+): Bar[] {
+  const cost = widget.measure === 'plannedCost';
   const bar = (v: PlanDetailsValue): Bar => ({
     key: v.key,
     label: v.label,
     size: cost ? Number(toCents(v.plannedCost?.amount ?? '0')) : v.count,
-    text: figure(v),
+    text: cost ? money(v.plannedCost) : v.count.toLocaleString('en-GB'),
     href: href(v),
     muted: SPECIAL.includes(v.key),
   });
   const regular = widget.values.filter((v) => !SPECIAL.includes(v.key));
   const drawn = widget.other ? regular.slice(0, CHART_VALUES) : regular;
-  const bars = [
+  return [
     ...drawn.map(bar),
     ...(widget.other ? [bar(widget.other)] : []),
     ...widget.values.filter((v) => SPECIAL.includes(v.key)).map(bar),
   ];
-  const records = RECORDS[level].many;
-  const table: ReportTableData = {
+}
+
+function tableOf(
+  widget: PlanDetailsWidget,
+  records: string,
+  currency: string,
+  money: Money,
+): ReportTableData {
+  const cost = widget.measure === 'plannedCost';
+  return {
     columns: [
       { label: 'Value' },
       { label: records, numeric: true },
@@ -62,25 +90,19 @@ export function ValueWidget({ widget, level, address, attributeId, currency }: V
       ...(cost ? [money(widget.total.plannedCost)] : []),
     ],
   };
+}
+
+/** The per cent filled in and the records left out of it go on the filled-in widget; the others draw them as bars. */
+function noteOf(widget: PlanDetailsWidget, level: Level): string {
+  const filledIn = widget.measure === 'filledIn';
   const doesNotApply = widget.values.find((v) => v.key === 'doesNotApply')?.count ?? 0;
   const percent =
     widget.filledInPercent === null ? undefined : `${String(widget.filledInPercent)} % filled in`;
-  const note = [
-    widget.measure === 'filledIn' && percent,
+  return [
+    filledIn && percent,
     widget.countsInEach && countsInEachText(level),
-    doesNotApplyText(doesNotApply, level),
+    filledIn && doesNotApplyText(doesNotApply, level),
   ]
     .filter(Boolean)
     .join(' · ');
-  return (
-    <ReportWidget
-      report="planDetails"
-      widget={widget.key}
-      title={widget.title}
-      tip={tipOf(widget, level)}
-      note={note === '' ? undefined : note}
-      chart={<BarList title={widget.title} bars={bars} />}
-      table={table}
-    />
-  );
 }

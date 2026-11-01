@@ -7,8 +7,7 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// amountOf returns the planned cost of a record in the Breakdown's currency, before conversion: USD, or the
-// plan currency; nil when it has none.
+// amountOf is a record's planned cost before conversion: USD, or the plan currency; nil when it has none.
 func (w *breakdownWork) amountOf(n *Node) *money.Amount {
 	if w.planCurrency != "" {
 		if n.PlannedCostPlan == nil {
@@ -19,9 +18,7 @@ func (w *breakdownWork) amountOf(n *Node) *money.Amount {
 	return n.PlannedCost
 }
 
-// pieces returns the parts of the activity a's planned cost (data-model §3.5): the whole activity, or, for a
-// line-item grouping, each line item and the unassigned planned cost ("Not on a line item"). Line items of an
-// activity without a planned cost count too, and are named in a note.
+// pieces split activity a's planned cost (data-model §3.5): the activity, or its line items and "Not on a line item".
 func (w *breakdownWork) pieces(a *tnode, byLineItems bool) []piece {
 	planned := w.amountOf(a.n)
 	if !byLineItems {
@@ -53,7 +50,6 @@ func (w *breakdownWork) pieces(a *tnode, byLineItems bool) []piece {
 	return list
 }
 
-// part is the amount of a piece that goes to one group.
 type part struct {
 	value
 	amount money.Amount
@@ -106,7 +102,6 @@ func splitAmount(amount money.Amount, shares []*money.Percent) ([]money.Amount, 
 	return amounts, false
 }
 
-// shareOfAmount is a × p ÷ 100, rounded half up (away from zero) to the cent.
 func shareOfAmount(a money.Amount, p money.Percent) money.Amount {
 	num := new(big.Int).Mul(big.NewInt(a.Cents()), big.NewInt(p.Hundredths()))
 	return money.FromCents(roundHalfAway(num, big.NewInt(10000)))

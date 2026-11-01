@@ -1,6 +1,8 @@
 package plandetails
 
 import (
+	"slices"
+
 	"mapp/internal/allwork"
 	"mapp/internal/platform/money"
 )
@@ -39,6 +41,7 @@ func choiceKind(kind string) bool {
 // is divided activity by activity, as All work's Breakdown divides it (FR-011, SC-002).
 func (v view) choiceWidgets(a allwork.Attribute) []Widget {
 	values, filled := newTally(), newTally()
+	values.seed(notFilledInPart())
 	filled.seed(filledPart(), notFilledInPart())
 	for _, r := range v.records {
 		units := v.units[r.PlanID]
@@ -87,13 +90,18 @@ func (v view) fieldFilledIn(a allwork.Attribute) Widget {
 }
 
 func empty(value allwork.Value) bool {
-	return value.Text == "" && value.Number == nil && value.USD == nil && value.Money == nil && value.Yes == nil &&
-		len(value.Choices) == 0
+	filled := []bool{value.Text != "", value.Number != nil, value.USD != nil, value.Money != nil, value.Yes != nil,
+		len(value.Choices) > 0}
+	return !slices.Contains(filled, true)
 }
 
 func (v view) filledInWidget(a allwork.Attribute, filled *tally) Widget {
+	filter := ""
+	if choiceKind(a.Type) { // All work cannot filter text, long text or number attributes
+		filter = FilterAttr
+	}
 	w := filled.widget(spec{key: attrKey(a.ID, suffixFilledIn), title: a.Label + " filled in", measure: MeasureFilledIn,
-		filter: FilterAttr, timeOrder: true}, v.currency)
+		filter: filter, timeOrder: true}, v.currency)
 	yes, no := len(filled.buckets[KeyFilled].records), len(filled.buckets[KeyNotFilledIn].records)
 	w.FilledInPercent = wholePercent(yes, yes+no)
 	return w

@@ -14,8 +14,8 @@
    reads the year's nodes in the `reports.view` scope, matched by `allwork.Match` as 039's frame matches them,
    through a `Scoped` port adapted in `app/measure_plandetails.go` (research R1, R4), so scope, matching, planned
    cost and completeness come from their one definition and the statements do not grow with the records (028).
-2. **016's attribution rule** (FR-011) is a 40-line copy in `attribution.go`, pinned to All work's Breakdown by
-   an equality test; the integrator is asked to export it from `allwork` instead (research R2). **Does not
+2. **016's attribution rule** (FR-011) is All work's own, exported as `allwork.AttributeParts` at the
+   integrator's request and called from `attribution.go`; the Breakdown equality test stays (research R2). **Does not
    apply** (043-C2) is worked out from the attribute's business-unit condition (R3).
 3. **039's frame** gives the filter, Show (the level), period, currency, saved views, empty states and export:
    the handler parses 039's `measure.Filter` and adds nothing; the report implements `measure.Report` and its
@@ -67,7 +67,7 @@ folder (~15 files); 1 e2e spec
 | II Shell language | Plan, Campaign, Initiative, Activity; Not filled in; Does not apply (new label, 043-C2, glossary entry by the integrator) | Pass |
 | III Documented design | plan, research R1–R5, contracts/api.md, quickstart | Pass |
 | IV Server is the source of truth | Counts, amounts, shares, per cents, "Other" and the start periods come from the API; the web app formats | Pass |
-| V Simplicity | No store, no query, no dependency; reuses All work's read and 039's frame | Pass (one copy of a rule: Complexity Tracking) |
+| V Simplicity | No store, no query, no dependency; reuses All work's read and 039's frame | Pass |
 | VI Meaningful tests | A test per rule and per widget state; equality with Breakdown; contract test per operation; scope persona tests; e2e for US1. No new scoped store read, so no new scope-isolation test (the year read has 023's) | Pass |
 | VII Security | `reports.view` route rule (039); scope from `authz.ScopeOf(ctx)` inside the year read; out-of-scope plans never counted or named; `show` and `widget` allowlisted by 039; export needs `data.export`; files never stored | Pass |
 | VIII Clean construction | Comment budget per file; one concept per file | Pass |
@@ -100,7 +100,7 @@ backend/internal/measure/plandetails/        # NEW, read-only, no store
 ├── level.go          # the matched records of the level; cards
 ├── builtin.go        # activity type, status, timing, start periods, planned cost entered, goal entered
 ├── profile.go        # one row per active attribute of the level; filled in; Does not apply
-├── attribution.go    # 016 FR-041 for one record: values, % split, counts in each (R2)
+├── attribution.go    # 016 FR-041 for one record: values and Does not apply; the split is allwork.AttributeParts (R2)
 ├── widget.go         # ordering, "Other" after ten, totals, per cents
 ├── sheets.go         # measure.Report: Key, Available, Sheets for 039's export
 ├── handler.go        # 039's filter parser; GET /api/v1/reports/plan-details
@@ -158,4 +158,4 @@ Benchmark result (2026-11-01, Intel Core Ultra 5 135U, `go test -bench Benchmark
 
 | Violation | Why needed | Simpler alternative rejected because |
 |---|---|---|
-| A local copy of 016's attribution rule (`attribution.go`, ~40 lines) | The rule is unexported in `allwork`, which is outside lane D's paths | Exporting it is better and is proposed (R2); until approved, the copy is pinned value-for-value to All work's Breakdown by `TestAttribution_EqualsAllWorkBreakdown_SC002` |
+| None: the attribution rule, once copied, is now All work's exported `allwork.AttributeParts` (research R2) | — | — |

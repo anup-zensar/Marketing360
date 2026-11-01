@@ -30,12 +30,8 @@ func (s *Service) Report(ctx context.Context, a actor.Actor, f measure.Filter) (
 		if err != nil {
 			return err
 		}
-		attributes, err := s.scoped.Attributes(ctx)
-		if err != nil {
-			return err
-		}
 		v := newView(m, levelOf(f.Show), f.Period)
-		rows := v.rows(attributes)
+		rows := v.rows(m.Attributes)
 		r = Report{Show: v.level, Currency: m.Currency.Code, Cards: v.cards(), BuiltIn: v.builtIn(), Attributes: rows,
 			AttributesSetUp: len(rows) > 0}
 		return nil

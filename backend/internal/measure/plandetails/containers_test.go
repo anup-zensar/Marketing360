@@ -66,8 +66,8 @@ func TestRows_OtherLevels_FR008(t *testing.T) {
 	if len(rows) != 1 || rows[0].AttributeID != "SA-11" {
 		t.Fatalf("rows = %+v, want only the campaign attribute Cluster", rows)
 	}
-	want := shape{Title: "Campaigns by Cluster", Keys: []string{"EU", "AS"}, Counts: map[string]int{"EU": 2, "AS": 1},
-		Total: 3}
+	want := shape{Title: "Campaigns by Cluster", Keys: []string{"EU", "AS", "none"},
+		Counts: map[string]int{"EU": 2, "AS": 1, "none": 0}, Total: 3}
 	if diff := cmp.Diff(want, shapeOf(rows[0].Widgets[0])); diff != "" {
 		t.Errorf("Campaigns by Cluster (-want +got):\n%s", diff)
 	}
@@ -75,7 +75,7 @@ func TestRows_OtherLevels_FR008(t *testing.T) {
 	for _, v := range rows[0].Widgets[1].Values {
 		cost[v.Key] = v.PlannedCost.Amount.String()
 	}
-	if diff := cmp.Diff(map[string]string{"EU": "300.00", "AS": "50.00"}, cost); diff != "" {
+	if diff := cmp.Diff(map[string]string{"EU": "300.00", "AS": "50.00", "none": "0.00"}, cost); diff != "" {
 		t.Errorf("Planned cost by Cluster from the campaigns' activities (-want +got):\n%s", diff)
 	}
 }

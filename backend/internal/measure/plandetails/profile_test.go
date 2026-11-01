@@ -2,6 +2,7 @@ package plandetails
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -185,6 +186,9 @@ func TestRows_TextFilledIn_FR010(t *testing.T) {
 	if got := counts(filled); got[KeyFilled] != 3 || got[KeyNotFilledIn] != 1 || filled.Title != "FIT4 ID filled in" {
 		t.Errorf("FIT4 ID filled in = %q %v, want 3 · 1", filled.Title, got)
 	}
+	if filled.FilterParam != nil || slices.ContainsFunc(filled.Values, func(v Value) bool { return v.Linkable }) {
+		t.Errorf("FIT4 ID filled in links to All work, which cannot filter a text attribute")
+	}
 }
 
 func TestRows_NoAttributesOfTheLevel_FR016(t *testing.T) {
@@ -195,5 +199,20 @@ func TestRows_NoAttributesOfTheLevel_FR016(t *testing.T) {
 
 	if len(rows) != 0 {
 		t.Errorf("rows = %+v, want none: no activity attribute is set up", rows)
+	}
+}
+
+// TestRows_NotFilledInAtZero_FR009: every value widget lists Not filled in, also when every record has a value.
+func TestRows_NotFilledInAtZero_FR009(t *testing.T) {
+	t.Parallel()
+	code := func(n *allwork.Node) { n.Attrs = map[string]allwork.AttrValue{"SA-1": {OptionIDs: []string{"GB01"}}} }
+	y := newYear(t).plan("P-1").campaign("C-1", "P-1").activities(1, 2, "C-1", code)
+
+	rows := newView(y.matching(), LevelActivity, measure.PeriodMonth).rows([]allwork.Attribute{companyCode()})
+
+	for _, w := range rows[0].Widgets[:2] {
+		if got, listed := counts(w)[KeyNotFilledIn]; !listed || got != 0 {
+			t.Errorf("%s: Not filled in = %d, listed %v; want 0, listed", w.Title, got, listed)
+		}
 	}
 }
