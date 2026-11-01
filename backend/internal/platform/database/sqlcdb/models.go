@@ -288,6 +288,43 @@ type Currency struct {
 	UpdatedByName     string
 }
 
+type Dataset struct {
+	ID            string
+	Name          string
+	Description   string
+	OwnerID       string
+	FileName      string
+	SheetName     string
+	RowCount      int
+	Version       int
+	CreatedAt     time.Time
+	CreatedByID   string
+	CreatedByName string
+	UpdatedAt     time.Time
+	UpdatedByID   string
+	UpdatedByName string
+}
+
+type DatasetColumn struct {
+	DatasetID string
+	Position  int
+	Key       string
+	Label     string
+	Kind      string
+	Currency  *string
+}
+
+type DatasetRow struct {
+	DatasetID string
+	RowNumber int
+	Cells     []byte
+}
+
+type DatasetShare struct {
+	DatasetID string
+	TeamID    string
+}
+
 type ExchangeRate struct {
 	ID            string
 	Currency      string
