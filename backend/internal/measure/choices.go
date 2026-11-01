@@ -7,7 +7,11 @@ import (
 	"mapp/internal/allwork"
 )
 
-const labelNotFilledIn = "Not filled in"
+const (
+	labelNotFilledIn = "Not filled in"
+	labelYes         = "Yes"
+	labelNo          = "No"
+)
 
 func activityStatuses() []string {
 	return []string{"created", "submitted", "declined", "approved", "inProgress", "complete"}
@@ -117,7 +121,7 @@ func filterable(kind string) bool {
 
 func valuesOf(a allwork.Attribute, nodes []allwork.Node) []AttributeValue {
 	if a.Type == allwork.TypeYesNo {
-		return []AttributeValue{{ID: allwork.AttrYes, Label: "Yes", Active: true}, {ID: allwork.AttrNo, Label: "No", Active: true}}
+		return []AttributeValue{{ID: allwork.AttrYes, Label: labelYes, Active: true}, {ID: allwork.AttrNo, Label: labelNo, Active: true}}
 	}
 	values := []AttributeValue{}
 	for _, o := range a.Options {
