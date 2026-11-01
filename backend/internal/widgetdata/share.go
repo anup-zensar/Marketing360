@@ -47,3 +47,13 @@ func roundHalfUp(num, den *big.Int) *big.Int {
 	}
 	return quotient.Add(quotient, big.NewInt(1))
 }
+
+func (p *SharePercent) UnmarshalJSON(data []byte) error {
+	text, err := strconv.Unquote(string(data))
+	if err != nil {
+		return err
+	}
+	n, err := ParseNumber(text)
+	*p = SharePercent{tenths: n.Units() / (numberScale / 10)}
+	return err
+}

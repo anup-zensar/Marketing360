@@ -30,6 +30,7 @@ func sumByType(source string) widgetdata.Request {
 	return widgetdata.Request{Type: "bar", Query: widgetdata.Query{
 		Source: source, Dimension: &widgetdata.GroupBy{Field: "activityType"},
 		Measures: []widgetdata.Measure{{Aggregation: "sum", Field: ptr("plannedCost")}},
+		Filters:  []widgetdata.Filter{},
 		Sort:     widgetdata.Sort{By: "measure", Direction: "desc"}, Limit: 50,
 	}}
 }
@@ -205,7 +206,7 @@ func TestQuery_DatasetMoneyInUSD_FR018(t *testing.T) {
 		notes                []string
 	}{
 		{"converted at the current rate", "EUR", "20.02 USD", []string{}},
-		{"a currency no longer in Settings is left out", "XXX", "0.00 USD",
+		{"a currency no longer in Settings is left out", "XXX", "—",
 			[]string{"Amounts in a currency no longer in Settings are left out"}},
 	}
 	for _, tt := range tests {
@@ -223,7 +224,7 @@ func TestQuery_DatasetMoneyInUSD_FR018(t *testing.T) {
 
 			data, err := service(nil, ds).Query(signedIn(t, authz.DashboardsView), viewer, r)
 
-			if err != nil || data.Rows[0].Values[0].Money.Format() != tt.want {
+			if err != nil || moneyText(data.Rows[0].Values[0]) != tt.want {
 				t.Fatalf("dataset sum = %+v, %v; want %s", data.Rows, err, tt.want)
 			}
 			if diff := cmp.Diff(tt.notes, data.Notes); diff != "" {

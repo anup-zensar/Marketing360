@@ -155,7 +155,7 @@ func TestOrder_UngroupedAnswersOneRow_FR020(t *testing.T) {
 		t.Fatalf("compile: %v", err)
 	}
 	out, err := p.run(nil)
-	if err != nil || len(out.rows) != 1 || out.rows[0].Dimension != nil || out.rows[0].Values[0].Money.Amount.String() != "0.00" {
-		t.Errorf("an ungrouped sum of no rows = %+v, %v; want one row of 0.00", out.rows, err)
+	if err != nil || len(out.rows) != 1 || out.rows[0].Dimension != nil || out.rows[0].Values[0].Money != nil {
+		t.Errorf("an ungrouped sum of no rows = %+v, %v; want one row without a value", out.rows, err)
 	}
 }

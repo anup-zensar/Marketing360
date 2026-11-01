@@ -326,6 +326,67 @@ func (q *Queries) ListTransactionsInScope(ctx context.Context, arg ListTransacti
 	return items, nil
 }
 
+const listTransactionsOnLineItems = `-- name: ListTransactionsOnLineItems :many
+SELECT id, type, document_number, line_number, po_number, po_line_number, posting_date, accrual_month,
+    amount_minor, currency, vendor_code, vendor_name, description, swbs_code, tracking_key, sent_line_item_id,
+    line_item_id, matched_by, not_linked_reason, manual_link_by_id, manual_link_by_name, manual_link_at, import_id,
+    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name
+FROM financial_transactions
+WHERE line_item_id = ANY($1::text[])
+ORDER BY length(id), id COLLATE "C"
+`
+
+func (q *Queries) ListTransactionsOnLineItems(ctx context.Context, lineItemIds []string) ([]FinancialTransaction, error) {
+	rows, err := q.db.Query(ctx, listTransactionsOnLineItems, lineItemIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []FinancialTransaction{}
+	for rows.Next() {
+		var i FinancialTransaction
+		if err := rows.Scan(
+			&i.ID,
+			&i.Type,
+			&i.DocumentNumber,
+			&i.LineNumber,
+			&i.PoNumber,
+			&i.PoLineNumber,
+			&i.PostingDate,
+			&i.AccrualMonth,
+			&i.AmountMinor,
+			&i.Currency,
+			&i.VendorCode,
+			&i.VendorName,
+			&i.Description,
+			&i.SwbsCode,
+			&i.TrackingKey,
+			&i.SentLineItemID,
+			&i.LineItemID,
+			&i.MatchedBy,
+			&i.NotLinkedReason,
+			&i.ManualLinkByID,
+			&i.ManualLinkByName,
+			&i.ManualLinkAt,
+			&i.ImportID,
+			&i.Version,
+			&i.CreatedAt,
+			&i.CreatedByID,
+			&i.CreatedByName,
+			&i.UpdatedAt,
+			&i.UpdatedByID,
+			&i.UpdatedByName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const putFinancialImport = `-- name: PutFinancialImport :exec
 INSERT INTO financial_imports (
     id, source, feed_name, file_name, rows, new, updated, unchanged, refused, not_linked, relinked, version,

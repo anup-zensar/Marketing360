@@ -11,7 +11,11 @@ type Months struct {
 }
 
 func PlannedByActivity(nodes []Node, year int) map[string]Months {
-	p := periodsOf(buildTree(nodes), year, year)
+	return plannedByActivity(nodes, year, year)
+}
+
+func plannedByActivity(nodes []Node, from, to int) map[string]Months {
+	p := periodsOf(buildTree(nodes), from, to)
 	byActivity := map[string]Months{}
 	for n, b := range p.of {
 		if n.n.Level != LevelActivity {

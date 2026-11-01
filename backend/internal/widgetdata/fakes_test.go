@@ -75,3 +75,10 @@ func service(readers map[string]widgetdata.SourceReader, datasets widgetdata.Dat
 	rates := fakeRates{"EUR": money.RateFromMicros(500_000)}
 	return widgetdata.NewService(fakeTx{}, widgetdata.Deps{Sources: readers, Datasets: datasets, Rates: rates})
 }
+
+func moneyText(c widgetdata.Cell) string {
+	if c.Money == nil {
+		return "—"
+	}
+	return c.Money.Format()
+}

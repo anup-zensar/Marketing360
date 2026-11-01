@@ -12,7 +12,7 @@ const maxCents int64 = 99_999_999_999_999_999
 
 var errTooLarge = errors.New("widgetdata: values too large to add up")
 
-// aggregate works out one measure over the rows idx; sums of nothing are 0, averages, minimums and maximums empty.
+// aggregate works out one measure over the rows idx; a sum, average, minimum or maximum of no values is empty.
 func aggregate(m measure, rows []Row, idx []int) (Value, error) {
 	switch m.agg {
 	case aggCount:
@@ -23,11 +23,11 @@ func aggregate(m measure, rows []Row, idx []int) (Value, error) {
 		return extremeOf(m, rows, idx), nil
 	}
 	total, n, err := sumOf(m, rows, idx)
-	if err != nil || m.agg == aggSum {
-		return unitsValue(m.field.Kind, total), err
-	}
-	if n == 0 {
-		return noValue(), nil
+	switch {
+	case err != nil || n == 0:
+		return noValue(), err
+	case m.agg == aggSum:
+		return unitsValue(m.field.Kind, total), nil
 	}
 	return unitsValue(m.field.Kind, roundHalfUp(big.NewInt(total), big.NewInt(int64(n))).Int64()), nil
 }

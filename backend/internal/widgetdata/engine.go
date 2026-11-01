@@ -78,7 +78,7 @@ func (p *compiled) dimensionKey(r ranked) *Key {
 }
 
 // denominators are, per measure, the sum of the siblings' values that shares are of; nil when a share means
-// nothing: an aggregation other than a count or sum, or a negative or empty value among them.
+// nothing: an aggregation other than a count or sum, or a negative value among them.
 func (p *compiled) denominators(siblings []ranked) []*big.Int {
 	out := make([]*big.Int, len(p.measures))
 	for m, measure := range p.measures {
@@ -89,7 +89,10 @@ func (p *compiled) denominators(siblings []ranked) []*big.Int {
 		for _, s := range siblings {
 			v := s.values[m]
 			units := unitsIn(v, measure.kind())
-			if v.Empty || units < 0 {
+			if v.Empty {
+				continue
+			}
+			if units < 0 {
 				sum = nil
 				break
 			}
@@ -105,7 +108,7 @@ func (p *compiled) cells(values []Value, denominators []*big.Int) []Cell {
 	for m, v := range values {
 		kind := p.measures[m].kind()
 		out[m] = cellOf(v, kind)
-		if denominators[m] != nil {
+		if denominators[m] != nil && !v.Empty {
 			out[m].Share = percentOf(unitsIn(v, kind), denominators[m])
 		}
 	}

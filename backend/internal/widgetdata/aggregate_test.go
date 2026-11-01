@@ -28,7 +28,7 @@ func TestAggregate_EveryKind_FR018(t *testing.T) {
 		{"count of a field skips empty values", measure{agg: aggCount, index: 0, field: cost}, all, "2"},
 		{"count distinct counts each value of a multi field once", measure{agg: aggCountDistinct, index: 3, field: team}, all, "2"},
 		{"sum is exact and ignores empty values", measure{agg: aggSum, index: 0, field: cost}, all, "10.01"},
-		{"sum of nothing is zero", measure{agg: aggSum, index: 0, field: cost}, []int{2}, "0.00"},
+		{"sum of nothing is empty", measure{agg: aggSum, index: 0, field: cost}, []int{2}, "—"},
 		{"average of money rounds half up to the cent", measure{agg: aggAvg, index: 0, field: cost}, all, "5.01"},
 		{"average of numbers keeps four decimals", measure{agg: aggAvg, index: 1, field: days}, all, "1.5"},
 		{"average of nothing is empty", measure{agg: aggAvg, index: 1, field: days}, []int{2}, "—"},

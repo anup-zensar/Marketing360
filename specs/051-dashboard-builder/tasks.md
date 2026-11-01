@@ -378,34 +378,34 @@ Pages (each F0 stub exports a component with no props): `DashboardBuilderPage` (
 
 ## Phase 5: Lane B3 — `internal/widgetdata` (US1, US2, US3, US5)
 
-- [ ] T033 [P] [B3] [US1] `catalogue.go`: the ten sources of data model §5 (fields, kinds, multi, finance, date /
+- [x] T033 [P] [B3] [US1] `catalogue.go`: the ten sources of data model §5 (fields, kinds, multi, finance, date /
   plan / team filters, needed permission) — `TestCatalogue_SourcesByPermission_FR016` (Viewer, Planner, no finance,
   global budgets) with datasets from a fake `DatasetTables`
-- [ ] T034 [B3] [US1] Tests first then `query.go` (request → validated query against the source's fields: groupable,
+- [x] T034 [B3] [US1] Tests first then `query.go` (request → validated query against the source's fields: groupable,
   aggregations allowed, operators by kind, values parsed, type rules §2.3; every problem at once) —
   `TestQueryValidation_AllProblems_FR019`
-- [ ] T035 [P] [B3] [US1] Tests first then `filter.go` — `TestFilters_EveryOperator_FR019` (each kind, empty values,
+- [x] T035 [P] [B3] [US1] Tests first then `filter.go` — `TestFilters_EveryOperator_FR019` (each kind, empty values,
   multi-valued fields)
-- [ ] T036 [P] [B3] [US1] Tests first then `bucket.go`, `group.go` — `TestBuckets_DayWeekMonthQuarterYear_FR017` (ISO
+- [x] T036 [P] [B3] [US1] Tests first then `bucket.go`, `group.go` — `TestBuckets_DayWeekMonthQuarterYear_FR017` (ISO
   week across years), `TestGroup_MultiValuedCountsInEach_D373`, `TestGroup_EmptyIsNotSet`
-- [ ] T037 [P] [B3] [US1] Tests first then `aggregate.go` (count, countDistinct, sum, avg, min, max; exact; half up;
+- [x] T037 [P] [B3] [US1] Tests first then `aggregate.go` (count, countDistinct, sum, avg, min, max; exact; half up;
   overflow → validation_failed; shares; totals) — `TestAggregate_EveryKind_FR018`, `TestShares_OfGroupOrTotal_FR021`
-- [ ] T038 [P] [B3] [US1] Tests first then `order.go` (default sorts, ties by label, limit, Other, series cap 20,
+- [x] T038 [P] [B3] [US1] Tests first then `order.go` (default sorts, ties by label, limit, Other, series cap 20,
   groupCount) — `TestOrder_LimitAndOther_FR020`
-- [ ] T039 [P] [B3] [US5] Tests first then `compare.go` (target share; previous period of equal length; null on zero)
+- [x] T039 [P] [B3] [US5] Tests first then `compare.go` (target share; previous period of equal length; null on zero)
   — `TestComparison_TargetAndPreviousPeriod_FR023`
-- [ ] T040 [B3] [US1] `service.go` (`Catalogue`, `Query`: permission view or build → 403; source permission → 403;
+- [x] T040 [B3] [US1] `service.go` (`Catalogue`, `Query`: permission view or build → 403; source permission → 403;
   dataset → 404; prefilter only where the source supports it, never datasets; notes; dataset money to USD with
   `Rates`) and `handler.go`; contract tests for the 2 operations on fakes of the readers — `handler_test.go`,
   `TestPrefilter_AppliedPerSource_FR022`
-- [ ] T041 [B3] [US1] App adapters, one `SourceReader` per key, over All work's scoped year data (years overlapping
+- [x] T041 [B3] [US1] App adapters, one `SourceReader` per key, over All work's scoped year data (years overlapping
   the date range, else every year in scope; read once per request with `memo`), `allwork.PlannedByActivity`,
   financials (`SpendOnLineItems` or a new scoped `TransactionsOnLineItems` with
   `TestPostgresStoreTransactionsOnLineItems_ScopeIsolation_051_FR007`), `approval.Service.RoundSummaries`,
   purchase requests (`OnLineItems`), `budget.Service.YearFigures` — `internal/app/widgetdata_planning.go`,
   `widgetdata_money.go`, `widgetdata_workflow.go`; wiring `widgetData()` in `internal/app/widget_data.go` with a
   fake-free `DatasetTables` placeholder answering no datasets until INT
-- [ ] T042 [B3] [US2] Persona contract tests on the demo data — `TestQuery_OnlyThePlansInScope_FR007` (Priya, Mei,
+- [x] T042 [B3] [US2] Persona contract tests on the demo data — `TestQuery_OnlyThePlansInScope_FR007` (Priya, Mei,
   Sara), `TestQuery_FinanceHiddenOutsideFinanceScope_FR007`, `TestQuery_EqualsTheRecordPages_SC002` — and
   `BenchmarkWidgetData` (SC-004) — `internal/app/widgetdata_test.go`, `internal/platform/apibench/widget_data_test.go`
 
