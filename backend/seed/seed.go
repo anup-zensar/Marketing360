@@ -81,6 +81,7 @@ func Load(ctx context.Context, set stores.Set, now clock.Clock, opts ...Option) 
 		if !o.withoutHistory {
 			steps = append(steps, d.addHistory)
 		}
+		steps = append(steps, d.addMeasure)
 		if o.showcase {
 			steps = append(steps, d.addShowcase)
 		}
