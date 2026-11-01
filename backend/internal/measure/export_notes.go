@@ -56,11 +56,11 @@ func filterWords(sc Scope) string {
 		}
 	}
 	add("Plans", q.Plans, func(id string) (string, bool) { name, known := plans[id]; return name, known })
-	add("Plan type", q.PlanTypes, func(id string) (string, bool) { return id, true })
+	add("Plan type", q.PlanTypes, func(id string) (string, bool) { return allwork.PlanTypeWord(id), true })
 	add("Team", q.Teams, optionNamed(sc.Choices.Teams))
 	add("Owner", q.Owners, optionNamed(sc.Choices.People))
 	add("Activity type", q.ActivityTypes, optionNamed(sc.Choices.ActivityTypes))
-	add("Activity status", q.ActivityStatuses, func(id string) (string, bool) { return id, true })
+	add("Activity status", q.ActivityStatuses, func(id string) (string, bool) { return allwork.ActivityStatusWord(id), true })
 	for _, filter := range q.Attributes {
 		if i := slices.IndexFunc(sc.Attributes, func(a allwork.Attribute) bool { return a.ID == filter.AttributeID }); i >= 0 {
 			add(sc.Attributes[i].Label, filter.Values, valueNamed(sc.Attributes[i]))

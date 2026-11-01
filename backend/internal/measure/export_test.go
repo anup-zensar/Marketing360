@@ -177,3 +177,21 @@ func TestExport_LeftOutValuesNotNamed_FR015(t *testing.T) {
 		}
 	}
 }
+
+func TestExport_FiltersInWords_FR022(t *testing.T) {
+	t.Parallel()
+	file, err := exportOf(t, measure.KeyPlanDetails, url.Values{"planType": {"crossMarket"}, "activityStatus": {"inProgress"}},
+		measure.ExportRequest{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	tables, err := sheet.ReadXLSX(file.Body, 50)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, row := range tables[len(tables)-1].Rows {
+		if row.Cells[0] == "Filters" && row.Cells[1] != "Plan type: Cross-market; Activity status: In progress" {
+			t.Errorf("Filters = %q, want the plan type and status as the screen words them", row.Cells[1])
+		}
+	}
+}
