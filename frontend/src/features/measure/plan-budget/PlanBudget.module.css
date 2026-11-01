@@ -1,0 +1,63 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: var(--space-3);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  font-size: var(--text-sm);
+  list-style: none;
+}
+
+.swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: var(--space-2);
+  border-radius: 2px;
+  vertical-align: -1px;
+}
+
+.chart {
+  width: 100%;
+  height: auto;
+}
+
+.budget {
+  fill: var(--chart-budget);
+  background: var(--chart-budget);
+}
+
+.planned {
+  fill: var(--chart-planned);
+  background: var(--chart-planned);
+}
+
+.actual {
+  fill: var(--chart-actual);
+  background: var(--chart-actual);
+}
+
+.today {
+  fill: var(--hover);
+}
+
+.axis {
+  stroke: var(--ink);
+}
+
+.axisLabel {
+  fill: var(--ink);
+  font-size: 11px;
+}

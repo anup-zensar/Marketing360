@@ -217,7 +217,7 @@ a widget to its table, export it, export the report, compare every value with th
 - [X] T046 [US3] `frontend/src/features/measure/shared/ReportWidget.tsx`, `ReportTable.tsx`, `ExportMenu.tsx`
   (whole report) using `src/api/download.ts`; chart tokens of D-345 only; `shared/periods.ts` (period state from
   the plan year and today) and the labelled **Today** marker every time chart of 040–050 draws (FR-019)
-- [ ] T047 [P] [US3] Gallery entries for `ReportWidget` and `ReportTable` in
+- [X] T047 [P] [US3] Gallery entries for `ReportWidget` and `ReportTable` in
   `frontend/src/features/dev/ComponentGalleryPage.tsx` (a sample bar chart with its table)
 - [ ] T048 [US3] `frontend/e2e/measure.spec.ts` US3: Export from a report page downloads an `.xlsx` whose sheets
   include In view and About this export
@@ -226,10 +226,10 @@ a widget to its table, export it, export the report, compare every value with th
 
 ## Phase 6: User Story 4 — Why a report is empty or incomplete (P2)
 
-- [ ] T049 [P] [US4] Tests first: `TestFrame_NoPlansInYear_FR031` in `frame_test.go` (years that have plans
+- [X] T049 [P] [US4] Tests first: `TestFrame_NoPlansInYear_FR031` in `frame_test.go` (years that have plans
   returned); `ReportFrame.test.tsx` states "No plans you may see for 2027" with the years, "Your filters exclude
   everything" with Reset filters, "You can't see financial data", one widget failing alone
-- [ ] T050 [US4] Empty and partial states in `backend/internal/measure/frame.go` and
+- [X] T050 [US4] Empty and partial states in `backend/internal/measure/frame.go` and
   `frontend/src/features/measure/shared/ReportFrame.tsx`
 
 **Checkpoint**: commit "feat(039): empty states that say why (US4, FR-031)".
@@ -238,7 +238,7 @@ a widget to its table, export it, export the report, compare every value with th
 
 - [ ] T051 `BenchmarkReportsFrame` in `backend/internal/platform/apibench/reports_test.go` (demo data and the 028
   volume); record the results in `plan.md` (SC-003, research R9)
-- [ ] T052 Comment budget and file length of **every file this feature touched**, including the hub and Plan
+- [X] T052 Comment budget and file length of **every file this feature touched**, including the hub and Plan
   files (`routes.go`, `catalogue.go`, `ids.go`, `seed/access.go`, `navigation.ts`, `pages.tsx`, `router.tsx`,
   `contract_routes_test.go`): whole-file 5% budget (CLAUDE.md 3), at most 300 non-blank lines
 - [ ] T053 Run `specs/039-measure-foundation/quickstart.md` by hand on the demo data; fix what differs
