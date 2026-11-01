@@ -93,6 +93,15 @@ describe('ReportWidget and ReportTable (039 FR-020 – FR-023)', () => {
     expect(exportButton).toHaveAccessibleDescription(/Exporting/);
   });
 
+  it('says why it is empty instead of drawing zeros (FR-031)', () => {
+    renderWidget({ empty: 'No data yet: performance rows appear here once an upload is matched.' });
+
+    expect(
+      screen.getByText('No data yet: performance rows appear here once an upload is matched.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('The chart')).not.toBeInTheDocument();
+  });
+
   it('loads and fails on its own, with Try again (FR-023)', async () => {
     const onRetry = vi.fn();
     const { user } = renderWidget({ failed: true, onRetry, note: 'Covers 1 of 2 plans' });

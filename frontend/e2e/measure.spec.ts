@@ -47,7 +47,7 @@ test('039 US1: a report opens on the defaults, filters on Apply and keeps everyt
   await expectNoAxeViolations(page);
   const levels = page.getByRole('tablist', { name: 'Shell attributes by level' });
   await levels.scrollIntoViewIfNeeded();
-  for (const level of ['Plan', 'Campaign', 'Initiative', 'Activity']) {
+  for (const level of ['Plan', 'Campaign', 'Initiative', 'Activity', 'Line item']) {
     await expect(levels.getByRole('tab', { name: level })).toBeInViewport({ ratio: 1 });
   }
 
