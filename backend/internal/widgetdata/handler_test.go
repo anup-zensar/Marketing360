@@ -36,7 +36,7 @@ func TestListDataSources_SourcesOfThePerson_FR016(t *testing.T) {
 		want  []string
 	}{
 		{priyaEmail, []string{"plans", "campaigns", "initiatives", "activities", "lineItems", "plannedByMonth",
-			"financialTransactions", "approvals", "purchaseRequests"}},
+			"financialTransactions", "approvals", "purchaseRequests", "DS-1001"}},
 		{carlosEmail, []string{"plans", "campaigns", "initiatives", "activities", "lineItems", "plannedByMonth",
 			"financialTransactions", "approvals", "purchaseRequests", "globalBudgets"}},
 	}
