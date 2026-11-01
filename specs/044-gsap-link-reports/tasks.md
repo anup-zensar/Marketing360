@@ -97,7 +97,7 @@ Write each test first and see it fail.
 
 - [X] T026 `BenchmarkGsapLink_SC001` in `gsaplink/bench_test.go` (research R6); result in plan.md
 - [X] T027 Comment budget and file length of every file of this feature; lint and format
-- [ ] T028 `/speckit-converge`; spec status Built; pull request into `measure-module` with the feature-map status
+- [X] T028 `/speckit-converge`; spec status Built; pull request #64 into `measure-module` with the feature-map status
 
 ## Dependencies
 
