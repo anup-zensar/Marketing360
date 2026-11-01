@@ -11,6 +11,11 @@ import (
 	"mapp/internal/platform/record"
 )
 
+// Validate refuses, with every problem at once, a dashboard the API would not save; the seed's test uses it.
+func Validate(d Dashboard) error {
+	return validate(normalised(d)).Err()
+}
+
 // validate returns every problem of a dashboard at once (FR-033); fields are checked against the data
 // catalogue only when a widget's data is asked for.
 func validate(d Dashboard) errs.Problems {

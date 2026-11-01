@@ -26,7 +26,6 @@ type Store interface {
 	NameTaken(ctx context.Context, ownerID, name, exceptID string) (bool, error)
 }
 
-// Directory names people and teams, and says which teams a person belongs to now.
 type Directory interface {
 	PersonRefs(ctx context.Context, ids []string) (map[string]people.PersonRef, error)
 	TeamRefs(ctx context.Context, ids []string) (map[string]people.TeamRef, error)
