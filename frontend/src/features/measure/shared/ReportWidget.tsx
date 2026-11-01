@@ -59,7 +59,7 @@ export function ReportWidget(props: ReportWidgetProps) {
       <ExportMenu
         label="Export"
         formats={['csv', 'xlsx']}
-        download={(format) => downloadReport(report, address, format, widget)}
+        download={(format) => downloadReport(report, address, format, { widget })}
       />
     </div>
   );

@@ -63,8 +63,7 @@ func TestEveryProtectedOperationRequiresSignIn_FR005(t *testing.T) {
 	}
 }
 
-// notYetServed: the contract's operations designed but not built yet (D-192, D-298). Each feature removes
-// its own in the change that serves them; the list must be empty when the Plan module is done.
+// notYetServed: contract operations not built yet (D-192, D-298); each feature removes its own when it serves them.
 var notYetServed = []string{
 	// 043 Plan details report
 	"GET /api/v1/reports/plan-details",
@@ -118,8 +117,7 @@ func contractOperations(t *testing.T) []operation {
 		for method, op := range item.GetOperations().FromOldest() {
 			operations = append(operations, operation{
 				route: strings.ToUpper(method) + " " + path,
-				// An operation without a security list of its own needs the contract's default, the session
-				// cookie. The public ones say "security: []", which libopenapi reads as an empty list.
+				// No security list of its own means the session cookie; public ones say "security: []" (an empty list).
 				needsSession: op.Security == nil || len(op.Security) > 0,
 			})
 		}
