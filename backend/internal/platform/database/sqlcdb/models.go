@@ -288,6 +288,46 @@ type Currency struct {
 	UpdatedByName     string
 }
 
+type CustomDashboard struct {
+	ID             string
+	Name           string
+	Description    string
+	OwnerID        string
+	FilterDateFrom *time.Time
+	FilterDateTo   *time.Time
+	FilterPlanIds  []string
+	FilterTeamIds  []string
+	Version        int
+	CreatedAt      time.Time
+	CreatedByID    string
+	CreatedByName  string
+	UpdatedAt      time.Time
+	UpdatedByID    string
+	UpdatedByName  string
+}
+
+type CustomDashboardShare struct {
+	DashboardID string
+	TeamID      string
+}
+
+type CustomDashboardWidget struct {
+	DashboardID string
+	ID          string
+	Position    int
+	Type        string
+	Title       string
+	Subtitle    string
+	GridX       int
+	GridY       int
+	GridW       int
+	GridH       int
+	Source      *string
+	Query       []byte
+	Display     []byte
+	Note        string
+}
+
 type ExchangeRate struct {
 	ID            string
 	Currency      string

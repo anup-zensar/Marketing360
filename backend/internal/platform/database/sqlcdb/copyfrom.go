@@ -652,3 +652,48 @@ func (r iteratorForAddTransactions) Err() error {
 func (q *Queries) AddTransactions(ctx context.Context, arg []AddTransactionsParams) (int64, error) {
 	return q.db.CopyFrom(ctx, []string{"financial_transactions"}, []string{"id", "type", "document_number", "line_number", "po_number", "po_line_number", "posting_date", "accrual_month", "amount_minor", "currency", "vendor_code", "vendor_name", "description", "swbs_code", "tracking_key", "sent_line_item_id", "line_item_id", "matched_by", "not_linked_reason", "manual_link_by_id", "manual_link_by_name", "manual_link_at", "import_id", "version", "created_at", "created_by_id", "created_by_name", "updated_at", "updated_by_id", "updated_by_name"}, &iteratorForAddTransactions{rows: arg})
 }
+
+// iteratorForInsertCustomDashboardWidgets implements pgx.CopyFromSource.
+type iteratorForInsertCustomDashboardWidgets struct {
+	rows                 []InsertCustomDashboardWidgetsParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForInsertCustomDashboardWidgets) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForInsertCustomDashboardWidgets) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].DashboardID,
+		r.rows[0].ID,
+		r.rows[0].Position,
+		r.rows[0].Type,
+		r.rows[0].Title,
+		r.rows[0].Subtitle,
+		r.rows[0].GridX,
+		r.rows[0].GridY,
+		r.rows[0].GridW,
+		r.rows[0].GridH,
+		r.rows[0].Source,
+		r.rows[0].Query,
+		r.rows[0].Display,
+		r.rows[0].Note,
+	}, nil
+}
+
+func (r iteratorForInsertCustomDashboardWidgets) Err() error {
+	return nil
+}
+
+func (q *Queries) InsertCustomDashboardWidgets(ctx context.Context, arg []InsertCustomDashboardWidgetsParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"custom_dashboard_widgets"}, []string{"dashboard_id", "id", "position", "type", "title", "subtitle", "grid_x", "grid_y", "grid_w", "grid_h", "source", "query", "display", "note"}, &iteratorForInsertCustomDashboardWidgets{rows: arg})
+}
