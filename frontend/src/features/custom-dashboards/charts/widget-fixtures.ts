@@ -119,6 +119,7 @@ export function seriesData(): WidgetData {
       row(key('Event'), [money('2500.00', '20.0')], key('Lubricants')),
       row(key('Digital'), [money('7500.00', '100.0')], key('Mobility')),
     ],
+    groupCount: 2,
   });
 }
 
