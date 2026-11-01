@@ -31,6 +31,8 @@ type approvalsActivities struct {
 	rates      func(context.Context) (money.Rates, error)
 	check      submitCheck
 	now        clock.Clock
+	// approved runs inside the same transaction once a status lands on approved; nil before feature 046.
+	approved func(ctx context.Context, a actor.Actor, activityID string) error
 }
 
 var _ approval.Activities = (*approvalsActivities)(nil)
@@ -91,6 +93,11 @@ func (p *approvalsActivities) SetStatus(ctx context.Context, a actor.Actor, id, 
 	act.Touch(a, p.now())
 	if err := p.activities.Put(ctx, act); err != nil {
 		return approval.ActivityFacts{}, err
+	}
+	if act.Status == activity.StatusApproved && p.approved != nil {
+		if err := p.approved(ctx, a, act.ID); err != nil {
+			return approval.ActivityFacts{}, err
+		}
 	}
 	return p.facts(ctx, act)
 }

@@ -212,6 +212,14 @@ these into the decision log at the end of wave B.
   column per type at most. The reader fills the row's keys from those mappings and never inspects a value to
   decide what it is.
 
+- **046-C24** — Q: FR-021 holds a fact "matched to a binned activity", but the recycle bin deletes the
+  activity row and collects its keys with it — matching into the bin would resolve keys against deleted
+  records. → A: **Two cases, and only one can match.** A fact that existed before the binning is a child of
+  the activity: it goes to the bin with it and returns **held** on restore, which is FR-021's "held until
+  restore and approval". A **new** row arriving while the activity sits in the bin cannot resolve: it is left
+  unmatched in the review queue, and the re-check (FR-025, US5) matches it after the restore. A row for a
+  permanently deleted activity takes the same unmatched path, which is exactly where FR-021 sends it.
+
 
 ## User Scenarios & Testing *(mandatory)*
 

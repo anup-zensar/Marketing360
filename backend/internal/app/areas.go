@@ -21,9 +21,12 @@ import (
 // areas builds the business areas after people and access, each after those it reads; where people's and
 // Settings' records are used is wired last, once every area exists.
 func (w *wiring) areas() error {
+	release := &heldRelease{}
 	steps := []func() error{
-		w.settingsArea, w.overspendArea, w.plansArea, w.planningArea, w.budgetsArea, w.samplesArea, w.approvalsArea, w.financialsArea,
-		w.swbsArea, w.purchaseRequestsArea, w.bulkArea, w.workbookArea, w.performanceArea,
+		w.settingsArea, w.overspendArea, w.plansArea, w.planningArea, w.budgetsArea, w.samplesArea,
+		func() error { return w.approvalsArea(release) }, w.financialsArea,
+		w.swbsArea, w.purchaseRequestsArea, w.bulkArea, w.workbookArea,
+		func() error { return w.performanceArea(release) },
 	}
 	for _, step := range steps {
 		if err := step(); err != nil {
@@ -156,12 +159,12 @@ func (w *wiring) samplesArea() error {
 	return nil
 }
 
-func (w *wiring) approvalsArea() error {
+func (w *wiring) approvalsArea(release *heldRelease) error {
 	s := w.set
 	tools := history.Tools{Tx: s.Tx, IDs: w.generator, Log: w.history, Now: w.now}
 	w.approvals = approval.NewService(tools, s.Approvals, s.People, &approvalsActivities{
 		activities: s.Activities, lineItems: s.LineItems, campaigns: s.Campaigns, plans: s.Plans, settings: s.Settings,
-		rates: w.settings.Rates, check: w.activities.SubmitCheck, now: w.now,
+		rates: w.settings.Rates, check: w.activities.SubmitCheck, now: w.now, approved: release.activityApproved,
 	})
 	if err := w.register(w.approvals.Kinds()); err != nil {
 		return err

@@ -7,6 +7,7 @@ import (
 	"mapp/internal/history"
 	"mapp/internal/performance"
 	"mapp/internal/performance/simulatedfeed"
+	"mapp/internal/platform/actor"
 )
 
 const feedSeed = 46
@@ -30,12 +31,26 @@ func (p performanceApprovals) ApprovedIDs(ctx context.Context, ids []string) (ma
 	return approved, nil
 }
 
+// heldRelease late-binds the release hook: approvals are wired before the performance area exists.
+type heldRelease struct {
+	service *performance.Service
+}
+
+func (r *heldRelease) activityApproved(ctx context.Context, a actor.Actor, activityID string) error {
+	if r.service == nil {
+		return nil
+	}
+	_, err := r.service.Release(ctx, a, activityID)
+	return err
+}
+
 // performanceArea builds feature 046 after the planning areas, whose activities its facts match to.
-func (w *wiring) performanceArea() error {
+func (w *wiring) performanceArea(release *heldRelease) error {
 	tools := history.Tools{Tx: w.set.Tx, IDs: w.generator, Log: w.history, Now: w.now}
 	service := performance.NewService(tools, w.set.Performance)
 	service.UseApprovals(performanceApprovals{activities: w.set.Activities})
 	service.UseFeed(simulatedfeed.New(feedSeed))
+	release.service = service
 	if err := w.register(service.Kinds()); err != nil {
 		return err
 	}
