@@ -40,15 +40,14 @@ marks tasks that can run in parallel.
   `RankedList`, mirroring `PlanBudgetReport.tsx`'s shape; `api.ts` for the report and ranked reads
 - [ ] T020 Empty-state reasons (FR-008, 049-C20): no goals, unapproved activities, no data loaded — backend
   states which, frontend shows it
-- [ ] T021 Gate: lint, tests, budgets — done for the backend (0 lint issues, all tests pass, every file within
-  budget). Remaining: a dedicated scope-isolation test for `ReportTotals` against real PostgreSQL (FR-002,
-  SC-004) — `sqlc vet` and the full suite already ran clean against a real database
+- [X] T021 Gate: lint, tests, budgets. Done: 0 lint issues, every file within budget, full suite green
+  including `-race` against real PostgreSQL; `store_postgres_test.go` proves FR-002/SC-004 directly —
+  a record outside the scope is invisible to `ReportTotals`
 
 ## Phase 3 — US2 Funnel stage against goal (P1)
 
 - [X] T030 Tests first: stage selector lists the union of allowed stages (FR-015); uncovered-plan count
-  (FR-018). Remaining: a direct test of `conversionCard`'s "—" on a zero denominator (FR-017) — the
-  function is written and used but not yet pinned by its own test
+  (FR-018); `conversionCard`'s own tests pin the "—" reason and the one-decimal rate (FR-017)
 - [X] T031 Stage selector and `stage` parameter, default first allowed stage (FR-015, 049-C11); deals
   excluded from the selector (049-C12)
 - [X] T032 Conversion figure reusing 046's panel rule (FR-017, 049-C13)
