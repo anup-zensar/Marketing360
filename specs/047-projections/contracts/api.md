@@ -1,0 +1,41 @@
+# API contract: Projections
+
+Every operation below goes into `backend/api/openapi.yaml` by lane B at the wave-B contract step, with
+`pnpm run api:types` after. All paths under `/api/v1`. Reads marked *signed in* apply scope in the service
+(FR-023); writes need `settings.manage`.
+
+## Model (extended — feature 002's operations, additive fields)
+
+The `Model` schema gains `inqToMqlVelocityMonths` (integer 0–24), `mqlToDealVelocityMonths` (integer
+0–24) and `allowedGoalStages` (non-empty array of `inq`·`mql`·`revenue`). `ModelCreate`/`ModelUpdate`
+accept them optionally — defaults 0, 0 and all three — so existing clients keep working. No path changes;
+`listModels`/`createModel`/`getModel`/`updateModel`/`checkModelImpact`/`setModelStatus` stand. The impact
+answer gains the goals stranded by a narrowed `allowedGoalStages` (FR-003).
+
+## Activity categories (new, Settings)
+
+| Operation | Path | Permission |
+|---|---|---|
+| listActivityCategories | GET `/settings/activity-categories` | signed in |
+| createActivityCategory | POST `/settings/activity-categories` | settings.manage |
+| getActivityCategory | GET `/settings/activity-categories/{categoryId}` | signed in |
+| updateActivityCategory | PATCH `/settings/activity-categories/{categoryId}` | settings.manage |
+| deleteActivityCategory | DELETE `/settings/activity-categories/{categoryId}` | settings.manage (recycle bin) |
+
+A category carries `name`, `isDefault`, `active`, `activityTypeIds` (each type in at most one category —
+saving a type here moves it), `usage`, and the record envelope (version + created/updated). Validation
+errors all at once; duplicate name ignoring case refused; version_conflict on stale saves; delete answers
+the bin entry for Undo.
+
+## Activity panel (extended — 046's getActivityPerformance, additive fields)
+
+`StageFigure` gains `projected` (integer, null with `reason` when absent) and `months` (the split series:
+month, `actual`, `projected` — the month containing today carries both). `RevenueFigure` gains `projected`
+(Money, null with reason) and the same months. The panel gains `projection` metadata: the model's name and
+`parametersChangedAt` (047-C8, 020 FR-052). 046's rules (approval gate, scope, reasons vocabulary) are
+unchanged; `noGoal` is the reason when nothing projects (FR-013).
+
+## Not in this contract
+
+No projection endpoint for reports: 048–050 call `internal/projection` in Go. No report routes (047-C11).
+No new permission keys (FR-023).
