@@ -97,12 +97,12 @@ work).
   `GET /api/v1/reports/plan-details` from `notYetServed`; contract tests in `plandetails/handler_test.go`:
   `TestPlanDetails_Contract`, `TestPlanDetails_NoReportsView_FR003`, `TestReport_OnlyPlansInScope_FR003` (persona
   with one of two plans), `TestReport_NoFinanceView_ShowsPlannedCost_FR004`
-- [ ] T019 [US1] **⏸ 039 T027–T030, T046** `frontend/src/features/measure/plan-details/`: `api.ts`,
+- [X] T019 [US1] **⏸ 039 T027–T030, T046** `frontend/src/features/measure/plan-details/`: `api.ts`,
   `schemas.ts`, `PlanDetailsReport.tsx` (replaces 039's stub, inside `ReportFrame`), `PlanDetailsCards.tsx`,
   `BuiltInSection.tsx`, `AttributeRow.tsx`, `ValueWidget.tsx`, `FilledInWidget.tsx` (036's SVG bars in
   `ReportWidget`, table through `ReportTable`), `allWorkLink.ts` (`attr=<attributeId>:<key>` plus the frame's
   filters)
-- [ ] T020 [US1] **⏸ 039 T027–T030, T046** `PlanDetailsReport.test.tsx` (one test per state: data, no plans,
+- [X] T020 [US1] **⏸ 039 T027–T030, T046** `PlanDetailsReport.test.tsx` (one test per state: data, no plans,
   no data yet, no attributes set up, filters exclude everything), `AttributeRow.test.tsx`, `allWorkLink.test.ts`,
   vitest-axe in each
 - [ ] T021 [US1] **⏸ 039 T031, #DEMO** `frontend/e2e/measure-plan-details.spec.ts`: spec US1 on the demo data
