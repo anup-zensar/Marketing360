@@ -63,7 +63,9 @@ func newProvider(sqlDB *sql.DB) (*goose.Provider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("create migration lock: %w", err)
 	}
-	provider, err := goose.NewProvider(goose.DialectPostgres, sqlDB, Migrations(), goose.WithSessionLocker(locker))
+	// Lanes reserve their migration numbers but merge in any order, each on tables of its own (build guide §4).
+	provider, err := goose.NewProvider(goose.DialectPostgres, sqlDB, Migrations(), goose.WithSessionLocker(locker),
+		goose.WithAllowOutofOrder(true))
 	if err != nil {
 		return nil, fmt.Errorf("load migrations: %w", err)
 	}
