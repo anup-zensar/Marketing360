@@ -73,9 +73,6 @@ var notYetServed = []string{
 	// 045 User access report
 	"GET /api/v1/reports/user-access",
 	// 039 Measure foundation
-	"GET /api/v1/reports",
-	"GET /api/v1/reports/frame",
-	"GET /api/v1/reports/{report}/export",
 	"GET /api/v1/reports/{report}/views",
 	"POST /api/v1/reports/{report}/views",
 	"PATCH /api/v1/reports/{report}/views/{viewId}",

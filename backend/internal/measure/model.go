@@ -3,6 +3,8 @@
 package measure
 
 import (
+	"time"
+
 	"mapp/internal/allwork"
 	"mapp/internal/platform/sheet"
 )
@@ -68,4 +70,76 @@ type InView struct {
 type FinanceCoverage struct {
 	Plans int `json:"plans"`
 	Of    int `json:"of"`
+}
+
+// Frame is the contract's ReportFrame: what every report page shares (FR-006 – FR-019).
+type Frame struct {
+	Report          string          `json:"report"`
+	Filter          AppliedFilter   `json:"filter"`
+	Choices         Choices         `json:"choices"`
+	InView          InView          `json:"inView"`
+	Finance         FinanceCoverage `json:"finance"`
+	LeftOut         int             `json:"leftOut"`
+	DisplayCurrency string          `json:"displayCurrency"`
+	GeneratedAt     time.Time       `json:"generatedAt"`
+	FinanceAsOf     *time.Time      `json:"financeAsOf"`
+}
+
+type AppliedFilter struct {
+	Year             int                  `json:"year"`
+	Plans            []string             `json:"plans"`
+	PlanTypes        []string             `json:"planTypes"`
+	Teams            []string             `json:"teams"`
+	Owners           []string             `json:"owners"`
+	ActivityTypes    []string             `json:"activityTypes"`
+	ActivityStatuses []string             `json:"activityStatuses"`
+	Attributes       []allwork.AttrFilter `json:"attributes"`
+	Period           string               `json:"period"`
+	Show             *string              `json:"show"`
+	Currency         string               `json:"currency"`
+	Tables           []string             `json:"tables"`
+}
+
+type Choices struct {
+	Years            []int            `json:"years"`
+	Plans            []PlanChoice     `json:"plans"`
+	PlanTypes        []string         `json:"planTypes"`
+	Teams            []TeamChoice     `json:"teams"`
+	Owners           []NamedChoice    `json:"owners"`
+	ActivityTypes    []NamedChoice    `json:"activityTypes"`
+	ActivityStatuses []string         `json:"activityStatuses"`
+	AttributeGroups  []AttributeGroup `json:"attributeGroups"`
+	Currencies       []Currency       `json:"currencies"`
+}
+
+type NamedChoice struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type PlanChoice struct {
+	ID       string   `json:"id"`
+	Name     string   `json:"name"`
+	PlanType string   `json:"planType"`
+	TeamIDs  []string `json:"teamIds"`
+}
+
+type TeamChoice struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	Mine bool   `json:"mine"`
+}
+
+// AttributeGroup is one Shell attribute of one level in the filter panel; never merged with another by label.
+type AttributeGroup struct {
+	Level       string           `json:"level"`
+	AttributeID string           `json:"attributeId"`
+	Label       string           `json:"label"`
+	Values      []AttributeValue `json:"values"`
+}
+
+type AttributeValue struct {
+	ID     string `json:"id"`
+	Label  string `json:"label"`
+	Active bool   `json:"active"`
 }
