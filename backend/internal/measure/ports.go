@@ -5,6 +5,7 @@ import (
 
 	"mapp/internal/allwork"
 	"mapp/internal/platform/date"
+	"mapp/internal/platform/money"
 )
 
 type Transactor interface {
@@ -33,7 +34,14 @@ type Currency struct {
 	Name string `json:"name"`
 }
 
-// Currencies lists the active currencies a report may be shown in, by code.
+// Currencies lists the active currencies a report may be shown in, by code, and gives a currency's current rate.
 type Currencies interface {
 	Active(ctx context.Context) ([]Currency, error)
+	RateOf(ctx context.Context, code string) (money.Rate, error)
+}
+
+type Deps struct {
+	Planning   Planning
+	Plans      Plans
+	Currencies Currencies
 }
