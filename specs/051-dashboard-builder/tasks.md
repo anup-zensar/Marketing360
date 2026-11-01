@@ -487,10 +487,10 @@ Pages (each F0 stub exports a component with no props): `DashboardBuilderPage` (
   `history_access_owned_test.go` (FR-009, FR-010, FR-045)
 - [x] T066 [INT] Empty the 051 entries of `notYetServed`; all contract, access and matrix tests pass —
   `internal/app/contract_routes_test.go`
-- [ ] T067 [INT] [US1] E2E: Priya builds a dashboard (palette click and drag, Data tab, keyboard move and resize, undo,
+- [x] T067 [INT] [US1] E2E: Priya builds a dashboard (palette click and drag, Data tab, keyboard move and resize, undo,
   validation summary, save, reload, figures equal the activity pages; guard on leaving; Viewer without the builder
   item) — `frontend/e2e/dashboard-builder.spec.ts` (axe, CSP guard, both themes)
-- [ ] T068 [INT] [US2] E2E: Daniel opens Dashboards (built-ins open 036's pages), the shared dashboard, tooltip, legend
+- [x] T068 [INT] [US2] E2E: Daniel opens Dashboards (built-ins open 036's pages), the shared dashboard, tooltip, legend
   toggle, Show as table, Download as PNG (file name and PNG signature), filters in the address with Back, no Edit;
   Mei gets "Dashboard not found" — `frontend/e2e/custom-dashboards.spec.ts`
 - [ ] T069 [INT] Full checks: backend `golangci-lint fmt ./... && golangci-lint run ./...`, `sqlc generate && sqlc

@@ -18,12 +18,22 @@ function inspector(page: Page): Locator {
   return page.getByRole('complementary', { name: 'Inspector' });
 }
 
+/** Picks `label` in a choice field: a select up to ten options, a searchable combobox above. */
+async function choose(field: Locator, label: string) {
+  if ((await field.evaluate((element) => element.tagName)) === 'SELECT') {
+    await field.selectOption({ label });
+    return;
+  }
+  await field.fill(label);
+  await field.page().getByRole('option', { name: label, exact: true }).click();
+}
+
 async function chooseData(page: Page, source: string, groupBy: string, measure: string) {
   const panel = inspector(page);
-  await panel.getByLabel(/^Source/).selectOption({ label: source });
-  await panel.getByLabel(/^Group by/).selectOption({ label: groupBy });
+  await choose(panel.getByLabel(/^Source/), source);
+  await choose(panel.getByLabel(/^Group by/), groupBy);
   await panel.getByRole('button', { name: 'Add measure' }).click();
-  await panel.getByLabel('What to measure').selectOption({ label: measure });
+  await choose(panel.getByLabel('What to measure'), measure);
 }
 
 for (const colorScheme of ['light', 'dark'] as const) {
@@ -37,7 +47,9 @@ for (const colorScheme of ['light', 'dark'] as const) {
       page.getByRole('heading', { level: 1, name: "Edit 'Lubricants Europe overview'" }),
     ).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('data-theme', colorScheme);
-    await expect(cell(page, 'Planned cost by activity type').getByRole('img')).toBeVisible();
+    await expect(
+      cell(page, 'Planned cost by activity type').getByRole('img', { name: /^Bar chart/ }),
+    ).toBeVisible();
     await expectNoAxeViolations(page);
 
     await cell(page, 'Planned cost by activity type')
@@ -58,7 +70,7 @@ test('051 US1: Priya builds a dashboard — palette, Data tab, keyboard, undo, p
   await expect(page.getByRole('button', { name: 'Save' })).toBeVisible();
   await expectNoAxeViolations(page);
 
-  await page.getByRole('button', { name: 'Add bar' }).click();
+  await page.getByRole('button', { name: 'Add bar', exact: true }).click();
   const bar = cell(page, 'Bar chart');
   await expect(bar).toHaveAccessibleName('Widget: Bar chart, column 1, row 1');
   await expect(inspector(page).getByRole('tab', { name: 'Data' })).toHaveAttribute(
@@ -74,9 +86,9 @@ test('051 US1: Priya builds a dashboard — palette, Data tab, keyboard, undo, p
   await expect(bar).toHaveAccessibleName('Widget: Bar chart, column 2, row 1');
   await expect(page.getByText('Moved to column 2, row 1.')).toBeAttached();
   await page.keyboard.press('Shift+ArrowRight');
-  await expect(bar).toHaveAttribute('style', /grid-column: 2 \/ span 7/);
+  await expect(bar).toHaveCSS('grid-column-end', 'span 7');
   await page.getByRole('button', { name: 'Undo' }).click();
-  await expect(bar).toHaveAttribute('style', /grid-column: 2 \/ span 6/);
+  await expect(bar).toHaveCSS('grid-column-end', 'span 6');
 
   await page
     .getByRole('button', { name: 'Add table' })
@@ -145,7 +157,7 @@ test('051 US1-3, SC-001: a widget adds up the planned cost the activity page sho
     leaveEmpty: [],
   });
   await page.goto('/builder');
-  await page.getByRole('button', { name: 'Add table' }).click();
+  await page.getByRole('button', { name: 'Add table', exact: true }).click();
   await chooseData(page, 'Activities', 'Activity', 'Planned cost');
   const name = uniqueName('Mobility check');
   await page.getByRole('button', { name: 'Dashboard details' }).click();

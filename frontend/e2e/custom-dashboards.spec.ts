@@ -72,13 +72,15 @@ test('051 US2: Daniel opens Dashboards, the built-ins and the dashboard shared w
     widget(page, 'Event leads by month').getByText("You don't have access to this data"),
   ).toBeVisible();
   await expect(widget(page, 'Event leads by month')).not.toContainText('Leads');
-  const bars = widget(page, 'Planned cost by activity type').getByRole('img');
+  const bars = widget(page, 'Planned cost by activity type').getByRole('img', {
+    name: /^Bar chart: Planned cost by activity type\./,
+  });
   await expect(bars).toHaveAccessibleName(/^Bar chart: Planned cost by activity type\./);
   await expectNoAxeViolations(page);
 
   expect((await tooltipRows(page, bars)).text).toMatch(/\$[\d,]+\.\d{2}/);
 
-  const lines = widget(page, 'Planned cost by month').getByRole('img');
+  const lines = widget(page, 'Planned cost by month').getByRole('img', { name: /^Line chart/ });
   const [hidden = ''] = (await tooltipRows(page, lines)).labels;
   await lines.locator('svg text').filter({ hasText: hidden }).first().click();
   expect((await tooltipRows(page, lines)).labels).not.toContain(hidden);
