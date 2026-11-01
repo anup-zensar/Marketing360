@@ -1,0 +1,152 @@
+/* A widget fills its cell on the dashboard grid: header, body, then its notes. */
+.widget {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4) 0;
+}
+
+.heading {
+  min-width: 0;
+}
+
+.title {
+  overflow: hidden;
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-size: var(--text-md);
+  font-weight: var(--weight-heading);
+  line-height: var(--leading-md);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subtitle {
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  padding: var(--space-3) var(--space-4);
+  overflow: auto;
+}
+
+/* A builder preview never scrolls: a scrolling area without a focusable child is out of keyboard reach. */
+.preview {
+  overflow: hidden;
+}
+
+.notes {
+  margin: 0;
+  padding: 0 var(--space-4) var(--space-3);
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  list-style: none;
+}
+
+.reserved {
+  width: 100%;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 100%;
+  text-align: center;
+}
+
+.messageIcon {
+  display: grid;
+  place-items: center;
+  width: var(--space-10);
+  height: var(--space-10);
+  border-radius: var(--radius-pill);
+  background: var(--chip);
+  color: var(--ink-2);
+}
+
+.messageIcon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.messageTitle {
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+}
+
+.messageText {
+  max-width: 28rem;
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+}
+
+.textNote {
+  color: var(--ink);
+  font-size: var(--text-sm);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.placeholder {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+
+.keyFigure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.figure {
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-heading);
+  font-variant-numeric: tabular-nums;
+}
+
+.figureLabel,
+.figureNote {
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+}
+
+.change {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.change svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.better {
+  color: var(--success-text);
+}

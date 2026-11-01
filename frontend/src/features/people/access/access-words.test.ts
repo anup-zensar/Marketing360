@@ -40,6 +40,18 @@ describe('038 FR-045 (L-17): every permission in the words of 014 Table A', () =
     ]);
   });
 
+  it('051 FR-001: names the two dashboard permissions, between global budgets and administration', () => {
+    expect(permissionLabel('dashboards.view')).toBe('See custom dashboards shared with them');
+    expect(permissionLabel('dashboards.build')).toBe('Build dashboards and upload data');
+    const keys = PERMISSIONS.map((permission) => permission.key);
+    expect(keys.slice(21, 25)).toEqual([
+      'globalBudgets.manage',
+      'dashboards.view',
+      'dashboards.build',
+      'settings.manage',
+    ]);
+  });
+
   it('writes a purchase-request permission in Your access', () => {
     expect(summariseAccess([{ key: 'purchaseRequests.list', all: true, teams: [] }])).toEqual([
       'In all markets: see the Purchase requests page.',

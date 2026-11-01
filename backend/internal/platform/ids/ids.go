@@ -60,6 +60,9 @@ const (
 
 	PrefixBulkAction = "BLK"
 	PrefixPlanImport = "IMP"
+
+	PrefixDashboard = "DB"
+	PrefixDataset   = "DS"
 )
 
 var Prefixes = []string{
@@ -76,6 +79,7 @@ var Prefixes = []string{
 	PrefixSwbsRun,
 	PrefixPurchaseRequest, PrefixPurchaseRequestLine, PrefixPurchaseRequestRouting, PrefixSimulatedGSAPPR, PrefixSimulatedPO,
 	PrefixBulkAction, PrefixPlanImport,
+	PrefixDashboard, PrefixDataset,
 }
 
 const firstNumber = 1001

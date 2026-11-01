@@ -13,6 +13,8 @@ import (
 	"mapp/internal/budget/budgettest"
 	"mapp/internal/bulk/bulktest"
 	"mapp/internal/campaign/campaigntest"
+	"mapp/internal/customdashboard/customdashboardtest"
+	"mapp/internal/dataset/datasettest"
 	"mapp/internal/financials/financialstest"
 	"mapp/internal/history/historytest"
 	"mapp/internal/lineitem/lineitemtest"
@@ -33,6 +35,10 @@ func New(db *fake.DB) stores.Set {
 	return stores.Set{
 		Tx: db, Counters: counters, Samples: sampletest.NewStore(db),
 		Organisation: organisation(db), Planning: planning(db), Finance: finance(db),
+		Dashboards: stores.Dashboards{
+			CustomDashboards: customdashboardtest.NewStore(db),
+			Datasets:         datasettest.NewStore(db),
+		},
 		Ready:   func(context.Context) error { return nil },
 		IsEmpty: func(context.Context) (bool, error) { return !counters.Used(), nil },
 	}

@@ -11,6 +11,7 @@ type Transactor interface {
 type Store interface {
 	ListTransactions(ctx context.Context) ([]Transaction, error)
 	SpendOnLineItems(ctx context.Context, lineItemIDs []string) ([]Transaction, error)
+	TransactionsOnLineItems(ctx context.Context, lineItemIDs []string) ([]Transaction, error)
 	GetTransaction(ctx context.Context, id string) (Transaction, bool, error)
 	PutTransaction(ctx context.Context, t Transaction) error
 	AddTransactions(ctx context.Context, list []Transaction) error

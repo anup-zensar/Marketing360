@@ -69,6 +69,18 @@ Agency fee (Ireland)" waits as Created on the UK plan's line item L-1010 for 23,
 30 Apr 2027, owner Priya Raman, MoA approver Daniel Okoro, vendor Brightside Media BV, Email group
 G_GB_RETAIL. The Email group options include **DE_LUBES**, the recipient the walkthroughs route to.
 
+Custom dashboards (feature 051) in the demo: **Lubricants Europe overview** (DB-1001), owned by Priya Raman and
+shared with Lubricants Europe, holds a bar of planned cost by activity type, a line of planned cost by month and
+campaign, a key figure of the plan budgets, a table of campaigns (budget and planned cost), a text note and a bar of
+event leads by month over Priya's dataset **Event leads 2026** (DS-1001). Daniel Okoro and Sara Novak find it under
+Shared with me, each with the figures of the plans they may see; the dataset widget tells them "You don't have
+access to this data" until Priya shares the dataset. Mei Lin does not see the dashboard at all.
+
+Uploaded data (feature 051) in the demo: **DS-1001** "Event leads 2026", uploaded by Priya Raman from
+`event-leads.xlsx` (sheet Leads) and shared with nobody: 12 events of 2026 with the columns Event (Text), Date
+(Date), Leads (Number) and Agency cost (Money, EUR). The end-to-end upload fixtures
+`frontend/e2e/fixtures/event-leads.xlsx` and `event-leads.csv` hold the same rows, with the cost column named Cost.
+
 ## Showcase plans (optional)
 
 `go run ./cmd/seed -reset -showcase` loads the demo data above and then two complete 2026 plans that look like

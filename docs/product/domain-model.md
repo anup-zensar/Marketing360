@@ -435,6 +435,8 @@ for new choices, existing values kept and labelled "(inactive)").
 | **Global budget** and **Budget allocation** (feature 014) | Money for a year and the parts of it given to plans (§4.9); deleted to the recycle bin like any record. |
 | **Financial transaction** (feature 015) | One GSAP purchase-order line, invoice, payment or accrual as GSAP sent it (FT-…): type, document and line number, PO reference, posting date, accrual month, amount in its own currency, vendor, SWBS code, HX key and line-item ID as sent, and its link to at most one line item with how it was matched or why not (§4.6). Unique by type, document number and line number; read-only except a manual link; never deleted. |
 | **Financial import** (feature 015) | One delivery of the simulated GSAP extract or the demo data (FIM-…): file name, who, when, and how many rows were new, updated, unchanged, refused or left not linked, and how many earlier transactions it linked. Its time is "GSAP data as of". |
+| **Custom dashboard** (feature 051) | A person's own dashboard (DB-…): name, description, owner, the teams it is shared with view-only, default filters (date range, plans, teams) and up to 30 **widgets** on a 12-column grid — charts, key figures, tables and text notes, each with a data query (source, group, breakdown, measures, filters, sort, top N) and display options. It stores no figures: every widget is worked out by SP&A One when shown, from the records the **viewer** may see (§8). Versioned, logged, deleted to the recycle bin; only the owner changes it (D-371–D-375). |
+| **Dataset** (feature 051) | A table uploaded from a CSV or Excel file (DS-…): name, description, owner, shared teams, up to 50 typed columns (Text, Number, Date, Money with a currency) and up to 10,000 rows, used as a widget's source. Money is converted to USD at the current rate when charted (§4.7). Only the owner changes it; shared view-only like a dashboard (D-376). |
 
 ---
 
@@ -455,6 +457,9 @@ for new choices, existing values kept and labelled "(inactive)").
   they own or submitted" is on, the owner and the submitter never decide and are left out when approvers are
   resolved (segregation of duties). The history records the capacity (as delegate of, as backup approver, on
   behalf of). A role changed in Settings changes who may approve at once.
+- Custom dashboards and datasets (feature 051) are seen only by their owner and the members of the teams they are
+  shared with ("See dashboards"; building and uploading need "Build dashboards"); a widget always shows the
+  viewer's own scope, and a dataset the viewer may not see shows "You don't have access to this data" (D-374, D-375).
 - Sign-in stays a demo until Microsoft Entra ID; line managers are kept in MAPP and later come from Entra ID.
   Reminders and escalations run when someone allowed to change approval workflows runs them; later a
   scheduler runs them and notifications are also sent by e-mail.

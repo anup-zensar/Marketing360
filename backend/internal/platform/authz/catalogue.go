@@ -29,6 +29,8 @@ const (
 	ApprovalsDecideOnBehalf Permission = "approvals.decideOnBehalf"
 	GlobalBudgetsView       Permission = "globalBudgets.view"
 	GlobalBudgetsManage     Permission = "globalBudgets.manage"
+	DashboardsView          Permission = "dashboards.view"
+	DashboardsBuild         Permission = "dashboards.build"
 	SettingsManage          Permission = "settings.manage"
 	ExchangeRatesManage     Permission = "exchangeRates.manage"
 	WorkflowsManage         Permission = "workflows.manage"
@@ -45,11 +47,12 @@ const (
 	GroupPurchaseRequests = "Purchase requests"
 	GroupApprovals        = "Approvals"
 	GroupGlobalBudgets    = "Global budgets"
+	GroupDashboards       = "Dashboards"
 	GroupAdministration   = "Administration"
 )
 
 var Groups = []string{ //nolint:gochecknoglobals // Table A's groups: built once, only read
-	GroupPlanning, GroupFinance, GroupPurchaseRequests, GroupApprovals, GroupGlobalBudgets, GroupAdministration}
+	GroupPlanning, GroupFinance, GroupPurchaseRequests, GroupApprovals, GroupGlobalBudgets, GroupDashboards, GroupAdministration}
 
 type PermissionInfo struct {
 	Key    Permission
@@ -83,6 +86,8 @@ var catalogue = []PermissionInfo{
 	{ApprovalsDecideOnBehalf, GroupApprovals, "Approve or decline on behalf of the named approvers", "Deciding on behalf of other approvers", true},
 	{GlobalBudgetsView, GroupGlobalBudgets, "See global budgets and their allocations", "Seeing global budgets", true},
 	{GlobalBudgetsManage, GroupGlobalBudgets, "Create global budgets and allocate them to plans", "Managing global budgets", true},
+	{DashboardsView, GroupDashboards, "See custom dashboards shared with them", "Seeing dashboards", false},
+	{DashboardsBuild, GroupDashboards, "Build dashboards and upload data", "Building dashboards", false},
 	{SettingsManage, GroupAdministration, "Change Settings lists (models, activity types, Shell attributes, finance budget items, field help)", "Changing Settings", false},
 	{ExchangeRatesManage, GroupAdministration, "Add currencies, change exchange rates and import rate files", "Changing currencies and exchange rates", false},
 	{WorkflowsManage, GroupAdministration, "Create and change approval workflows", "Changing approval workflows", false},

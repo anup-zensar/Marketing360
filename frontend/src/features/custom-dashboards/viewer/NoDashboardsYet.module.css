@@ -1,0 +1,153 @@
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+}
+
+.sketch {
+  width: 240px;
+  max-width: 100%;
+  height: auto;
+  margin-bottom: var(--space-5);
+}
+
+.panel {
+  fill: var(--surface);
+  stroke: var(--card-border);
+  stroke-width: 1.5;
+}
+
+.bar1 {
+  fill: var(--chart-cat-1);
+}
+
+.bar2 {
+  fill: var(--chart-cat-2);
+}
+
+.bar3 {
+  fill: var(--chart-cat-3);
+}
+
+.line {
+  fill: none;
+  stroke: var(--chart-cat-4);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.donutBase {
+  fill: none;
+  stroke: var(--chart-seq-1);
+  stroke-width: 7;
+}
+
+.donutPart {
+  fill: none;
+  stroke: var(--chart-cat-5);
+  stroke-width: 7;
+  stroke-dasharray: 62 100;
+  transform: rotate(-90deg);
+  transform-origin: 152px 94px;
+}
+
+.kpi {
+  fill: var(--ink-2);
+}
+
+.kpiFaint {
+  fill: var(--chip);
+}
+
+.title {
+  max-width: 34rem;
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-heading);
+  line-height: var(--leading-xl);
+}
+
+.text {
+  max-width: 34rem;
+  margin-top: var(--space-2);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+
+.ideasTitle {
+  margin-top: var(--space-6);
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ideas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 48rem;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.idea {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  text-align: left;
+}
+
+.ideaIcon {
+  width: 20px;
+  height: 20px;
+  margin-bottom: var(--space-1);
+  color: var(--chart-cat-1);
+}
+
+.ideaTitle {
+  color: var(--ink);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-sm);
+}
+
+.ideaText {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bar1,
+  .bar2,
+  .bar3 {
+    transform-box: fill-box;
+    transform-origin: bottom;
+    animation: grow 600ms ease-out both;
+  }
+}
+
+@keyframes grow {
+  from {
+    transform: scaleY(0);
+  }
+}

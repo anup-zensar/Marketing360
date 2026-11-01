@@ -1,17 +1,26 @@
 <!--
 Sync Impact Report
-- Version change: 4.6.0 → 4.7.0 (MINOR: one exception added to Principle X; no principle removed or
-  redefined)
-- Modified principles: X Shell Colour Palette — Red also marks a field required to save, as a bold asterisk of
-  at least 19 px after its label (D-364)
-- Modified sections: X "How the palette is used" (Red); Amendment History
+- Version change: 4.7.0 → 4.9.0 (MINOR: scope materially expanded; no principle removed or redefined). 4.8.0 is
+  the Measure-module amendment on the `measure-module` branch (D-366–D-370 there); this amendment is made on
+  `develop` and skips that number so the two merge without renumbering. When `measure-module` merges, its
+  out-of-scope "a dashboard builder" is dropped in favour of this text (D-371).
+- Modified principles: none
+- Modified sections: Current Phase & Scope — in scope: the self-service dashboard builder (051): people build
+  their own dashboards of charts from the Plan-module data they may see and from CSV or Excel files they upload,
+  view them at Dashboards next to 036's built-in dashboards, and share them view-only with their teams; out of
+  scope gains dashboards shared outside SP&A One teams, scheduled or e-mailed dashboards and live data
+  connectors for uploaded data. F1: charts — Apache ECharts (ADR-0020), with 036's hand-drawn SVG charts kept
+  until a later change moves them. Amendment History.
 - Added sections: none
 - Removed sections: none
-- Impact on existing code: FieldShell's "Required" word tag becomes the red asterisk (feature 038 FR-063,
-  FR-064); docs/product/design-system.md FieldShell row and §10 form markings updated
+- Impact on existing code: none until 051 lands — two new permissions in 014 Table A (`dashboards.view`,
+  `dashboards.build`, D-374) granted to the built-in roles by migration; `/dashboards` becomes a list instead of
+  a redirect to the Executive dashboard (D-372); the `echarts` dependency (ADR-0020)
 - Templates: no change needed (plan-template.md reads its gates from this file)
 - Follow-up TODOs:
   - TODO(DARK_TOKENS): dark-theme values for Disabled Text, Link Hover and an error-text red
+  - ADR-0020 is taken by the dashboard builder on `develop`; the Measure module's simulated performance feed ADR
+    (planned as 0020 on `measure-module`) takes the next free number when it is written (D-378)
 -->
 
 
@@ -491,12 +500,17 @@ both be non-negotiable without conflict.
   the BCPIR marker defined by Shell's spec 006 (013); **executive and regional planning dashboards** built
   only from the plan and finance data MAPP holds, and export of plans and dashboards to **PowerPoint and PDF
   files** (036); and **overspend control** — each budget owner chooses whether going over a budget warns or
-  is refused (037). The feature list and build order are in `docs/sdd/feature-map.md`.
+  is refused (037). Since 4.9.0 also a **self-service dashboard builder** (051, D-371): people build their own
+  dashboards of charts, tables and figures from the Plan-module data they may see and from CSV or Excel files
+  they upload as datasets, view them under Dashboards next to 036's built-in dashboards, and share them
+  view-only with their teams; every figure stays scoped to the person who looks at it. The feature list and
+  build order are in `docs/sdd/feature-map.md`.
 - **Out of scope for now:** the Finance budgets module, accrual calculation, invoice approval,
   supporting documents on purchase requests, Measure's performance reporting (revenue, attribution, funnel
   and ROI from external performance data), sharing to e-mail, Outlook or Teams, live GSAP integration, real
   sign-in (Microsoft Entra ID single sign-on), e-mail (purchase requests are routed inside MAPP),
-  AI features. Specs may mention these only as future integration points.
+  dashboards shared outside SP&A One's teams, scheduled or e-mailed dashboards, live data connectors for
+  uploaded data, AI features. Specs may mention these only as future integration points.
 - **Running locally:** the application runs on a developer laptop: the Go API, a local PostgreSQL
   database, and the web app's development server. Servers listen on `127.0.0.1` only. **Docker is
   optional:** a developer installs PostgreSQL natively or starts it with the repository's
@@ -689,7 +703,7 @@ These rules apply to everything under `frontend/` and refine the Core Principles
 | Server state | TanStack Query for every read and write of API data |
 | Forms and validation | React Hook Form with Zod schemas |
 | API access | `fetch`, directly or through the thin typed wrapper `openapi-fetch`, used only inside the client module in `src/api/`; types generated from `backend/api/openapi.yaml` with `openapi-typescript` |
-| Component primitives, icons, styling, data grid, charts | One library or approach for each, chosen by ADR that records accessibility conformance, maintenance activity, licence and bundle size. Current: Radix primitives, lucide-react icons, CSS Modules with the design tokens |
+| Component primitives, icons, styling, data grid, charts | One library or approach for each, chosen by ADR that records accessibility conformance, maintenance activity, licence and bundle size. Current: Radix primitives, lucide-react icons, CSS Modules with the design tokens, Apache ECharts for charts (ADR-0020; feature 036's hand-drawn SVG charts stay until a later change moves them, ADR-0017) |
 | Testing | Vitest, React Testing Library with `user-event`, Mock Service Worker (`msw`), Playwright, `axe-core` (through `vitest-axe` and `@axe-core/playwright`), `fast-check` |
 | Static analysis | ESLint with a flat config in `frontend/eslint.config.js`, using `typescript-eslint`, `eslint-plugin-react-hooks` and `eslint-plugin-jsx-a11y`; Prettier; `pnpm audit`; SonarQube |
 
@@ -1163,5 +1177,6 @@ amended to match.
 | 4.5.0 | 2026-10-28 | X: the product name SP&A One is the logo, "&" in Shell dark blue and "One" in Shell yellow (a darker shade, `#AD8700`, on light surfaces), with a blue tile and a yellow "1" where the name does not fit; the only yellow text. VIII: feature 035 is exempt from the file-wide comment rule except in the files it redesigns. Opening: people see the product as SP&A One; MAPP stays the project's name | D-332; client requirement of 2026-10-28 |
 | 4.6.0 | 2026-10-28 | Current Phase & Scope: bulk actions and Excel import (012), the SP&A view and BCPIR marker of Shell's spec 006 (013), executive and regional planning dashboards from plan and finance data with PowerPoint and PDF export (036), and overspend control per budget owner (037) come into scope; out of scope narrowed to Measure's performance reporting | D-333; product owner instruction of 2026-10-28 (sandbox readiness) |
 | 4.7.0 | 2026-10-29 | X: a field required to save is marked by a Secondary Red asterisk after its label, bold and at least 19 px (large text), with "required" still given to screen readers; "Needed to publish" and "Needed to submit" stay words | D-364; product owner instruction of 2026-10-29 |
+| 4.9.0 | 2026-11-01 | Current Phase & Scope: the self-service dashboard builder (051) — dashboards people build from the Plan-module data they may see and from CSV or Excel datasets they upload, shown under Dashboards next to 036's built-in dashboards and shared view-only with their teams; out of scope gains dashboards shared outside SP&A One teams, scheduled or e-mailed dashboards and live data connectors. F1: Apache ECharts is the chart library (ADR-0020). 4.8.0 is the Measure-module amendment on `measure-module` | D-371–D-378; ADR-0020; product owner instruction of 2026-11-01 |
 
-**Version**: 4.7.0 | **Ratified**: 2026-10-18 | **Last Amended**: 2026-10-29
+**Version**: 4.9.0 | **Ratified**: 2026-10-18 | **Last Amended**: 2026-11-01

@@ -1,0 +1,49 @@
+.scroll {
+  max-height: 100%;
+  overflow: auto;
+}
+
+.scroll:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+.table th,
+.table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--row-divider);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--gray-bg);
+  font-weight: var(--weight-bold);
+}
+
+.table tbody th {
+  font-weight: var(--weight-regular);
+}
+
+.table tfoot th,
+.table tfoot td {
+  font-weight: var(--weight-bold);
+}
+
+.number {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.table th.number {
+  text-align: right;
+}

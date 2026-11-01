@@ -1,0 +1,131 @@
+.tab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+}
+
+.group,
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.row {
+  padding: var(--space-3);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-control);
+}
+
+.legend,
+.rowLegend,
+.number label {
+  padding: 0;
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-sm);
+}
+
+.legend {
+  margin-bottom: var(--space-2);
+  font-family: var(--font-heading);
+  font-size: var(--text-md);
+  font-weight: var(--weight-heading);
+}
+
+.rowLegend {
+  margin-bottom: var(--space-1);
+}
+
+.error {
+  margin: 0;
+  color: var(--danger-text);
+  font-size: var(--text-sm);
+}
+
+.note {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+
+.link {
+  align-self: flex-start;
+  color: var(--link);
+  font-size: var(--text-sm);
+}
+
+.link:hover {
+  color: var(--link-hover);
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.number {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.number input {
+  height: var(--control-md);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-control);
+  background-color: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+.number input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.number input:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.palettes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.paletteChoice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+.swatches {
+  display: flex;
+  gap: var(--space-1);
+  margin-inline-start: auto;
+}
+
+.swatch {
+  width: var(--space-3);
+  height: var(--space-3);
+  border-radius: var(--radius-chip);
+}
+
+.widgetTitle {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-size: var(--text-md);
+  font-weight: var(--weight-heading);
+}

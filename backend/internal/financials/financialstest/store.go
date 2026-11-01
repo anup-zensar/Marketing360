@@ -33,6 +33,10 @@ func (s Store) SpendOnLineItems(_ context.Context, lineItemIDs []string) ([]fina
 	})
 }
 
+func (s Store) TransactionsOnLineItems(_ context.Context, lineItemIDs []string) ([]financials.Transaction, error) {
+	return s.transactions.Where(func(t financials.Transaction) bool { return slices.Contains(lineItemIDs, t.LineItemID) })
+}
+
 func (s Store) GetTransaction(_ context.Context, id string) (financials.Transaction, bool, error) {
 	return s.transactions.Get(id)
 }

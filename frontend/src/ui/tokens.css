@@ -76,6 +76,20 @@
   --chart-planned: #336094;
   --chart-committed: #008192;
   --chart-actual: #008557;
+  /* Feature 051 palettes: Shell and design-system colours only, never yellow or red (design system §4.7) */
+  --chart-cat-1: #003c88;
+  --chart-cat-2: #008192;
+  --chart-cat-3: #87217d;
+  --chart-cat-4: #008557;
+  --chart-cat-5: #a3195b;
+  --chart-cat-6: #336094;
+  --chart-cat-7: #5b6b7a;
+  --chart-cat-8: #6e6e6e;
+  --chart-seq-1: #c9d8ea;
+  --chart-seq-2: #93b1d6;
+  --chart-seq-3: #5e8ac1;
+  --chart-seq-4: #336094;
+  --chart-seq-5: #003c88;
 
   --banner-bg: var(--ink);
   --banner-text: var(--surface);
@@ -218,6 +232,19 @@
   --chart-planned: #6f9bd1;
   --chart-committed: #3fb6c5;
   --chart-actual: #3dbb8c;
+  --chart-cat-1: #6f9bd1;
+  --chart-cat-2: #3fb6c5;
+  --chart-cat-3: #c96bbf;
+  --chart-cat-4: #3dbb8c;
+  --chart-cat-5: #e06a9f;
+  --chart-cat-6: #8fb4e3;
+  --chart-cat-7: #8696a6;
+  --chart-cat-8: #8e99a4;
+  --chart-seq-1: #1f3a5c;
+  --chart-seq-2: #2b5482;
+  --chart-seq-3: #4b78aa;
+  --chart-seq-4: #6f9bd1;
+  --chart-seq-5: #a9c6ea;
 
   --level-plan: #6f9bd1;
   --level-campaign: #c96bbf;

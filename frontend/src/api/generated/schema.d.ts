@@ -4265,6 +4265,256 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/custom-dashboards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The person's own dashboards and those shared with their teams, each by name (feature 051, FR-003)
+         * @description Needs dashboards.view. The built-in Executive and Regional dashboards (036) are not listed: the web app shows them to holders of plans.view.
+         */
+        get: operations["listCustomDashboards"];
+        put?: never;
+        /**
+         * Create a dashboard owned by the person, shared with nobody (feature 051, FR-008, FR-013 – FR-025)
+         * @description Needs dashboards.build. Every problem of the name, the filters and every widget is answered at once (validation_failed, fields such as widgets[2].query.measures); a name the person already uses answers 409 name_taken.
+         */
+        post: operations["createCustomDashboard"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/custom-dashboards/{dashboardId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DB-1001 */
+                dashboardId: components["parameters"]["CustomDashboardId"];
+            };
+            cookie?: never;
+        };
+        /**
+         * One dashboard with its widgets, filters and sharing (feature 051, FR-005, FR-036)
+         * @description Needs dashboards.view; visible to its owner and to members of the teams it is shared with. Any other dashboard answers 404 not_found, exactly like a missing one.
+         */
+        get: operations["getCustomDashboard"];
+        put?: never;
+        post?: never;
+        /** Delete a dashboard to the recycle bin — owner only (feature 051, FR-010) */
+        delete: operations["deleteCustomDashboard"];
+        options?: never;
+        head?: never;
+        /**
+         * Change a dashboard's name, description, filters or widgets — owner only (feature 051, FR-006, FR-012, FR-033)
+         * @description Needs dashboards.build and ownership (403 forbidden for a dashboard the person sees but does not own). Only the fields sent change; widgets, when sent, replace the whole list. An out-of-date version answers 409 version_conflict.
+         */
+        patch: operations["updateCustomDashboard"];
+        trace?: never;
+    };
+    "/api/v1/custom-dashboards/{dashboardId}/copy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DB-1001 */
+                dashboardId: components["parameters"]["CustomDashboardId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Make a copy owned by the person, shared with nobody (feature 051, FR-011)
+         * @description Needs dashboards.build and sight of the dashboard. The name defaults to "Copy of <name>", shortened to 80 characters and numbered ("Copy of X (2)") when taken.
+         */
+        post: operations["copyCustomDashboard"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/custom-dashboards/{dashboardId}/sharing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DB-1001 */
+                dashboardId: components["parameters"]["CustomDashboardId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set the teams a dashboard is shared with, view-only — owner only (feature 051, FR-046)
+         * @description Each team must be one the owner belongs to now or one already shared (validation_failed on teamIds otherwise). An out-of-date version answers 409 version_conflict.
+         */
+        put: operations["shareCustomDashboard"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/datasets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The person's datasets and those shared with their teams, each by name (feature 051, FR-040)
+         * @description Needs dashboards.build.
+         */
+        get: operations["listDatasets"];
+        put?: never;
+        /**
+         * Store an uploaded CSV or .xlsx file as a dataset with the chosen column names and types (feature 051, FR-042, FR-043)
+         * @description Needs dashboards.build. The file is read again and every cell checked against its column's type; every problem is answered at once (validation_failed, fields such as columns[2] with "Row 14: 'n/a' is not a number", at most 50 listed and a last one saying how many more). Limits: 5 MB file, 10,000 rows, 50 columns, 50 datasets per person (validation_failed on content or name).
+         */
+        post: operations["createDataset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/datasets/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check an uploaded file and propose its columns and types; nothing is stored (feature 051, FR-041)
+         * @description Needs dashboards.build. Reads the first sheet of an .xlsx file or a UTF-8 CSV file (comma, semicolon or tab); the first row holds the column names. A file that cannot be read, has no header row or breaks a limit answers 400 validation_failed on content with the reason.
+         */
+        post: operations["previewDataset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/datasets/{datasetId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DS-1001 */
+                datasetId: components["parameters"]["DatasetId"];
+            };
+            cookie?: never;
+        };
+        /**
+         * One dataset with its columns, sharing and the visible dashboards that use it (feature 051, FR-040)
+         * @description Needs dashboards.build; a dataset the person may not see answers 404 not_found.
+         */
+        get: operations["getDataset"];
+        put?: never;
+        post?: never;
+        /** Delete a dataset to the recycle bin — owner only (feature 051, FR-045) */
+        delete: operations["deleteDataset"];
+        options?: never;
+        head?: never;
+        /**
+         * Rename a dataset, change its description or its column names — owner only (feature 051, FR-040, FR-044)
+         * @description Column types never change. An out-of-date version answers 409 version_conflict.
+         */
+        patch: operations["updateDataset"];
+        trace?: never;
+    };
+    "/api/v1/datasets/{datasetId}/rows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DS-1001 */
+                datasetId: components["parameters"]["DatasetId"];
+            };
+            cookie?: never;
+        };
+        /** A page of a dataset's rows, as stored (feature 051, FR-040) */
+        get: operations["listDatasetRows"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/datasets/{datasetId}/sharing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DS-1001 */
+                datasetId: components["parameters"]["DatasetId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        /** Set the teams a dataset is shared with, view-only — owner only (feature 051, FR-046) */
+        put: operations["shareDataset"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/data-sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The data catalogue — the built-in sources and datasets the person may read, with their fields (feature 051, FR-016)
+         * @description Needs dashboards.view or dashboards.build (checked by the service). Built-in sources need their own permission (plans.view; finance.view for financialTransactions; globalBudgets.view for globalBudgets) and are left out without it. Datasets: those the person owns or that are shared with their teams.
+         */
+        get: operations["listDataSources"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/data-sources/query": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Work out one widget's figures for the person asking, in their scope (feature 051, FR-007, FR-016 – FR-023)
+         * @description Needs dashboards.view or dashboards.build (checked by the service). A built-in source the person may not read answers 403 forbidden; a dataset they may not see, or a deleted one, answers 404 not_found — the web app shows both as "You don't have access to this data" (or, to the owner of a deleted dataset, "This data is no longer available"). Fields not in the source, or a query that breaks the rules of its use, answer 400 validation_failed listing every problem (fields such as query.measures[1].field). Nothing is stored.
+         */
+        post: operations["queryWidgetData"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -8714,7 +8964,7 @@ export interface components {
          * @description A permission of spec Table A.
          * @enum {string}
          */
-        PermissionKey: "plans.view" | "plans.create" | "plans.edit" | "plans.publish" | "plans.delete" | "campaigns.edit" | "campaigns.delete" | "activities.edit" | "activities.delete" | "activities.submit" | "data.export" | "finance.view" | "finance.link" | "finance.import" | "purchaseRequests.edit" | "purchaseRequests.delete" | "purchaseRequests.submit" | "purchaseRequests.list" | "approvals.decide" | "approvals.decideOnBehalf" | "globalBudgets.view" | "globalBudgets.manage" | "settings.manage" | "exchangeRates.manage" | "workflows.manage" | "people.manage" | "access.manage" | "activityLog.viewAll" | "recycleBin.purge";
+        PermissionKey: "plans.view" | "plans.create" | "plans.edit" | "plans.publish" | "plans.delete" | "campaigns.edit" | "campaigns.delete" | "activities.edit" | "activities.delete" | "activities.submit" | "data.export" | "finance.view" | "finance.link" | "finance.import" | "purchaseRequests.edit" | "purchaseRequests.delete" | "purchaseRequests.submit" | "purchaseRequests.list" | "approvals.decide" | "approvals.decideOnBehalf" | "globalBudgets.view" | "globalBudgets.manage" | "settings.manage" | "exchangeRates.manage" | "workflows.manage" | "people.manage" | "access.manage" | "activityLog.viewAll" | "recycleBin.purge" | "dashboards.view" | "dashboards.build";
         PermissionInfo: {
             key: components["schemas"]["PermissionKey"];
             /** @example Edit plan details */
@@ -8724,7 +8974,7 @@ export interface components {
         };
         PermissionGroup: {
             /** @enum {string} */
-            name: "Plans and planning" | "Financial data" | "Purchase requests" | "Approvals" | "Global budgets" | "Administration";
+            name: "Plans and planning" | "Financial data" | "Purchase requests" | "Approvals" | "Global budgets" | "Dashboards" | "Administration";
             permissions: components["schemas"]["PermissionInfo"][];
         };
         PermissionCatalogue: {
@@ -10297,6 +10547,495 @@ export interface components {
             plannedCost: components["schemas"]["Money"];
             overAllocated: boolean;
         };
+        /**
+         * @description An exact decimal number with up to 4 decimal places, as text (never a float).
+         * @example 1234.5
+         */
+        Decimal: string;
+        /**
+         * @description A share in percent with one decimal, worked out by the API (half up).
+         * @example 37.5
+         */
+        SharePercent: string;
+        /**
+         * @description bar (vertical or horizontal; grouped, stacked or 100 %), line, area, combo (bars and lines on one or two value axes), pie, donut, scatter, funnel, gauge, heatmap, treemap, radar, kpi (key figure), table, text (plain-text note).
+         * @enum {string}
+         */
+        WidgetType: "bar" | "line" | "area" | "combo" | "pie" | "donut" | "scatter" | "funnel" | "gauge" | "heatmap" | "treemap" | "radar" | "kpi" | "table" | "text";
+        /** @description Position on the 12-column grid, zero-based (the Layout tab shows x+1 and y+1). x + w is at most 12, y + h at most 200, and no two widgets of a dashboard share a cell. */
+        WidgetLayout: {
+            x: number;
+            y: number;
+            w: number;
+            h: number;
+        };
+        /**
+         * @description How a date field is grouped; weeks are ISO weeks starting on Monday. Required for date fields, refused for others.
+         * @enum {string}
+         */
+        WidgetDateGroup: "day" | "week" | "month" | "quarter" | "year";
+        WidgetGroupBy: {
+            /**
+             * @description A groupable field key of the source (data catalogue).
+             * @example activityType
+             */
+            field: string;
+            dateGroup: components["schemas"]["WidgetDateGroup"] | null;
+        };
+        /**
+         * @description count (records, or non-empty values of a field), countDistinct (distinct non-empty values), sum and avg (number and money fields), min and max (number, money and date fields).
+         * @enum {string}
+         */
+        WidgetAggregation: "count" | "countDistinct" | "sum" | "avg" | "min" | "max";
+        WidgetMeasure: {
+            aggregation: components["schemas"]["WidgetAggregation"];
+            /**
+             * @description The field measured; null only with count, which then counts records.
+             * @example plannedCost
+             */
+            field: string | null;
+            /** @description The measure's name on the chart; empty uses "Sum of Planned cost" and the like. */
+            label: string;
+        };
+        /**
+         * @description eq is, ne is not, in is one of (1–50 values), contains (text, ignoring case), gt greater than, gte at least, lt less than, lte at most (number, money, date), between (2 values, both included), isEmpty and notEmpty (no values). eq, ne, contains, gt, gte, lt and lte take exactly one value.
+         * @enum {string}
+         */
+        WidgetFilterOperator: "eq" | "ne" | "in" | "contains" | "gt" | "gte" | "lt" | "lte" | "between" | "isEmpty" | "notEmpty";
+        WidgetFilter: {
+            field: string;
+            operator: components["schemas"]["WidgetFilterOperator"];
+            /** @description Typed by the field — text 1–200 characters, numbers as Decimal, money as a decimal with up to 2 places in USD, dates YYYY-MM-DD. */
+            values: string[];
+        };
+        WidgetSort: {
+            /** @enum {string} */
+            by: "dimension" | "measure";
+            /** @description The measure sorted by (by = measure); 0 otherwise. Below the number of measures. */
+            measureIndex: number;
+            /** @enum {string} */
+            direction: "asc" | "desc";
+        };
+        /** @description What a widget shows, worked out by the API in the viewer's scope. Which parts a type needs is in the feature's data model §2.3 (for example pie: a dimension, no series, one measure); the API refuses others. */
+        WidgetQuery: {
+            /**
+             * @description A built-in source key or a dataset ID.
+             * @example activities
+             */
+            source: string;
+            /** @description The group (categories or x axis); null for gauge, kpi and an ungrouped table. */
+            dimension: components["schemas"]["WidgetGroupBy"] | null;
+            /** @description The breakdown (series); not the same field and date group as the dimension. */
+            series: components["schemas"]["WidgetGroupBy"] | null;
+            measures: components["schemas"]["WidgetMeasure"][];
+            /** @description All must hold. */
+            filters: components["schemas"]["WidgetFilter"][];
+            sort: components["schemas"]["WidgetSort"];
+            /** @description The most dimension groups answered (top N by the sort). */
+            limit: number;
+            /** @description The groups after the limit are answered as one group "Other". */
+            groupRest: boolean;
+        };
+        /**
+         * @description The design-system chart palettes (§4.7); never Primary Yellow or Secondary Red.
+         * @enum {string}
+         */
+        ChartPalette: "categorical" | "planning" | "levels" | "sequential";
+        WidgetLegend: {
+            show: boolean;
+            /** @enum {string} */
+            position: "top" | "bottom" | "left" | "right";
+        };
+        WidgetAxisTitles: {
+            x: string;
+            y: string;
+            /** @description The right value axis (combo). */
+            y2: string;
+        };
+        WidgetMeasureStyle: {
+            /** @enum {string} */
+            as: "bar" | "line";
+            /** @enum {string} */
+            axis: "left" | "right";
+        };
+        WidgetReferenceLine: {
+            value: components["schemas"]["Decimal"];
+            label: string;
+        };
+        /** @description min below max; max null means the value rounded up to a round number. */
+        WidgetGaugeOptions: {
+            min: components["schemas"]["Decimal"];
+            max: components["schemas"]["Decimal"] | null;
+        };
+        /** @description target is required when comparison is target. */
+        WidgetKpiOptions: {
+            /** @enum {string} */
+            comparison: "none" | "target" | "previousPeriod";
+            target: components["schemas"]["Decimal"] | null;
+            higherIsBetter: boolean;
+        };
+        WidgetTableOptions: {
+            /** @description The columns shown, in order, each once; empty shows every column. */
+            columns: string[];
+            totals: boolean;
+        };
+        /** @description Display options; every property is optional and its default is in the feature's data model §3. An option a type does not draw is refused (validation_failed), so a stored widget holds only what it uses. */
+        WidgetDisplay: {
+            palette?: components["schemas"]["ChartPalette"];
+            legend?: components["schemas"]["WidgetLegend"];
+            dataLabels?: boolean;
+            axisTitles?: components["schemas"]["WidgetAxisTitles"];
+            gridlines?: boolean;
+            smooth?: boolean;
+            /** @enum {string} */
+            stack?: "none" | "stacked" | "percent";
+            /** @enum {string} */
+            orientation?: "vertical" | "horizontal";
+            /**
+             * @description compact writes 1.2K, 3.4M; percent writes the value with "%" without multiplying it.
+             * @enum {string}
+             */
+            numberFormat?: "number" | "money" | "percent" | "compact";
+            decimals?: number;
+            zoom?: boolean;
+            referenceLine?: components["schemas"]["WidgetReferenceLine"] | null;
+            /** @description combo only, one per measure, in order. */
+            measureStyles?: components["schemas"]["WidgetMeasureStyle"][];
+            gauge?: components["schemas"]["WidgetGaugeOptions"];
+            kpi?: components["schemas"]["WidgetKpiOptions"];
+            table?: components["schemas"]["WidgetTableOptions"];
+        };
+        Widget: {
+            /**
+             * @description Made by the web app; unique in its dashboard.
+             * @example w1
+             */
+            id: string;
+            type: components["schemas"]["WidgetType"];
+            title: string;
+            subtitle: string;
+            layout: components["schemas"]["WidgetLayout"];
+            /** @description null exactly when type is text. */
+            query: components["schemas"]["WidgetQuery"] | null;
+            display: components["schemas"]["WidgetDisplay"];
+            /** @description The text of a text widget, plain text (never HTML); empty for other types. */
+            note: string;
+        };
+        /** @description Applied to every built-in source that has the field, never to datasets (D-373). Plans and teams the viewer cannot see are ignored. dateFrom is not after dateTo. */
+        CustomDashboardFilters: {
+            /** Format: date */
+            dateFrom: string | null;
+            /** Format: date */
+            dateTo: string | null;
+            planIds: string[];
+            teamIds: string[];
+        };
+        CustomDashboardAccess: {
+            edit: components["schemas"]["ActionAvailability"];
+            share: components["schemas"]["ActionAvailability"];
+            delete: components["schemas"]["ActionAvailability"];
+            copy: components["schemas"]["ActionAvailability"];
+        };
+        CustomDashboard: {
+            /** @example DB-1001 */
+            id: string;
+            name: string;
+            description: string;
+            owner: components["schemas"]["PersonRef"];
+            isOwner: boolean;
+            /** @description Sorted by name. */
+            sharedWith: components["schemas"]["TeamRef"][];
+            /** @description The teams the owner may tick in Sharing (their teams and those already shared), by name; empty for others. */
+            shareableTeams: components["schemas"]["TeamRef"][];
+            filters: components["schemas"]["CustomDashboardFilters"];
+            widgets: components["schemas"]["Widget"][];
+            access: components["schemas"]["CustomDashboardAccess"];
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        CustomDashboardSummary: {
+            id: string;
+            name: string;
+            description: string;
+            owner: components["schemas"]["PersonRef"];
+            sharedWith: components["schemas"]["TeamRef"][];
+            widgetCount: number;
+            /** Format: date-time */
+            updatedAt: string;
+            access: components["schemas"]["CustomDashboardAccess"];
+        };
+        CustomDashboardList: {
+            mine: components["schemas"]["CustomDashboardSummary"][];
+            /** @description Dashboards of other owners shared with one of the person's teams, by name. */
+            sharedWithMe: components["schemas"]["CustomDashboardSummary"][];
+        };
+        CustomDashboardCreate: {
+            /** @description Required, trimmed, at most 80 characters (validation_failed names the limit). */
+            name: string;
+            description: string;
+            filters: components["schemas"]["CustomDashboardFilters"];
+            widgets: components["schemas"]["Widget"][];
+        };
+        /** @description Only the fields to change, and the version. widgets, when sent, replace the whole list. */
+        CustomDashboardUpdate: {
+            version: number;
+            name?: string;
+            description?: string;
+            filters?: components["schemas"]["CustomDashboardFilters"];
+            widgets?: components["schemas"]["Widget"][];
+        };
+        CustomDashboardCopy: {
+            /** @description The copy's name; left out gives "Copy of <name>". */
+            name?: string;
+        };
+        CustomDashboardRef: {
+            id: string;
+            name: string;
+        };
+        SharingUpdate: {
+            version: number;
+            /** @description Every team it is shared with after the change; empty makes it private. */
+            teamIds: string[];
+        };
+        /** @enum {string} */
+        DataFieldKind: "text" | "number" | "money" | "date";
+        DataField: {
+            /** @example plannedCost */
+            key: string;
+            /** @example Planned cost */
+            label: string;
+            kind: components["schemas"]["DataFieldKind"];
+            /** @description The field can hold several values (a plan's teams); a record counts in each group. */
+            multi: boolean;
+            groupable: boolean;
+            /** @description The aggregations allowed on this field (count is always allowed without a field). */
+            aggregations: components["schemas"]["WidgetAggregation"][];
+            /** @description Empty outside the plans where the person sees financial data. */
+            finance: boolean;
+        };
+        /** @description Which dashboard filters apply to the source; datasets never take any. */
+        DataSourceFilters: {
+            /** @description The field the date range applies to, or null. */
+            date: string | null;
+            plan: boolean;
+            team: boolean;
+        };
+        DataSource: {
+            /**
+             * @description A built-in key, or the dataset's ID.
+             * @example activities
+             */
+            key: string;
+            /** @example Activities */
+            label: string;
+            description: string;
+            /** @enum {string} */
+            kind: "builtIn" | "dataset";
+            fields: components["schemas"]["DataField"][];
+            filters: components["schemas"]["DataSourceFilters"];
+            /** @description The dataset's owner; null for built-in sources. */
+            owner: components["schemas"]["PersonRef"] | null;
+        };
+        DataSourceList: {
+            items: components["schemas"]["DataSource"][];
+        };
+        /** @description kpi only. previousPeriod needs the filters' dateFrom and dateTo; target needs target. */
+        WidgetComparisonRequest: {
+            /** @enum {string} */
+            kind: "target" | "previousPeriod";
+            target: components["schemas"]["Decimal"] | null;
+        };
+        WidgetDataRequest: {
+            type: components["schemas"]["WidgetType"];
+            query: components["schemas"]["WidgetQuery"];
+            filters: components["schemas"]["CustomDashboardFilters"] | null;
+            comparison: components["schemas"]["WidgetComparisonRequest"] | null;
+        };
+        WidgetDataColumn: {
+            key: string;
+            /** @example Sum of Planned cost */
+            label: string;
+            kind: components["schemas"]["DataFieldKind"];
+            dateGroup: components["schemas"]["WidgetDateGroup"] | null;
+        };
+        /** @description A group. value is the text, the decimal, or the first day of a date bucket (YYYY-MM-DD); null for "Not set" and "Other". The web app writes date buckets in the person's date format. */
+        WidgetKey: {
+            value: string | null;
+            /** @example Event */
+            label: string;
+            /** @enum {string} */
+            kind: "value" | "empty" | "other";
+        };
+        /** @description One measure's value: exactly one of number, money and date is set for the measure's kind, all null when there is no value (an average of nothing). share is the value's percent of its dimension group (with a series) or of the total (without), for count, countDistinct and sum of non-negative values; else null. */
+        WidgetValue: {
+            number: components["schemas"]["Decimal"] | null;
+            money: components["schemas"]["Money"] | null;
+            /** Format: date */
+            date: string | null;
+            share: components["schemas"]["SharePercent"] | null;
+        };
+        WidgetDataRow: {
+            dimension: components["schemas"]["WidgetKey"] | null;
+            series: components["schemas"]["WidgetKey"] | null;
+            /** @description One per measure, in the query's order. */
+            values: components["schemas"]["WidgetValue"][];
+        };
+        WidgetComparison: {
+            /** @enum {string} */
+            kind: "target" | "previousPeriod";
+            value: components["schemas"]["WidgetValue"];
+            /** @description The value's change against the comparison in percent (previousPeriod) or the share of the target reached (target); null when the comparison is zero or empty. */
+            change: components["schemas"]["SharePercent"] | null;
+            /** @description The previous period compared with (previousPeriod), else null. */
+            period: {
+                /** Format: date */
+                from: string;
+                /** Format: date */
+                to: string;
+            } | null;
+        };
+        WidgetFiltersApplied: {
+            date: boolean;
+            plan: boolean;
+            team: boolean;
+        };
+        WidgetData: {
+            source: string;
+            /** @description dimension (when grouped), series (when broken down), then m0… one per measure. */
+            columns: components["schemas"]["WidgetDataColumn"][];
+            /** @description In the query's sort order; at most limit groups (+ Other) per series. */
+            rows: components["schemas"]["WidgetDataRow"][];
+            /** @description One per measure over every group, also those beyond the limit. */
+            totals: components["schemas"]["WidgetValue"][];
+            /** @description Dimension groups before the limit ("Showing 10 of 37"). */
+            groupCount: number;
+            /** @description Plain sentences for the widget's foot ("Not filtered by date", "Financial figures cover 1 of 2 plans"). */
+            notes: string[];
+            filtersApplied: components["schemas"]["WidgetFiltersApplied"];
+            comparison: components["schemas"]["WidgetComparison"] | null;
+        };
+        DatasetUpload: {
+            /** @example event-leads-2026.xlsx */
+            fileName: string;
+            /** @description The .xlsx or .csv file, base64-encoded (at most 5 MB before encoding). */
+            content: string;
+        };
+        DatasetPreviewColumn: {
+            position: number;
+            /** @description From the first row, trimmed and cut to 60 characters; "Column 3" when empty. */
+            label: string;
+            proposedKind: components["schemas"]["DataFieldKind"];
+            /** @description USD for a proposed money column, else null. */
+            proposedCurrency: string | null;
+            samples: string[];
+            emptyCount: number;
+        };
+        DatasetPreview: {
+            fileName: string;
+            /** @description The sheet read (the first); empty for a CSV file. */
+            sheetName: string;
+            rowCount: number;
+            columns: components["schemas"]["DatasetPreviewColumn"][];
+            /** @description The first 20 rows as text, one string per column ("" empty). */
+            rows: string[][];
+            /** @description What will stop the save or is worth knowing (duplicate column names, merged cells, empty columns). */
+            problems: string[];
+        };
+        DatasetColumnInput: {
+            position: number;
+            /** @description Required, at most 60 characters, unique in the dataset ignoring case. */
+            label: string;
+            kind: components["schemas"]["DataFieldKind"];
+            /** @description An active currency for a money column; null for others. */
+            currency: string | null;
+        };
+        DatasetCreate: {
+            fileName: string;
+            /** @description The same file as checked, base64-encoded (at most 5 MB before encoding). */
+            content: string;
+            /** @description Required, at most 80 characters, unique among the person's datasets ignoring case. */
+            name: string;
+            description: string;
+            /** @description One per column of the file, positions 0… in order. */
+            columns: components["schemas"]["DatasetColumnInput"][];
+        };
+        DatasetColumn: {
+            /** @description The field key in the data catalogue and in widget queries. */
+            key: string;
+            position: number;
+            label: string;
+            kind: components["schemas"]["DataFieldKind"];
+            currency: string | null;
+        };
+        DatasetAccess: {
+            edit: components["schemas"]["ActionAvailability"];
+            share: components["schemas"]["ActionAvailability"];
+            delete: components["schemas"]["ActionAvailability"];
+        };
+        Dataset: {
+            /** @example DS-1001 */
+            id: string;
+            name: string;
+            description: string;
+            owner: components["schemas"]["PersonRef"];
+            isOwner: boolean;
+            sharedWith: components["schemas"]["TeamRef"][];
+            shareableTeams: components["schemas"]["TeamRef"][];
+            fileName: string;
+            sheetName: string;
+            rowCount: number;
+            columns: components["schemas"]["DatasetColumn"][];
+            /** @description Dashboards the person may see whose widgets read this dataset, by name. */
+            usedBy: components["schemas"]["CustomDashboardRef"][];
+            access: components["schemas"]["DatasetAccess"];
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        DatasetSummary: {
+            id: string;
+            name: string;
+            description: string;
+            owner: components["schemas"]["PersonRef"];
+            sharedWith: components["schemas"]["TeamRef"][];
+            rowCount: number;
+            columnCount: number;
+            /** Format: date-time */
+            updatedAt: string;
+            access: components["schemas"]["DatasetAccess"];
+        };
+        DatasetList: {
+            mine: components["schemas"]["DatasetSummary"][];
+            sharedWithMe: components["schemas"]["DatasetSummary"][];
+        };
+        /** @description Only the fields to change, and the version. Column types never change. */
+        DatasetUpdate: {
+            version: number;
+            name?: string;
+            description?: string;
+            /** @description New names of the columns given; the others keep theirs. */
+            columns?: {
+                position: number;
+                label: string;
+            }[];
+        };
+        DatasetRowPage: {
+            columns: components["schemas"]["DatasetColumn"][];
+            /** @description One array per row, one cell per column: null for empty; text as written, numbers as Decimal, dates YYYY-MM-DD, money as a decimal in the column's currency. */
+            rows: (string | null)[][];
+            offset: number;
+            limit: number;
+            total: number;
+        };
     };
     responses: {
         /** @description The request is not valid (validation_failed lists every field problem; bad_request when the body cannot be read). */
@@ -10387,6 +11126,10 @@ export interface components {
         };
     };
     parameters: {
+        /** @example DB-1001 */
+        CustomDashboardId: string;
+        /** @example DS-1001 */
+        DatasetId: string;
         /** @example PR-1001 */
         PurchaseRequestId: string;
         /** @example PRR-1001 */
@@ -18568,6 +19311,498 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: components["responses"]["OfficeFile"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listCustomDashboards: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The dashboards. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomDashboardList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    createCustomDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomDashboardCreate"];
+            };
+        };
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomDashboard"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            413: components["responses"]["TooLarge"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getCustomDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DB-1001 */
+                dashboardId: components["parameters"]["CustomDashboardId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The dashboard. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomDashboard"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteCustomDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DB-1001 */
+                dashboardId: components["parameters"]["CustomDashboardId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Moved to the recycle bin. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    updateCustomDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DB-1001 */
+                dashboardId: components["parameters"]["CustomDashboardId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomDashboardUpdate"];
+            };
+        };
+        responses: {
+            /** @description The dashboard after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomDashboard"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            413: components["responses"]["TooLarge"];
+            default: components["responses"]["Error"];
+        };
+    };
+    copyCustomDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DB-1001 */
+                dashboardId: components["parameters"]["CustomDashboardId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CustomDashboardCopy"];
+            };
+        };
+        responses: {
+            /** @description The copy. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomDashboard"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    shareCustomDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DB-1001 */
+                dashboardId: components["parameters"]["CustomDashboardId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SharingUpdate"];
+            };
+        };
+        responses: {
+            /** @description The dashboard after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomDashboard"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listDatasets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The datasets. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    createDataset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DatasetCreate"];
+            };
+        };
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Dataset"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            413: components["responses"]["TooLarge"];
+            default: components["responses"]["Error"];
+        };
+    };
+    previewDataset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DatasetUpload"];
+            };
+        };
+        responses: {
+            /** @description The proposal. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetPreview"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            413: components["responses"]["TooLarge"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getDataset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DS-1001 */
+                datasetId: components["parameters"]["DatasetId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The dataset. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Dataset"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteDataset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DS-1001 */
+                datasetId: components["parameters"]["DatasetId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Moved to the recycle bin. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    updateDataset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DS-1001 */
+                datasetId: components["parameters"]["DatasetId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DatasetUpdate"];
+            };
+        };
+        responses: {
+            /** @description The dataset after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Dataset"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listDatasetRows: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @example DS-1001 */
+                datasetId: components["parameters"]["DatasetId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The rows. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetRowPage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    shareDataset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example DS-1001 */
+                datasetId: components["parameters"]["DatasetId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SharingUpdate"];
+            };
+        };
+        responses: {
+            /** @description The dataset after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Dataset"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listDataSources: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The sources, built-in first in a fixed order, then datasets by name. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataSourceList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    queryWidgetData: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WidgetDataRequest"];
+            };
+        };
+        responses: {
+            /** @description The widget's rows, totals and notes. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WidgetData"];
+                };
+            };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];

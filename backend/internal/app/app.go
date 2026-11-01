@@ -15,6 +15,8 @@ import (
 	"mapp/internal/auth"
 	"mapp/internal/budget"
 	"mapp/internal/campaign"
+	"mapp/internal/customdashboard"
+	"mapp/internal/dataset"
 	"mapp/internal/financials"
 	"mapp/internal/history"
 	"mapp/internal/lineitem"
@@ -40,28 +42,30 @@ type App struct {
 }
 
 type wiring struct {
-	cfg        Config
-	set        stores.Set
-	now        clock.Clock
-	generator  *ids.Generator
-	signedIn   gin.IRoutes
-	history    *history.Service
-	people     *people.Service
-	access     *access.Service
-	settings   *settings.Service
-	plans      *plan.Service
-	campaigns  *campaign.Service
-	activities *activity.Service
-	lineItems  *lineitem.Service
-	approvals  *approval.Service
-	financials *financials.Service
-	budgets    *budget.Service
-	prs        *purchaserequest.Service
-	allWork    allWorkSource
-	finance    financialPlanning
-	purchases  *purchaserequest.Service
-	guard      *overspend.Guard
-	overspend  *overspend.Service
+	cfg              Config
+	set              stores.Set
+	now              clock.Clock
+	generator        *ids.Generator
+	signedIn         gin.IRoutes
+	history          *history.Service
+	people           *people.Service
+	access           *access.Service
+	settings         *settings.Service
+	plans            *plan.Service
+	campaigns        *campaign.Service
+	activities       *activity.Service
+	lineItems        *lineitem.Service
+	approvals        *approval.Service
+	financials       *financials.Service
+	budgets          *budget.Service
+	prs              *purchaserequest.Service
+	allWork          allWorkSource
+	finance          financialPlanning
+	purchases        *purchaserequest.Service
+	guard            *overspend.Guard
+	overspend        *overspend.Service
+	customDashboards *customdashboard.Service
+	datasets         *dataset.Service
 }
 
 type routeRegistrar interface {
@@ -107,7 +111,9 @@ func (w *wiring) organisation() *auth.Service {
 		auth.Options{DemoMode: w.cfg.DemoMode(), DemoPassword: w.cfg.DemoPassword, Now: w.now})
 	w.access = access.NewService(history.Tools{Tx: s.Tx, IDs: w.generator, Log: w.history, Now: w.now},
 		s.Access, accessDirectory{people: w.people})
-	w.people.UseAccess(peopleAccessHooks(w.access))
+	hooks := peopleAccessHooks(w.access)
+	hooks.TeamDeleted = sharesLeaveWithTeam(hooks.TeamDeleted, s.CustomDashboards, s.Datasets)
+	w.people.UseAccess(hooks)
 	return authService
 }
 

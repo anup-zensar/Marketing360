@@ -23,7 +23,7 @@ import (
 func (w *wiring) areas() error {
 	steps := []func() error{
 		w.settingsArea, w.overspendArea, w.plansArea, w.planningArea, w.budgetsArea, w.samplesArea, w.approvalsArea, w.financialsArea,
-		w.swbsArea, w.purchaseRequestsArea, w.bulkArea, w.workbookArea,
+		w.swbsArea, w.purchaseRequestsArea, w.customDashboardsArea, w.datasetsArea, w.bulkArea, w.workbookArea,
 	}
 	for _, step := range steps {
 		if err := step(); err != nil {
@@ -34,6 +34,7 @@ func (w *wiring) areas() error {
 	w.views()
 	w.spaArea()
 	w.dashboards()
+	w.widgetData()
 	w.usesOfPeople()
 	w.usesInSettings()
 	return nil
@@ -69,7 +70,8 @@ func (w *wiring) plansArea() error {
 		return err
 	}
 	mount(w.signedIn, plan.NewHandler(w.plans))
-	w.history.UseAccess(historyAccess{plans: w.set.Plans, history: w.history, purchaseRequests: w.set.PurchaseRequests})
+	w.history.UseAccess(historyAccess{plans: w.set.Plans, history: w.history, purchaseRequests: w.set.PurchaseRequests,
+		dashboards: w.set.CustomDashboards, datasets: w.set.Datasets})
 	return nil
 }
 
