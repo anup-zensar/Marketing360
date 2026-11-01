@@ -10,7 +10,7 @@ envelope; every operation answers 401 when signed out and 403 `forbidden` when t
 |---|---|---|
 | `GET /api/v1/reports` | `need(authz.ReportsView)` | 200 `ReportCatalogue` |
 | `GET /api/v1/reports/frame` | `need(authz.ReportsView)` | 200 `ReportFrame`; 400 problems for a malformed filter; 404 unknown `report` |
-| `GET /api/v1/reports/{report}/export` | `need(authz.DataExport)` | 200 file (`.xlsx` or `.csv`); 400 `format=csv` without `widget`, unknown `widget`; 404 unknown report. A report not built yet exports its **In view** and **About this export** sheets only |
+| `GET /api/v1/reports/{report}/export` | `need(authz.DataExport)` | 200 file (`.xlsx` or `.csv`); 400 `format=csv` without `widget`, unknown `widget`; 404 unknown report. A report not built yet exports its **In view** and **About this export** sheets only. A report that implements `measure.Described` adds its own parameters in words ("Search: planner") right after **Filters** |
 | `GET /api/v1/reports/{report}/views` | `need(authz.ReportsView)` | 200 `ReportViewPage` (the person's views of the report) |
 | `POST /api/v1/reports/{report}/views` | `need(authz.ReportsView)` | 201 `ReportView`; 400 problems (name, query) |
 | `PATCH /api/v1/reports/{report}/views/{viewId}` | `need(authz.ReportsView)` | 200 `ReportView`; 400 problems; 404 another person's or missing view; 409 `version_conflict` for a stale `version` |

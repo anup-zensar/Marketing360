@@ -3,6 +3,7 @@ package measure
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"slices"
 
 	"mapp/internal/platform/actor"
@@ -17,10 +18,15 @@ type Report interface {
 	Sheets(ctx context.Context, a actor.Actor, f Filter) ([]WidgetSheet, error)
 }
 
-// Parameterised reports have address parameters of their own (a tab, a sort) that saved views keep.
-type Parameterised interface {
-	Params() []string
-}
+// A report may have address parameters of its own (a tab, a sort) that views keep and the export says in words.
+type (
+	Parameterised interface {
+		Params() []string
+	}
+	Described interface {
+		Describe(ctx context.Context, a actor.Actor, own url.Values) ([][2]string, error)
+	}
+)
 
 type entry struct {
 	key, path, name, purpose string

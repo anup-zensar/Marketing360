@@ -32,10 +32,20 @@ func (r sheetsReport) Sheets(context.Context, actor.Actor, measure.Filter) ([]me
 	}, nil
 }
 
-func exportService(t *testing.T) *measure.Service {
+type describedReport struct{ sheetsReport }
+
+func (describedReport) Describe(_ context.Context, _ actor.Actor, own url.Values) ([][2]string, error) {
+	return [][2]string{{"Search", own.Get("q")}, {"Status", "Active"}}, nil
+}
+
+// exportService serves Plan details as report, or as sheetsReport when none is given.
+func exportService(t *testing.T, report ...measure.Report) *measure.Service {
 	t.Helper()
+	if len(report) == 0 {
+		report = []measure.Report{sheetsReport{key: measure.KeyPlanDetails}}
+	}
 	registry := measure.NewRegistry()
-	if err := registry.Register(sheetsReport{key: measure.KeyPlanDetails}); err != nil {
+	if err := registry.Register(report[0]); err != nil {
 		t.Fatal(err)
 	}
 	return measure.NewService(history.Tools{Tx: fakeTx{}, Now: func() time.Time { return time.Date(2026, 10, 18, 14, 5, 0, 0, time.UTC) }}, measure.Deps{Planning: fakePlanning{nodes: frameNodes()}, Plans: fakePlans{"P-1"},
@@ -122,5 +132,31 @@ func TestExport_StubReport_FR022(t *testing.T) {
 	tables, err := sheet.ReadXLSX(file.Body, 50)
 	if err != nil || len(tables) != 2 || tables[0].Name != "In view" {
 		t.Errorf("sheets = %+v, %v; want In view and About this export", tables, err)
+	}
+}
+
+func TestExport_ReportSaysItsOwnParameters_FR022(t *testing.T) {
+	t.Parallel()
+	service := exportService(t, describedReport{sheetsReport{key: measure.KeyPlanDetails}})
+	f, err := measure.ParseFilter(url.Values{"q": {"planner"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	file, err := service.Export(t.Context(), actor.Actor{ID: "U-2", Name: "Priya Raman"}, measure.KeyPlanDetails,
+		measure.ExportRequest{Filter: f})
+	if err != nil {
+		t.Fatal(err)
+	}
+	tables, err := sheet.ReadXLSX(file.Body, 50)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var lines []string
+	for _, row := range tables[len(tables)-1].Rows[:5] {
+		lines = append(lines, row.Cells[0]+": "+row.Cells[1])
+	}
+	want := []string{"Report: Plan details", "Year: 2026", "Filters: None", "Search: planner", "Status: Active"}
+	if diff := cmp.Diff(want, lines); diff != "" {
+		t.Errorf("About this export, first lines (-want +got):\n%s", diff)
 	}
 }
