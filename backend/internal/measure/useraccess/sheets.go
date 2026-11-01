@@ -1,7 +1,9 @@
 package useraccess
 
 import (
+	"cmp"
 	"context"
+	"net/url"
 	"strings"
 
 	"mapp/internal/measure"
@@ -99,4 +101,44 @@ func signedIn(r Row) sheet.Cell {
 		return sheet.Cell{}
 	}
 	return sheet.DateTime(*r.LastSignedInAt)
+}
+
+// Describe says the report's own filters in About this export, after Filters (US2-2): search, teams and status.
+func (s *Service) Describe(ctx context.Context, a actor.Actor, own url.Values) ([][2]string, error) {
+	q, err := ParseQuery(own)
+	if err != nil {
+		return nil, err
+	}
+	var lines [][2]string
+	if q.Search != "" {
+		lines = append(lines, [2]string{"Search", q.Search})
+	}
+	if len(q.Teams) > 0 {
+		names, readErr := s.teamNames(ctx, a, q.Teams)
+		if readErr != nil {
+			return nil, readErr
+		}
+		lines = append(lines, [2]string{"Team", strings.Join(names, ", ")})
+	}
+	status := map[string]string{StatusActive: "Active", StatusInactive: "Inactive", StatusAll: "All"}[q.Status]
+	return append(lines, [2]string{"Status", status}), nil
+}
+
+// teamNames names the chosen teams as people's teams show them; a team no one is in keeps its ID.
+func (s *Service) teamNames(ctx context.Context, a actor.Actor, ids []string) ([]string, error) {
+	known := map[string]string{}
+	err := s.tx.Read(ctx, func(ctx context.Context) error {
+		people, readErr := s.people.PeopleAccess(ctx, a)
+		for _, p := range people {
+			for _, t := range p.Teams {
+				known[t.ID] = t.Name
+			}
+		}
+		return readErr
+	})
+	names := make([]string, 0, len(ids))
+	for _, id := range ids {
+		names = append(names, cmp.Or(known[id], id))
+	}
+	return names, err
 }

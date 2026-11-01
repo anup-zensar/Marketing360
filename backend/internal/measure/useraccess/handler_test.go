@@ -109,3 +109,17 @@ func TestSignIn_ShowsInReport_SC002(t *testing.T) {
 		t.Errorf("signed in: Priya %v, Alex %v, Mei %v; want Priya and Alex only", at(priya), at(alex), at(mei))
 	}
 }
+
+// TestExport_SaysOwnFilters_US2: About this export names the search, team and status, after Filters.
+func TestExport_SaysOwnFilters_US2(t *testing.T) {
+	t.Parallel()
+	alexSees := apitest.New(t).SignIn(t, alex)
+
+	r := get(t, alexSees, "/api/v1/reports/user-access/export?format=csv&widget=people&q=priya&status=all", http.StatusOK)
+
+	for _, line := range []string{"Search,priya", "Status,All"} {
+		if !strings.Contains(string(r.Body), line) {
+			t.Errorf("export notes lack %q:\n%s", line, r.Body)
+		}
+	}
+}
