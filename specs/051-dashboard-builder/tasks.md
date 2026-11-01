@@ -350,29 +350,29 @@ Pages (each F0 stub exports a component with no props): `DashboardBuilderPage` (
 
 ## Phase 4: Lane B2 — `internal/dataset` (US3, US4)
 
-- [ ] T024 [P] [B2] [US3] Migration and queries of data model §8 (00029) — `migrations/00029_datasets.sql`,
+- [x] T024 [P] [B2] [US3] Migration and queries of data model §8 (00029) — `migrations/00029_datasets.sql`,
   `queries/datasets.sql`; rows inserted with `pgx.CopyFrom`
-- [ ] T025 [B2] [US3] Tests first then `read.go` (base64 → `sheet.ReadCSV` / `sheet.ReadXLSX` first table,
+- [x] T025 [B2] [US3] Tests first then `read.go` (base64 → `sheet.ReadCSV` / `sheet.ReadXLSX` first table,
   `maxRows` 10,001, header row, 50 columns, 5 MB, cells ≤ 500, empty or duplicate names) —
   `TestPreview_FormatsAndLimits_FR041_FR043` (CSV comma/semicolon/tab, BOM, .xlsx dates and formulas, non-UTF-8,
   too large, too many rows and columns, no header)
-- [ ] T026 [B2] [US3] Tests first then `infer.go` and `cells.go` (data model §7: kinds proposed from the first 200
+- [x] T026 [B2] [US3] Tests first then `infer.go` and `cells.go` (data model §7: kinds proposed from the first 200
   cells, money by column name; parse numbers with separators, dates in three formats and Excel cells, money to minor
   units) — `TestInferKinds_FR041`, `TestParseCells_EveryKind_FR042` (fast-check round trips)
-- [ ] T027 [B2] [US3] `model.go`, `store.go` (`ListVisible`, `GetVisible`, `Rows`, `RowsPage`, `Insert` with columns
+- [x] T027 [B2] [US3] `model.go`, `store.go` (`ListVisible`, `GetVisible`, `Rows`, `RowsPage`, `Insert` with columns
   and rows, `Update`, `UpdateLabels`, `Delete`, `ReplaceShares`, `CountOfOwner`, `OwnerOf`), `store_postgres.go`,
   fakes (`store_fake_test.go`, `datasettest/store.go`), `stores/datasets.go`; wire in `stores/postgres.go`, `storestest`
-- [ ] T028 [B2] [US4] `TestPostgresStoreVisibleDatasets_ScopeIsolation_FR044` (owner, shared member, other; list,
+- [x] T028 [B2] [US4] `TestPostgresStoreVisibleDatasets_ScopeIsolation_FR044` (owner, shared member, other; list,
   get, rows) — `store_postgres_test.go`
-- [ ] T029 [B2] [US3] Tests first then `service.go`, `service_upload.go` (`Preview`, `Create`: every cell problem at
+- [x] T029 [B2] [US3] Tests first then `service.go`, `service_upload.go` (`Preview`, `Create`: every cell problem at
   once, 50 per person, name unique, active currency), `service_share.go` (`Share`, owner only), `Update` (labels
   only, types fixed), `Delete` — `TestCreate_CellProblemsAllAtOnce_FR042`, `TestCreate_LimitsPerPerson_FR043`,
   `TestUpdate_ColumnKindsNeverChange_FR044`, `TestShare_OwnTeamsOnly_FR046`, `TestDelete_ToRecycleBin_FR045`
-- [ ] T030 [B2] [US3] `tables.go`: `Visible` and `Table` satisfying `widgetdata.DatasetTables` (404 as `errs.NotFound`)
+- [x] T030 [B2] [US3] `tables.go`: `Visible` and `Table` satisfying `widgetdata.DatasetTables` (404 as `errs.NotFound`)
   — `TestTables_VisibleOnlyAndTyped_FR044`
-- [ ] T031 [B2] [US3] `kinds.go` (kind `dataset`, snapshot with columns, shares, rows); `handler.go` (body limit 7
+- [x] T031 [B2] [US3] `kinds.go` (kind `dataset`, snapshot with columns, shares, rows); `handler.go` (body limit 7
   MB on preview and create) and contract tests for the 8 operations — `handler_test.go`
-- [ ] T032 [B2] [US3] Wiring `datasetsArea`; seed DS-1001 "Event leads 2026" by Priya Raman (12 rows: Event,
+- [x] T032 [B2] [US3] Wiring `datasetsArea`; seed DS-1001 "Event leads 2026" by Priya Raman (12 rows: Event,
   Date, Leads, Agency cost EUR), not shared — `internal/app/datasets.go`, `seed/datasets.go` (+ test); fixtures
   `frontend/e2e/fixtures/event-leads.xlsx` and `.csv`
 
