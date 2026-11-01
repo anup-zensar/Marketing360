@@ -80,6 +80,17 @@ describe('RankedList (040 US2, US3)', () => {
     ]).toEqual(['budget', 'owner', null, '2026']);
   });
 
+  it('reaches page 10, whose number is also the default page size (FR-014)', async () => {
+    const { user, router } = renderList(
+      planBudgetRanked({ total: 120 }),
+      '/reports/plan-budget?page=9',
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Next' }));
+
+    expect(search(router).get('page')).toBe('10');
+  });
+
   it('opens a child as the new top with a trail, and Back goes up one level (FR-010)', async () => {
     const drilled = planBudgetRanked({
       trail: [
