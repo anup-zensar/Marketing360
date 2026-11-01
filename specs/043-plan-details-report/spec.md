@@ -221,6 +221,8 @@ as Excel and compare each with its table view.
 - **Goal entered**: an activity has a goal when its INQ goal is above zero, or, with "Set later stages
   myself", any stage goal is above zero (domain model §4.5).
 - **Is integrated**: not shown by 043; 046 adds it in wave B (043-C4).
+- **Activity directly under its campaign**: it has no initiative, so the Initiative level does not count it;
+  All work's Breakdown by an initiative attribute puts it under Not filled in (SC-002 allows for it).
 
 ## Requirements *(mandatory)*
 

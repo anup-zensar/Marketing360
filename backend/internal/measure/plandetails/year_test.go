@@ -33,9 +33,34 @@ func (y *year) plan(id string, units ...string) *year {
 	return y
 }
 
-func (y *year) campaign(id, parentID string) *year {
-	y.nodes = append(y.nodes, allwork.Node{Level: allwork.LevelCampaign, ID: id, ParentID: parentID,
-		PlanID: y.planOf(parentID), Status: "noActivities", PlanYear: testYearNumber})
+func (y *year) campaign(id, parentID string, changes ...func(*allwork.Node)) *year {
+	return y.container(allwork.LevelCampaign, id, parentID, changes)
+}
+
+func (y *year) initiative(id, parentID string, changes ...func(*allwork.Node)) *year {
+	return y.container(allwork.LevelInitiative, id, parentID, changes)
+}
+
+func (y *year) container(level allwork.Level, id, parentID string, changes []func(*allwork.Node)) *year {
+	n := allwork.Node{Level: level, ID: id, ParentID: parentID, PlanID: y.planOf(parentID), Status: "noActivities",
+		PlanYear: testYearNumber}
+	for _, change := range changes {
+		change(&n)
+	}
+	y.nodes = append(y.nodes, n)
+	return y
+}
+
+// on applies the changes to the node id already added: a plan's status or attributes.
+func (y *year) on(id string, changes ...func(*allwork.Node)) *year {
+	for i := range y.nodes {
+		if y.nodes[i].ID != id {
+			continue
+		}
+		for _, change := range changes {
+			change(&y.nodes[i])
+		}
+	}
 	return y
 }
 

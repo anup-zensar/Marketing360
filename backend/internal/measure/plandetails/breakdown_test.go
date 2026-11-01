@@ -16,6 +16,7 @@ import (
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/fake"
 	"mapp/internal/platform/ids"
+	"mapp/internal/platform/money"
 )
 
 // yearSource is an allwork.Source over one in-memory year, so All work's own Breakdown can be compared.
@@ -65,9 +66,12 @@ func breakdownYear(t *testing.T) (*year, []allwork.Attribute) {
 		attribute("SA-4", "Channel / audience", allwork.TypeMultipleChoice, "EXT", "INT"),
 		launch,
 		attribute("SA-6", "Agency involved", allwork.TypeYesNo),
+		atLevel(attribute("SA-10", "Plan focus", allwork.TypeSingleChoice, "B2B"), allwork.LevelPlan),
+		cluster(),
+		atLevel(attribute("SA-12", "Theme", allwork.TypeMultipleChoice, "T1", "T2"), allwork.LevelInitiative),
 	}
-	y := newYear(t).plan("P-1", "BU-LUB").campaign("C-1", "P-1").
-		plan("P-2", "BU-MOB").campaign("C-2", "P-2")
+	y := newYear(t).plan("P-1", "BU-LUB").on("P-1", choice("SA-10", "B2B")).campaign("C-1", "P-1", choice("SA-11", "EU")).
+		initiative("I-1", "C-1", choice("SA-12", "T1", "T2")).plan("P-2", "BU-MOB").campaign("C-2", "P-2")
 	splits := []map[string]string{{"DE": "33.33", "FR": "33.33", "IT": "33.34"}, {"DE": "70.00", "FR": "30.00"},
 		{"FR": "100.00", "IT": "0.00"}}
 	for i := range 30 {
@@ -81,7 +85,7 @@ func breakdownYear(t *testing.T) (*year, []allwork.Attribute) {
 		if i%3 != 0 {
 			changes = append(changes, yesNo("SA-6", i%2 == 0))
 		}
-		y.activity(fmt.Sprintf("A-%d", i+1), []string{"C-1", "C-2"}[i%2], fmt.Sprintf("%d.%02d", 100+i*37, i*7%100),
+		y.activity(fmt.Sprintf("A-%d", i+1), []string{"C-1", "C-2", "I-1"}[i%3], fmt.Sprintf("%d.%02d", 100+i*37, i*7%100),
 			changes...)
 	}
 	return y, attributes
@@ -95,9 +99,8 @@ func TestAttribution_EqualsAllWorkBreakdown_SC002(t *testing.T) {
 		return time.Date(testYearNumber, time.October, 18, 14, 5, 0, 0, time.UTC)
 	}}
 	allWork := allwork.NewService(tools, allworktest.NewStore(db), yearSource{nodes: y.nodes, attributes: attributes})
-	rows := newView(y.matching(), LevelActivity, measure.PeriodMonth).rows(attributes)
 
-	for i, a := range attributes {
+	for _, a := range attributes {
 		t.Run(a.Label, func(t *testing.T) {
 			t.Parallel()
 			br, err := allWork.Breakdown(t.Context(), actor.Actor{ID: "U-1002"},
@@ -109,11 +112,35 @@ func TestAttribution_EqualsAllWorkBreakdown_SC002(t *testing.T) {
 			for _, g := range br.Groups {
 				want[g.Key] = g.PlannedCost.Amount.String()
 			}
-			if diff := cmp.Diff(want, plannedCosts(t, rows[i].Widgets[1])); diff != "" {
+			rows := newView(y.matching(), Level(a.Level), measure.PeriodMonth).rows([]allwork.Attribute{a})
+			got := plannedCosts(t, rows[0].Widgets[1])
+			// An activity without a record of the level (an activity right under its campaign has no initiative) is
+			// on no tab of that level; the Breakdown counts it as Not filled in.
+			if outside := outsideLevel(y.nodes, a.Level); !outside.IsZero() {
+				if text, found := got["notFilledIn"]; found {
+					outside = outside.Add(*amount(t, text))
+				}
+				got["notFilledIn"] = outside.String()
+			}
+			if diff := cmp.Diff(want, got); diff != "" {
 				t.Errorf("planned cost by value against All work's Breakdown (-want +got):\n%s", diff)
 			}
 		})
 	}
+}
+
+func outsideLevel(nodes []allwork.Node, level allwork.Level) money.Amount {
+	byID := map[string]*allwork.Node{}
+	for i := range nodes {
+		byID[nodes[i].ID] = &nodes[i]
+	}
+	var outside money.Amount
+	for i := range nodes {
+		if nodes[i].Level == allwork.LevelActivity && ancestorAt(byID, &nodes[i], level) == nil {
+			outside = outside.Add(plannedCostOf(&nodes[i]))
+		}
+	}
+	return outside
 }
 
 // plannedCosts returns the widget's amount per value with Not filled in and Does not apply joined under

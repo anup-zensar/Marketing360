@@ -16,7 +16,13 @@ func (v view) builtIn() []Widget {
 	if len(v.records) == 0 {
 		return []Widget{}
 	}
-	if v.level == LevelActivity {
+	switch v.level {
+	case LevelPlan:
+		return []Widget{v.wordsWidget("statusCount", "status", planStatusWords(), statusOf)}
+	case LevelCampaign, LevelInitiative:
+		return []Widget{v.wordsWidget("progressCount", "approval progress", progressWords(), statusOf),
+			v.wordsWidget("timingCount", "timing", timingWords(), timingOf)}
+	case LevelActivity:
 		return v.activityBuiltIn()
 	}
 	return []Widget{}
@@ -33,7 +39,7 @@ func (v view) activityBuiltIn() []Widget {
 		typePart := v.typePart(a.ActivityTypeID)
 		typePart.amount = amount
 		types.add(a.ID, []part{typePart}, amount)
-		statuses.add(a.ID, []part{statusPart(a.Status)}, money.Amount{})
+		statuses.add(a.ID, []part{wordPart(a.Status, activityStatusWords())}, money.Amount{})
 		starts.add(a.ID, []part{v.startPart(a.StartDate)}, money.Amount{})
 		entered.add(a.ID, []part{yesNoPart(amount.Sign() > 0)}, money.Amount{})
 		goals.add(a.ID, []part{yesNoPart(hasGoal(a))}, money.Amount{})
@@ -72,17 +78,6 @@ func (v view) typePart(typeID string) part {
 	return p
 }
 
-// statusPart is an activity's display status in the words and lifecycle order of domain model §2.3.
-func statusPart(status string) part {
-	words := []struct{ key, label string }{{"created", "Created"}, {"submitted", "Submitted"}, {"declined", "Declined"},
-		{"approved", "Approved"}, {"inProgress", "In progress"}, {"complete", "Complete"}}
-	p := part{key: status, label: status, order: len(words), counted: true, linkable: true}
-	if i := slices.IndexFunc(words, func(w struct{ key, label string }) bool { return w.key == status }); i >= 0 {
-		p.label, p.order = words[i].label, i
-	}
-	return p
-}
-
 // periods are the months or quarters of the plan year, in order (039 FR-016).
 func (v view) periods() []part {
 	count := 12
@@ -109,7 +104,7 @@ func (v view) periodPart(n int) part {
 func (v view) startPart(start *date.Date) part {
 	switch {
 	case start == nil:
-		return part{key: KeyNoDates, label: "No dates", order: orderNoDates, counted: true}
+		return part{key: KeyNoDates, label: labelNoDates, order: orderNoDates, counted: true}
 	case start.Year() != v.year:
 		return part{key: KeyOutsideYear, label: fmt.Sprintf("Outside %d", v.year), order: orderOutside, counted: true}
 	case v.period == measure.PeriodQuarter:

@@ -115,11 +115,11 @@ work).
 **Goal**: the same layout for the other three levels. **Independent test**: spec US2; Campaign by Cluster equals
 All work's Breakdown by Cluster.
 
-- [ ] T022 [P] [US2] Tests: `TestBuiltIn_Containers_FR007` (plan status; approval progress and timing),
+- [X] T022 [P] [US2] Tests: `TestBuiltIn_Containers_FR007` (plan status; approval progress and timing),
   `TestRows_OtherLevels_FR008`, `TestCards_PlannedCostFromMatchingActivities_FR005`, extend T010 to every level
   (`TestAttribution_EqualsAllWorkBreakdown_SC002` for plan, campaign and initiative attributes), US2 scenario 7
   (one of two plans in scope)
-- [ ] T023 [US2] `level.go`, `builtin.go`, `profile.go`: records of the plan, campaign and initiative levels; a
+- [X] T023 [US2] `level.go`, `builtin.go`, `profile.go`: records of the plan, campaign and initiative levels; a
   container's planned cost is its matching activities' (domain model §4.2), attributed per activity through the
   container's value
 - [ ] T024 [US2] **⏸ 039 T029–T030** web: the level through 039's `ShowControl` (address `show`), "No <level>
