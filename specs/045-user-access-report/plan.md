@@ -139,7 +139,9 @@ lay them out, wired through 039's stubs; auth changed only where it starts a ses
 | 2,000 people within SC-001 | — | `BenchmarkUserAccess_SC001` (R5) |
 | US1 end to end on the demo data, axe | e2e | `measure-user-access.spec.ts` |
 
-Benchmark result: _recorded here after implementation_.
+Benchmark result (2026-11-01, `BenchmarkUserAccess_SC001`, a 14-thread Windows developer machine, 2,000 people, 200
+teams, 4,000 role assignments through fakes): first page 3.5 ms, a search 1.8 ms, sorted by last sign-in 1.4 ms; all far
+under the 100 ms of research R5.
 
 ## Dependencies and hand-offs
 

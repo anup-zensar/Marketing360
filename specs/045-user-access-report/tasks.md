@@ -70,8 +70,8 @@ each story.
 
 ## Phase 5: Polish
 
-- [ ] T019 `BenchmarkUserAccess_SC001` (2,000 people, 200 teams, 4,000 assignments; research R5); result in plan.md
-- [ ] T020 Comment budget and file length of every file of this feature; lint and format
+- [X] T019 `BenchmarkUserAccess_SC001` (2,000 people, 200 teams, 4,000 assignments; research R5); result in plan.md
+- [X] T020 Comment budget and file length of every file of this feature; lint and format
 - [ ] T021 `/speckit-converge`; spec status Built; pull request into `measure-module` with the feature-map status
 
 ## Dependencies

@@ -5,7 +5,6 @@ export function rolesText(row: UserAccessRow): string[] {
   return row.roles.map((a) => `${a.role.name} (${a.scope.text})`);
 }
 
-/** Teams, alphabetical as the API sends them, an inactive one marked. */
 export function teamsText(row: UserAccessRow): string {
   return row.teams.map((t) => (t.active ? t.name : `${t.name} (inactive)`)).join(', ');
 }
