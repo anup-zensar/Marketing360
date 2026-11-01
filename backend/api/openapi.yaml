@@ -115,6 +115,11 @@ tags:
     description: "Delegation of approval authority for a date range (feature 017)"
   - name: Dashboards
     description: "Executive and regional planning dashboards and the export of plans and dashboards to PowerPoint and PDF (feature 036)"
+  - name: Performance data
+    description: >-
+      Settings › Performance data: the data sources behind every performance figure and the column
+      mappings that say what each column of their files means (feature 046)
+
   - name: Reports
     description: "The Reports area of the Measure module: the catalogue, the report frame, saved report views and the export (features 039–050)"
 paths:
@@ -7749,6 +7754,622 @@ paths:
           $ref: "#/components/responses/NotFound"
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/performance/sources:
+    get:
+      tags: [Performance data]
+      operationId: listPerformanceSources
+      summary: Settings › Performance data — the data sources, with their derived freshness (046 FR-001, FR-005)
+      responses:
+        "200":
+          description: Every data source, by name.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceSourceList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        default: { $ref: "#/components/responses/Error" }
+    post:
+      tags: [Performance data]
+      operationId: createPerformanceSource
+      summary: Add a data source (needs performance.import) (046 FR-001)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PerformanceSourceInput" }
+      responses:
+        "201":
+          description: The source as created, active and never loaded.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceSource" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    get:
+      tags: [Performance data]
+      operationId: getPerformanceSource
+      summary: One data source with its freshness (046 FR-005)
+      responses:
+        "200":
+          description: The source.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceSource" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+    patch:
+      tags: [Performance data]
+      operationId: updatePerformanceSource
+      summary: Change a data source (needs performance.import) (046 FR-001, FR-045)
+      description: Version-checked — a save against a version someone has moved past is refused.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PerformanceSourceInput" }
+      responses:
+        "200":
+          description: The source as saved.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceSource" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [Performance data]
+      operationId: deletePerformanceSource
+      summary: Delete a data source, only while it holds no performance data (needs performance.import) (046 FR-002)
+      description: >-
+        A source that holds facts is refused with 409 in_use and Deactivate offered instead, because deleting
+        it would silently restate every figure its data fed.
+      responses:
+        "204": { description: "Deleted, to the recycle bin." }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}/deactivate:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    post:
+      tags: [Performance data]
+      operationId: deactivatePerformanceSource
+      summary: Stop a data source accepting data, keeping everything it has loaded (046 FR-004)
+      responses:
+        "200":
+          description: The source, now inactive; every activity that depended only on it stops counting as integrated.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceSource" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}/reactivate:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    post:
+      tags: [Performance data]
+      operationId: reactivatePerformanceSource
+      summary: Let a deactivated data source accept data again (046 FR-004)
+      responses:
+        "200":
+          description: The source, active again.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceSource" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}/mappings:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    get:
+      tags: [Performance data]
+      operationId: listColumnMappings
+      summary: The column mappings of a data source (046 FR-006)
+      responses:
+        "200":
+          description: Its mappings, by column name.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ColumnMappingList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+    post:
+      tags: [Performance data]
+      operationId: createColumnMapping
+      summary: Say what one column of this source's file means (needs performance.import) (046 FR-003, FR-006)
+      description: >-
+        Within a model, each stage and revenue is supplied by at most one active source; a second is refused
+        with 409, naming the source that already supplies it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ColumnMappingInput" }
+      responses:
+        "201":
+          description: The mapping as created; it affects future loads only.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ColumnMapping" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}/template:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    get:
+      tags: [Performance data]
+      operationId: downloadPerformanceTemplate
+      summary: A blank file carrying exactly the columns this source's mappings define (046 FR-008)
+      responses:
+        "200":
+          description: The template.
+          content:
+            text/csv:
+              schema: { type: string }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/mappings/{mappingId}:
+    parameters:
+      - $ref: "#/components/parameters/MappingId"
+    patch:
+      tags: [Performance data]
+      operationId: updateColumnMapping
+      summary: Change a column mapping (needs performance.import) (046 FR-006, FR-007)
+      description: A change affects future loads only and never restates a completed load.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ColumnMappingInput" }
+      responses:
+        "200":
+          description: The mapping as saved.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ColumnMapping" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [Performance data]
+      operationId: deleteColumnMapping
+      summary: Remove a column mapping (needs performance.import) (046 FR-006)
+      responses:
+        "204": { description: "Removed; loads already completed are unchanged." }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}/uploads:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    post:
+      tags: [Performance data]
+      operationId: uploadPerformanceFile
+      summary: Upload a CSV of performance rows for this source (needs performance.import) (046 FR-009)
+      description: |
+        The whole file lands or none of it does. A file carrying a personal-data column is refused in
+        full, naming the columns, and nothing from it is stored (FR-012).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PerformanceUpload" }
+      responses:
+        "201":
+          description: The completed load with its reconciling summary (FR-022).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceImport" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}/pull:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    post:
+      tags: [Performance data]
+      operationId: pullPerformanceFeed
+      summary: Pull the simulated feed once, by explicit action (needs performance.import) (046 FR-010, 046-C13)
+      responses:
+        "201":
+          description: The completed load; its rows took the same path as an uploaded file (ADR-0020).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceImport" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/imports:
+    get:
+      tags: [Performance data]
+      operationId: listPerformanceImports
+      summary: The uploads, newest first, findable by file, uploader, source, status and date (needs performance.import) (046 FR-016)
+      parameters:
+        - name: sourceId
+          in: query
+          required: false
+          schema: { type: string, pattern: "^PS-[0-9]+$" }
+        - name: search
+          in: query
+          required: false
+          description: Matches the file name and the uploader's name.
+          schema: { type: string, maxLength: 200 }
+        - name: status
+          in: query
+          required: false
+          schema: { type: string, enum: [completed, failed, undone] }
+        - name: since
+          in: query
+          required: false
+          schema: { type: string, format: date }
+        - name: until
+          in: query
+          required: false
+          description: Inclusive; the range covers this whole day.
+          schema: { type: string, format: date }
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 500 }
+      responses:
+        "200":
+          description: The uploads with their summaries.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceImportList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/imports/{importId}:
+    parameters:
+      - $ref: "#/components/parameters/ImportId"
+    get:
+      tags: [Performance data]
+      operationId: getPerformanceImport
+      summary: One upload with its summary and the counts per measure (needs performance.import) (046 FR-022, 046-C18)
+      responses:
+        "200":
+          description: The upload. An upload is never editable; undo is the only way back (FR-016).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceImport" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/imports/{importId}/undo:
+    parameters:
+      - $ref: "#/components/parameters/ImportId"
+    post:
+      tags: [Performance data]
+      operationId: undoPerformanceImport
+      summary: Undo a whole upload (needs performance.import and settings.manage) (046 FR-017, 046-C16)
+      description: Replaced versions return and the upload stays listed as undone.
+      responses:
+        "200":
+          description: The upload, undone.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceImport" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/performance/sources:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: getActivityDataSources
+      summary: The activity's Data sources area (046 FR-031)
+      responses:
+        "200":
+          description: External name and aliases, media-code count, the two flags, and each source's key and totals.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataSourcesArea" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/external-name-aliases:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: listExternalNameAliases
+      summary: The superseded names kept for matching (046 FR-034)
+      responses:
+        "200":
+          description: The aliases, by name.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ExternalNameAliasList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/external-name-aliases/{aliasId}:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+      - name: aliasId
+        in: path
+        required: true
+        schema: { type: string, pattern: "^ENA-[0-9]+$" }
+    delete:
+      tags: [Performance data]
+      operationId: deleteExternalNameAlias
+      summary: Remove an alias; the old name then stops matching (needs performance.link) (046 FR-034)
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/integration-ids:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: listIntegrationIds
+      summary: The outside systems' own ids for this activity, one per source (046 FR-037)
+      responses:
+        "200":
+          description: The integration ids, by source.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IntegrationIdList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/integration-ids/{sourceId}:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+      - $ref: "#/components/parameters/SourceId"
+    put:
+      tags: [Performance data]
+      operationId: setIntegrationId
+      summary: Register the source's own id for this activity (needs performance.link) (046 FR-037)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/IntegrationIdInput" }
+      responses:
+        "201":
+          description: The key as registered.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IntegrationId" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [Performance data]
+      operationId: deleteIntegrationId
+      summary: Remove the source's key; its rows then stop matching this activity (needs performance.link) (046 FR-037)
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/review-rows:
+    get:
+      tags: [Performance data]
+      operationId: listReviewRows
+      summary: The rows to review, findable by key, source, reason, upload, date and status; none can be created by hand (046 FR-023)
+      parameters:
+        - { name: status, in: query, required: false, schema: { type: string, enum: [open, resolved, dismissed] } }
+        - { name: sourceId, in: query, required: false, schema: { type: string, pattern: "^PS-[0-9]+$" } }
+        - { name: importId, in: query, required: false, schema: { type: string, pattern: "^PIM-[0-9]+$" } }
+        - { name: reason, in: query, required: false, schema: { type: string, maxLength: 200 } }
+        - { name: key, in: query, required: false, schema: { type: string, maxLength: 200 } }
+        - { name: since, in: query, required: false, schema: { type: string, format: date } }
+        - { name: until, in: query, required: false, schema: { type: string, format: date },
+            description: "Inclusive; the range covers this whole day." }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 500 } }
+      responses:
+        "200":
+          description: The rows, newest first; each row's candidates are filtered to the reader's scope (046-C15).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReviewRowList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/review-rows/{rowId}:
+    parameters:
+      - $ref: "#/components/parameters/ReviewRowId"
+    get:
+      tags: [Performance data]
+      operationId: getReviewRow
+      summary: One row with its content, every fault and its history of actions (046 FR-024)
+      responses:
+        "200":
+          description: The row.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReviewRow" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/review-rows/{rowId}/dismiss:
+    parameters:
+      - $ref: "#/components/parameters/ReviewRowId"
+    post:
+      tags: [Performance data]
+      operationId: dismissReviewRow
+      summary: Set a row aside with the required comment (046 FR-024)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DismissInput" }
+      responses:
+        "200":
+          description: The row, dismissed.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReviewRow" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/review-rows/{rowId}/reopen:
+    parameters:
+      - $ref: "#/components/parameters/ReviewRowId"
+    post:
+      tags: [Performance data]
+      operationId: reopenReviewRow
+      summary: Return a dismissed row to the queue (046 FR-024)
+      responses:
+        "200":
+          description: The row, open again.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReviewRow" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/review-rows/{rowId}/correct:
+    parameters:
+      - $ref: "#/components/parameters/ReviewRowId"
+    post:
+      tags: [Performance data]
+      operationId: correctReviewRow
+      summary: Fix the row's load-time cells and re-check it at once (046 FR-024, FR-007)
+      description: The reference may not change - a new identity is a new upload's to create (FR-013).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CorrectInput" }
+      responses:
+        "200":
+          description: The row after its re-check - resolved on a match, or open with its new verdict.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReviewRow" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}/recheck:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    post:
+      tags: [Performance data]
+      operationId: recheckSource
+      summary: Re-check the source's open rows and held facts on demand (046 FR-025)
+      responses:
+        "200":
+          description: What the re-check resolved, by outcome.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceCounts" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/performance/facts:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: listActivityFacts
+      summary: The activity's facts - date, source, stage or metric, value, currency, key matched on, upload (046 FR-030)
+      parameters:
+        - { name: search, in: query, required: false, schema: { type: string, maxLength: 100 } }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 500 } }
+      responses:
+        "200":
+          description: The facts, newest first; replaced versions are left out.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceFactList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/performance/facts/export:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: exportActivityFacts
+      summary: The same list as a CSV file (needs data.export) (046 FR-030, D-367)
+      parameters:
+        - { name: search, in: query, required: false, schema: { type: string, maxLength: 100 } }
+      responses:
+        "200":
+          description: The file; its name is in Content-Disposition.
+          headers:
+            Content-Disposition:
+              schema: { type: string }
+          content:
+            text/csv:
+              schema: { type: string }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/performance:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: getActivityPerformance
+      summary: The activity's performance panel, gated until it counts as approved (046 FR-027, FR-029)
+      description: |
+        Projected figures are feature 047's and the revenue model's name is feature 050's; both arrive as
+        backward-compatible additions. Every empty figure states its reason (FR-032), never a sample value.
+      responses:
+        "200":
+          description: The panel, or state notApproved with no figures.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformancePanel" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
   # Feature 039 Measure foundation: the Reports area, the report frame, saved report views and the export
   /api/v1/reports:
     get:
@@ -8088,6 +8709,128 @@ paths:
           $ref: "#/components/responses/Forbidden"
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/activities/{activityId}/media-codes:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: listMediaCodes
+      summary: The activity's media codes; present only where its type requires them (046 FR-040)
+      responses:
+        "200":
+          description: The codes, and whether the type requires them at all.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaCodeArea" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+    post:
+      tags: [Performance data]
+      operationId: generateMediaCode
+      summary: Generate a code at any activity status (needs performance.link) (046 FR-041, FR-042)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MediaCodeInput" }
+      responses:
+        "201":
+          description: The code, system-numbered and never reused.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaCode" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/media-codes/{codeId}:
+    parameters:
+      - $ref: "#/components/parameters/MediaCodeId"
+    patch:
+      tags: [Performance data]
+      operationId: editMediaCode
+      summary: Change a code's attributes and landing page only (needs performance.link) (046 FR-041)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MediaCodeInput" }
+      responses:
+        "200":
+          description: The code as saved.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaCode" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [Performance data]
+      operationId: deleteMediaCode
+      summary: Delete a code while unused; once facts matched through it, Deactivate is offered (046 FR-041)
+      responses:
+        "204": { description: Deleted to the recycle bin. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/media-codes/{codeId}/deactivate:
+    parameters:
+      - $ref: "#/components/parameters/MediaCodeId"
+    post:
+      tags: [Performance data]
+      operationId: deactivateMediaCode
+      summary: Stop a code matching; its history stays (needs performance.link) (046 FR-041)
+      responses:
+        "200":
+          description: The code, inactive.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaCode" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/configuration:
+    get:
+      tags: [Performance data]
+      operationId: getPerformanceConfiguration
+      summary: Which activity types require codes, the attribute catalogue and the next number (046 FR-039, 046-C12)
+      responses:
+        "200":
+          description: The configuration; its defaults before the first save.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceConfiguration" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        default: { $ref: "#/components/responses/Error" }
+    patch:
+      tags: [Performance data]
+      operationId: savePerformanceConfiguration
+      summary: Change the configuration (needs performance.import) (046 FR-039, FR-042)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PerformanceConfigurationInput" }
+      responses:
+        "200":
+          description: The configuration as saved.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceConfiguration" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
 components:
   securitySchemes:
     sessionCookie:
@@ -8096,6 +8839,31 @@ components:
       name: mapp_session
       description: HttpOnly session cookie set by sign-in.
   parameters:
+    # Feature 046 Performance data
+    SourceId:
+      name: sourceId
+      in: path
+      required: true
+      description: A data source's readable ID, such as PS-1001.
+      schema: { type: string, pattern: "^PS-[0-9]+$" }
+    MediaCodeId:
+      name: codeId
+      in: path
+      required: true
+      description: A media code's readable ID, such as MC-1001.
+      schema: { type: string, pattern: "^MC-[0-9]+$" }
+    ReviewRowId:
+      name: rowId
+      in: path
+      required: true
+      description: A review row's readable ID, such as PRV-1001.
+      schema: { type: string, pattern: "^PRV-[0-9]+$" }
+    MappingId:
+      name: mappingId
+      in: path
+      required: true
+      description: A column mapping's readable ID, such as PSM-1001.
+      schema: { type: string, pattern: "^PSM-[0-9]+$" }
     # Feature 039 Measure foundation
     ReportKey:
       name: report
@@ -9154,6 +9922,501 @@ components:
           schema:
             $ref: "#/components/schemas/Error"
   schemas:
+    # Feature 046 Performance data
+    PerformanceCategory:
+      type: string
+      description: The kind of system a data source is, which decides what it can supply (FA §E7.2).
+      enum: [webAnalytics, marketingAutomation, crm, leadProgression]
+    PerformanceDeliveryRoute:
+      type: string
+      description: How rows arrive — a file someone uploads, or a pull from the simulated feed (ADR-0020).
+      enum: [upload, simulated]
+    PerformanceCadence:
+      type: string
+      description: How often the source is expected to deliver; it decides when freshness reads Stale.
+      enum: [daily, weekly, monthly, onDemand]
+    PerformanceFreshness:
+      type: string
+      description: >-
+        Derived from the last load and the cadence, never stored. Inactive when the source is deactivated,
+        Stale when nothing has loaded within one extra cadence period, Failed when the last load failed.
+      enum: [current, stale, failed, inactive]
+    ColumnMeaning:
+      type: string
+      description: What one column of a source's file means (client 020 FR-006).
+      enum: [key, reference, factDate, stage, revenue, currency, webMetric, journey]
+    WebMetric:
+      type: string
+      description: The web-analytics vocabulary — counts by month, never money (clarification 046-C11).
+      enum: [sessions, visits, engagementTouches]
+    PerformanceSource:
+      type: object
+      description: Where performance data comes from (Settings › Performance data).
+      required: [id, name, description, ownerId, category, status, deliveryRoute, cadence, integrationId,
+                 freshness, factCount, version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        ownerId: { type: string }
+        category: { $ref: "#/components/schemas/PerformanceCategory" }
+        status: { type: string, enum: [active, inactive] }
+        deliveryRoute: { $ref: "#/components/schemas/PerformanceDeliveryRoute" }
+        cadence: { $ref: "#/components/schemas/PerformanceCadence" }
+        integrationId: { type: string, description: "The source's own identifier, empty when it has none." }
+        freshness: { $ref: "#/components/schemas/PerformanceFreshness" }
+        lastLoadedAt:
+          type: [string, "null"]
+          format: date-time
+          description: Null when nothing has ever loaded, which is every newly created source.
+        dataThrough:
+          type: [string, "null"]
+          format: date
+          description: The date the source's data runs through; null until something loads.
+        factCount: { type: integer, description: "How many facts this source holds; it may not be deleted while above zero." }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    PerformanceSourceInput:
+      type: object
+      required: [name, ownerId, category, deliveryRoute, cadence]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        description: { type: string, maxLength: 2000 }
+        ownerId: { type: string }
+        category: { $ref: "#/components/schemas/PerformanceCategory" }
+        deliveryRoute: { $ref: "#/components/schemas/PerformanceDeliveryRoute" }
+        cadence: { $ref: "#/components/schemas/PerformanceCadence" }
+        integrationId: { type: string, maxLength: 200 }
+        version:
+          type: integer
+          description: The version the editor read; a save against an older one is refused (409 version_conflict).
+    PerformanceSourceList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/PerformanceSource" }
+    PerformanceUpload:
+      type: object
+      additionalProperties: false
+      required: [fileName, content]
+      properties:
+        fileName:
+          type: string
+          minLength: 1
+          maxLength: 260
+          example: eloqua_2026-10.csv
+        content:
+          type: string
+          contentEncoding: base64
+          description: The file, base64 (at most 2 MB before encoding).
+    PerformanceCounts:
+      type: object
+      description: The five outcomes of a load; they add up to rows read (046-C3).
+      required: [read, matched, held, unattributed, rejected, unmatched]
+      properties:
+        read: { type: integer }
+        matched: { type: integer }
+        held: { type: integer }
+        unattributed: { type: integer }
+        rejected: { type: integer }
+        unmatched: { type: integer }
+    PerformanceBreakdownGroup:
+      type: object
+      description: The five counts again for one measure; a row carrying two measures counts in both (046-C18).
+      required: [stage, webMetric, counts]
+      properties:
+        stage: { type: string }
+        webMetric: { type: string }
+        counts: { $ref: "#/components/schemas/PerformanceCounts" }
+    PerformanceImport:
+      type: object
+      description: One load of performance data. Never editable; undo is the only way back (FR-016).
+      required: [id, sourceId, fileName, origin, status, dataThrough, counts, breakdown, version,
+                 createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        sourceId: { type: string }
+        fileName: { type: string }
+        origin: { type: string, enum: [upload, simulated] }
+        status: { type: string, enum: [completed, failed, undone] }
+        dataThrough:
+          type: [string, "null"]
+          format: date
+        counts: { $ref: "#/components/schemas/PerformanceCounts" }
+        breakdown:
+          type: array
+          items: { $ref: "#/components/schemas/PerformanceBreakdownGroup" }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    PerformanceImportList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/PerformanceImport" }
+    ExternalNameAlias:
+      type: object
+      description: A superseded external name, kept so the outside world's old exports still match (FR-034).
+      required: [id, activityId, name, version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        activityId: { type: string }
+        name: { type: string }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    ExternalNameAliasList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/ExternalNameAlias" }
+    IntegrationId:
+      type: object
+      description: One outside system's own id for an activity; at most one per source (FR-037).
+      required: [id, activityId, sourceId, value, version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        activityId: { type: string }
+        sourceId: { type: string }
+        value: { type: string }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    IntegrationIdList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/IntegrationId" }
+    IntegrationIdInput:
+      type: object
+      additionalProperties: false
+      required: [value]
+      properties:
+        value: { type: string, minLength: 1, maxLength: 120 }
+    SourceOfFacts:
+      type: object
+      required: [sourceId, sourceName, integrationId, factCount, lastFactDate]
+      properties:
+        sourceId: { type: string }
+        sourceName: { type: string }
+        integrationId: { type: string, description: "Empty when the source has no key for this activity." }
+        factCount: { type: integer }
+        lastFactDate: { type: string, description: "Empty until the source has delivered a fact." }
+    DataSourcesArea:
+      type: object
+      description: The activity's Performance - Data sources section (FR-031).
+      required: [externalName, aliases, mediaCodeCount, integrated, goalEntered, sources]
+      properties:
+        externalName: { type: string }
+        aliases:
+          type: array
+          items: { $ref: "#/components/schemas/ExternalNameAlias" }
+        mediaCodeCount: { type: integer }
+        integrated: { type: boolean }
+        goalEntered: { type: boolean }
+        sources:
+          type: array
+          items: { $ref: "#/components/schemas/SourceOfFacts" }
+    ReviewFault:
+      type: object
+      required: [column, code, message]
+      properties:
+        column: { type: string }
+        code: { type: string }
+        message: { type: string }
+    ReviewRow:
+      type: object
+      description: One row a person must fix; never created by hand (FR-023).
+      required: [id, importId, sourceId, sourceName, raw, reason, faults, candidates, status, comment,
+                 version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        importId: { type: string }
+        sourceId: { type: string }
+        sourceName: { type: string }
+        raw:
+          type: object
+          additionalProperties: { type: string }
+          description: The row exactly as the file carried it.
+        reason: { type: string, description: "The headline the queue is findable by (FR-023)." }
+        faults:
+          type: array
+          items: { $ref: "#/components/schemas/ReviewFault" }
+        candidates:
+          type: array
+          items: { type: string }
+          description: The activities named when keys disagree, filtered to the reader's scope (046-C15).
+        status: { type: string, enum: [open, resolved, dismissed] }
+        comment: { type: string }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    ReviewRowList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/ReviewRow" }
+    DismissInput:
+      type: object
+      additionalProperties: false
+      required: [comment]
+      properties:
+        comment: { type: string, minLength: 1, maxLength: 500 }
+    CorrectInput:
+      type: object
+      additionalProperties: false
+      properties:
+        date: { type: [string, "null"] }
+        currency: { type: [string, "null"] }
+        keys:
+          type: [object, "null"]
+          additionalProperties: false
+          properties:
+            activityId: { type: string }
+            mediaCode: { type: string }
+            integrationId: { type: string }
+            externalName: { type: string }
+        values:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [column, value]
+            properties:
+              column: { type: string }
+              value: { type: string }
+    PerformanceFact:
+      type: object
+      description: One figure a source delivered, matched to this activity (FR-030).
+      required: [id, sourceId, sourceName, importId, sourceReference, factDate, stage, webMetric,
+                 count, amount, held, matchedOn, version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        sourceId: { type: string }
+        sourceName: { type: string }
+        importId: { type: string, description: "The originating upload." }
+        sourceReference: { type: string }
+        factDate: { type: string, format: date }
+        stage: { type: string }
+        webMetric: { type: string }
+        count: { type: [integer, "null"] }
+        amount:
+          oneOf:
+            - { $ref: "#/components/schemas/Money" }
+            - { type: "null" }
+        held: { type: boolean }
+        matchedOn: { type: string, enum: ["", activityId, mediaCode, integrationId, externalName] }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    PerformanceFactList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/PerformanceFact" }
+    StageFigure:
+      type: object
+      required: [stage, goal, actual, conversion, reason]
+      properties:
+        stage: { type: string, enum: [inq, mql] }
+        goal: { type: [integer, "null"] }
+        actual: { type: [integer, "null"] }
+        conversion:
+          type: [number, "null"]
+          description: Actual over the previous stage's actual, one decimal; null where it cannot be worked out.
+        reason: { type: string, enum: ["", noSource, noGoal, failed, stale, noData] }
+    RevenueFigure:
+      type: object
+      required: [goal, actual, excludedCount, reason]
+      properties:
+        goal:
+          oneOf:
+            - { $ref: "#/components/schemas/Money" }
+            - { type: "null" }
+        actual:
+          oneOf:
+            - { $ref: "#/components/schemas/Money" }
+            - { type: "null" }
+          description: One USD total at the current rate (046-C7).
+        excludedCount: { type: integer, description: "Facts left out because their currency has no rate (SC-010)." }
+        reason: { type: string, enum: ["", notApproved, noSource, noGoal, failed, stale, noData] }
+    MetricFigure:
+      type: object
+      required: [metric, months]
+      properties:
+        metric: { type: string, enum: [sessions, visits, engagementTouches] }
+        months:
+          type: array
+          items:
+            type: object
+            required: [month, value]
+            properties:
+              month: { type: string, example: "2026-02" }
+              value: { type: integer }
+    PanelSource:
+      type: object
+      required: [sourceId, sourceName, freshness, dataThrough]
+      properties:
+        sourceId: { type: string }
+        sourceName: { type: string }
+        freshness: { $ref: "#/components/schemas/PerformanceFreshness" }
+        dataThrough: { type: [string, "null"], format: date }
+    PerformancePanel:
+      type: object
+      description: The activity's Performance area (FR-029); gated until the activity counts as approved.
+      required: [state, stages, revenue, webMetrics, sources]
+      properties:
+        state: { type: string, enum: [ok, notApproved] }
+        stages:
+          type: array
+          items: { $ref: "#/components/schemas/StageFigure" }
+        revenue: { $ref: "#/components/schemas/RevenueFigure" }
+        webMetrics:
+          type: array
+          items: { $ref: "#/components/schemas/MetricFigure" }
+        sources:
+          type: array
+          items: { $ref: "#/components/schemas/PanelSource" }
+    CodeAttribute:
+      type: object
+      required: [name, required]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        required: { type: boolean }
+    MediaCode:
+      type: object
+      description: A system-generated campaign-link code; its number is never reused (FR-042).
+      required: [id, code, activityId, attributes, landingPage, status,
+                 version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        code: { type: integer, format: int64 }
+        activityId: { type: string }
+        attributes:
+          type: object
+          additionalProperties: { type: string }
+        landingPage: { type: string }
+        status: { type: string, enum: [active, inactive] }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    MediaCodeArea:
+      type: object
+      required: [requiresCodes, items]
+      properties:
+        requiresCodes:
+          type: boolean
+          description: Stated by the API (FR-040); the web app hides the section when false.
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/MediaCode" }
+    MediaCodeInput:
+      type: object
+      additionalProperties: false
+      properties:
+        attributes:
+          type: object
+          additionalProperties: { type: string }
+        landingPage: { type: string, maxLength: 2000 }
+        version: { type: integer }
+    PerformanceConfiguration:
+      type: object
+      description: Settings - Performance data's one record (046-C12), never on the activity type.
+      required: [activityTypeIds, codeAttributes, mediaCodeNext, version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        activityTypeIds:
+          type: array
+          items: { type: string }
+        codeAttributes:
+          type: array
+          items: { $ref: "#/components/schemas/CodeAttribute" }
+        mediaCodeNext: { type: integer, format: int64 }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    PerformanceConfigurationInput:
+      type: object
+      additionalProperties: false
+      required: [activityTypeIds, codeAttributes, mediaCodeNext, version]
+      properties:
+        activityTypeIds:
+          type: array
+          items: { type: string }
+        codeAttributes:
+          type: array
+          items: { $ref: "#/components/schemas/CodeAttribute" }
+        mediaCodeNext: { type: integer, format: int64, minimum: 1 }
+        version: { type: integer }
+    MatchKeyType:
+      type: string
+      description: Which matching key a key column carries (046-C23); empty on every other column.
+      enum: ["", activityId, mediaCode, integrationId, externalName]
+    ColumnMapping:
+      type: object
+      description: What one column of a source's file means. A change affects future loads only.
+      required: [id, sourceId, columnName, meaning, keyType, stage, webMetric, modelId, version,
+                 createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        sourceId: { type: string }
+        columnName: { type: string }
+        meaning: { $ref: "#/components/schemas/ColumnMeaning" }
+        keyType: { $ref: "#/components/schemas/MatchKeyType" }
+        stage: { type: string, description: "Set only on a stage column." }
+        webMetric: { type: string, description: "Set only on a web-metric column." }
+        modelId: { type: string, description: "Set only on a stage or revenue column, which a model supplies." }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    ColumnMappingInput:
+      type: object
+      required: [columnName, meaning]
+      properties:
+        columnName: { type: string, minLength: 1, maxLength: 120 }
+        meaning: { $ref: "#/components/schemas/ColumnMeaning" }
+        keyType: { $ref: "#/components/schemas/MatchKeyType" }
+        stage: { type: string }
+        webMetric: { $ref: "#/components/schemas/WebMetric" }
+        modelId: { type: string }
+        version: { type: integer }
+    ColumnMappingList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/ColumnMapping" }
     # Feature 039 Measure foundation
     ReportKey:
       type: string
@@ -20882,6 +22145,8 @@ components:
         - finance.view
         - finance.link
         - finance.import
+        - performance.import
+        - performance.link
         - purchaseRequests.edit
         - purchaseRequests.delete
         - purchaseRequests.submit

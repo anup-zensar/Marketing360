@@ -22,6 +22,8 @@ const (
 	FinanceView             Permission = "finance.view"
 	FinanceLink             Permission = "finance.link"
 	FinanceImport           Permission = "finance.import"
+	PerformanceImport       Permission = "performance.import"
+	PerformanceLink         Permission = "performance.link"
 	PurchaseRequestsEdit    Permission = "purchaseRequests.edit"
 	PurchaseRequestsDelete  Permission = "purchaseRequests.delete"
 	PurchaseRequestsSubmit  Permission = "purchaseRequests.submit"
@@ -77,6 +79,8 @@ var catalogue = []PermissionInfo{
 	{FinanceView, GroupFinance, "See financial data", "Seeing financial data", true},
 	{FinanceLink, GroupFinance, "Link financial transactions to line items", "Linking financial transactions", true},
 	{FinanceImport, GroupFinance, "Import GSAP extracts", "Importing GSAP extracts", false},
+	{PerformanceImport, GroupFinance, "Upload or pull performance data and manage its sources", "Loading performance data", false},
+	{PerformanceLink, GroupFinance, "Match performance rows to activities and manage their keys", "Matching performance rows", true},
 	{PurchaseRequestsEdit, GroupPurchaseRequests, "Raise and edit purchase requests", "Raising and changing purchase requests", true},
 	{PurchaseRequestsDelete, GroupPurchaseRequests, "Delete purchase requests", "Deleting purchase requests", true},
 	{PurchaseRequestsSubmit, GroupPurchaseRequests, "Submit purchase requests for approval and recall them", "Submitting purchase requests", true},

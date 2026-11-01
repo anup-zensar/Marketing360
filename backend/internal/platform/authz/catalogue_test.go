@@ -38,8 +38,8 @@ func TestCatalogue(t *testing.T) {
 			t.Errorf("groups (-want +got):\n%s", diff)
 		}
 		all := authz.All()
-		if all[14] != authz.FinanceImport || all[15] != authz.PurchaseRequestsEdit {
-			t.Errorf("the purchase-request permissions follow finance.import: %v", all[13:17])
+		if all[14] != authz.FinanceImport || all[17] != authz.PurchaseRequestsEdit {
+			t.Errorf("the purchase-request permissions follow the financial ones, 046's included: %v", all[13:19])
 		}
 	})
 	t.Run("039 FR-002 reports.view is scoped, in group Plans and planning, right after data.export", func(t *testing.T) {

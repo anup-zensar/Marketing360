@@ -31,7 +31,7 @@ func TestSeed_RolesAssignmentsAndRules_FR040(t *testing.T) {
 		}
 	}
 	wantRoles := []role{
-		{"RL-1001", "Administrator", authz.BuiltInAdministrator, 30, authz.ScopeAll},
+		{"RL-1001", "Administrator", authz.BuiltInAdministrator, 32, authz.ScopeAll},
 		{"RL-1002", "Global planner", authz.BuiltInGlobalPlanner, 20, authz.ScopeAll},
 		{"RL-1003", "Planner", authz.BuiltInPlanner, 15, authz.ScopeMyTeams},
 		{"RL-1004", "Approver", authz.BuiltInApprover, 5, authz.ScopeMyTeams},

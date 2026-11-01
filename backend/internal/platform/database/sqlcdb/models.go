@@ -52,6 +52,33 @@ type Activity struct {
 	UpdatedByName        string
 }
 
+type ActivityExternalNameAlias struct {
+	ID            string
+	ActivityID    string
+	Name          string
+	Version       int
+	CreatedAt     time.Time
+	CreatedByID   string
+	CreatedByName string
+	UpdatedAt     time.Time
+	UpdatedByID   string
+	UpdatedByName string
+}
+
+type ActivityIntegrationID struct {
+	ID            string
+	ActivityID    string
+	SourceID      string
+	Value         string
+	Version       int
+	CreatedAt     time.Time
+	CreatedByID   string
+	CreatedByName string
+	UpdatedAt     time.Time
+	UpdatedByID   string
+	UpdatedByName string
+}
+
 type ActivityLog struct {
 	ID              string
 	Seq             int
@@ -475,6 +502,22 @@ type LineItemSpreadMonth struct {
 	AmountMinor int64
 }
 
+type MediaCode struct {
+	ID            string
+	Code          int64
+	ActivityID    string
+	Attributes    []byte
+	LandingPage   string
+	Status        string
+	Version       int
+	CreatedAt     time.Time
+	CreatedByID   string
+	CreatedByName string
+	UpdatedAt     time.Time
+	UpdatedByID   string
+	UpdatedByName string
+}
+
 type Model struct {
 	ID                      string
 	Name                    string
@@ -525,6 +568,139 @@ type OverspendConfiguration struct {
 	UpdatedByID             string
 	UpdatedByName           string
 	ApprovalOverPlannedCost string
+}
+
+type PerformanceCodeActivityType struct {
+	ActivityTypeID string
+}
+
+type PerformanceConfiguration struct {
+	ID             string
+	MediaCodeNext  int64
+	CodeAttributes []byte
+	Version        int
+	CreatedAt      time.Time
+	CreatedByID    string
+	CreatedByName  string
+	UpdatedAt      time.Time
+	UpdatedByID    string
+	UpdatedByName  string
+}
+
+type PerformanceFact struct {
+	ID              string
+	SourceID        string
+	ImportID        string
+	SourceReference string
+	ActivityID      *string
+	MatchedOn       string
+	MatchedKey      string
+	FactDate        time.Time
+	Stage           string
+	WebMetric       string
+	CountValue      *int64
+	AmountMinor     *int64
+	Currency        *string
+	Held            bool
+	ReplacedByID    *string
+	Version         int
+	CreatedAt       time.Time
+	CreatedByID     string
+	CreatedByName   string
+	UpdatedAt       time.Time
+	UpdatedByID     string
+	UpdatedByName   string
+}
+
+type PerformanceImport struct {
+	ID               string
+	SourceID         string
+	FileName         string
+	Origin           string
+	Status           string
+	DataThrough      *time.Time
+	RowsRead         int
+	RowsMatched      int
+	RowsHeld         int
+	RowsUnattributed int
+	RowsRejected     int
+	RowsUnmatched    int
+	Version          int
+	CreatedAt        time.Time
+	CreatedByID      string
+	CreatedByName    string
+	UpdatedAt        time.Time
+	UpdatedByID      string
+	UpdatedByName    string
+}
+
+type PerformanceImportBreakdown struct {
+	ImportID         string
+	Stage            string
+	WebMetric        string
+	RowsRead         int
+	RowsMatched      int
+	RowsHeld         int
+	RowsUnattributed int
+	RowsRejected     int
+	RowsUnmatched    int
+}
+
+type PerformanceReviewRow struct {
+	ID            string
+	ImportID      string
+	SourceID      string
+	Raw           []byte
+	Parsed        []byte
+	Reason        string
+	Faults        []byte
+	Candidates    []byte
+	Status        string
+	Comment       string
+	Version       int
+	CreatedAt     time.Time
+	CreatedByID   string
+	CreatedByName string
+	UpdatedAt     time.Time
+	UpdatedByID   string
+	UpdatedByName string
+}
+
+type PerformanceSource struct {
+	ID            string
+	Name          string
+	Description   string
+	OwnerID       string
+	Category      string
+	Status        string
+	DeliveryRoute string
+	Cadence       string
+	IntegrationID string
+	Version       int
+	CreatedAt     time.Time
+	CreatedByID   string
+	CreatedByName string
+	UpdatedAt     time.Time
+	UpdatedByID   string
+	UpdatedByName string
+}
+
+type PerformanceSourceMapping struct {
+	ID            string
+	SourceID      string
+	ColumnName    string
+	Meaning       string
+	KeyType       string
+	Stage         string
+	WebMetric     string
+	ModelID       *string
+	Version       int
+	CreatedAt     time.Time
+	CreatedByID   string
+	CreatedByName string
+	UpdatedAt     time.Time
+	UpdatedByID   string
+	UpdatedByName string
 }
 
 type Person struct {

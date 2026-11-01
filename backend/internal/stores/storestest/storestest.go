@@ -4,6 +4,10 @@ package storestest
 
 import (
 	"context"
+	"strings"
+
+	"mapp/internal/performance"
+	"mapp/internal/performance/performancetest"
 
 	"mapp/internal/access/accesstest"
 	"mapp/internal/activity/activitytest"
@@ -20,6 +24,7 @@ import (
 	"mapp/internal/overspend/overspendtest"
 	"mapp/internal/people/peopletest"
 	"mapp/internal/plan/plantest"
+	"mapp/internal/platform/authz"
 	"mapp/internal/platform/fake"
 	"mapp/internal/purchaserequest/purchaserequesttest"
 	"mapp/internal/sample/sampletest"
@@ -59,6 +64,42 @@ func planning(db *fake.DB) stores.Planning {
 func finance(db *fake.DB) stores.Finance {
 	return stores.Finance{
 		Budgets: budgettest.NewStore(db), Financials: financialstest.NewStore(db), SwbsRuns: swbstest.NewStore(db),
+		Performance:      performanceStore(db),
 		PurchaseRequests: purchaserequesttest.NewStore(db),
 	}
+}
+
+// performanceStore answers 046's scoped activity read from the shared activity fake, as the SQL does
+// through activity_in_scope().
+func performanceStore(db *fake.DB) *performancetest.Store {
+	store := performancetest.NewStore(db)
+	activities := activitytest.NewStore(db)
+	store.ActivityLookup = func(ctx context.Context, scope authz.Scope, id string) (performance.KeyFacts, bool, error) {
+		found, err := activities.ListInScopeOf(ctx, scope, []string{id})
+		if err != nil || len(found) == 0 {
+			return performance.KeyFacts{}, false, err
+		}
+		a := found[0]
+		return performance.KeyFacts{ExternalName: a.ExternalName,
+			GoalEntered: a.MQL != nil || a.Revenue != nil}, true, nil
+	}
+	store.ResolveActivityIDs = func(ctx context.Context, scope authz.Scope, keys []string) (map[string][]string, error) {
+		all, err := activities.ListInScope(ctx, scope)
+		if err != nil {
+			return nil, err
+		}
+		wanted := map[string]bool{}
+		for _, key := range keys {
+			wanted[key] = true
+		}
+		found := map[string][]string{}
+		for _, a := range all {
+			lowered := strings.ToLower(a.ID)
+			if wanted[lowered] {
+				found[lowered] = append(found[lowered], a.ID)
+			}
+		}
+		return found, nil
+	}
+	return store
 }

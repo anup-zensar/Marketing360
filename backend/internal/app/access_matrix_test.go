@@ -73,8 +73,8 @@ func TestAccessMatrix_EveryOperationRefusesWhomItsRuleExcludes_SC001(t *testing.
 			var want string
 			switch {
 			case (rule.Kind == access.Need || rule.Kind == access.InPlan) && !slices.Contains(held, rule.Permission):
-				info, _ := authz.Lookup(string(rule.Permission))
-				want = info.Noun + " isn't part of " + roles + ". Ask an administrator if you need it."
+				noun := permissionNoun(rule.Permission)
+				want = noun + " isn't part of " + roles + ". Ask an administrator if you need it."
 			case person.name == "Mei" && planning && (rule.Kind == access.View || rule.Kind == access.InPlan):
 				want = ""
 			default:
@@ -102,4 +102,13 @@ func TestAccessMatrix_EveryOperationRefusesWhomItsRuleExcludes_SC001(t *testing.
 			t.Errorf("%s: %d operations checked, want at least %d", name, checked[name], least)
 		}
 	}
+}
+
+// permissionNoun falls back to the key exactly as authz does for a permission an area declares itself
+// rather than in Table A, which features 003 and 014 assert the exact shape of.
+func permissionNoun(p authz.Permission) string {
+	if info, found := authz.Lookup(string(p)); found {
+		return info.Noun
+	}
+	return string(p)
 }
