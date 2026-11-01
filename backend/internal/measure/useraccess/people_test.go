@@ -25,15 +25,21 @@ func newOffice() *office {
 		team("T-1009", "Archive", false)
 	return &office{
 		people: []Person{
-			person("U-1002", "Priya Raman", "Marketing planner", true, []authz.TeamRef{europe, archive}, role("Planner", "My teams")),
-			person("U-1001", "Alex Morgan", "Platform administrator", true, nil, role("Administrator", "All markets")),
-			person("U-1004", "Mei Lin", "Planner", true, []authz.TeamRef{china}),
-			person("U-1005", "Carlos Mendes", "Finance lead", true, []authz.TeamRef{china}, role("Finance", "All markets")),
-			person("U-1003", "Daniel Okoro", "Approver", false, []authz.TeamRef{europe}, role("Viewer", "My teams")),
+			person(ref("U-1002", "Priya Raman", "Marketing planner"), []authz.TeamRef{europe, archive},
+				role("Planner", "My teams")),
+			person(ref("U-1001", "Alex Morgan", "Platform administrator"), nil, role("Administrator", "All markets")),
+			person(ref("U-1004", "Mei Lin", "Planner"), []authz.TeamRef{china}),
+			person(ref("U-1005", "Carlos Mendes", "Finance lead"), []authz.TeamRef{china}, role("Finance", "All markets")),
+			person(authz.PersonRef{ID: "U-1003", Name: "Daniel Okoro", JobTitle: "Approver"}, []authz.TeamRef{europe},
+				role("Viewer", "My teams")),
 		},
 		last: map[string]time.Time{"U-1002": now.AddDate(0, 0, -2), "U-1001": now.AddDate(0, 0, -45),
 			"U-1005": now.AddDate(0, 0, -30), "U-1003": now.AddDate(0, 0, -120)},
 	}
+}
+
+func ref(id, name, job string) authz.PersonRef {
+	return authz.PersonRef{ID: id, Name: name, JobTitle: job, Active: true}
 }
 
 func team(id, name string, active bool) authz.TeamRef {
@@ -44,10 +50,10 @@ func role(name, scope string) authz.RoleAssignment {
 	return authz.RoleAssignment{Role: authz.RoleRef{Name: name}, Scope: authz.AccessScope{Text: scope}}
 }
 
-func person(id, name, job string, active bool, teams []authz.TeamRef, roles ...authz.RoleAssignment) Person {
+func person(ref authz.PersonRef, teams []authz.TeamRef, roles ...authz.RoleAssignment) Person {
 	email := map[string]string{"U-1001": "alex.morgan@shell.com", "U-1002": "priya.raman@shell.com",
-		"U-1003": "daniel.okoro@shell.com", "U-1004": "mei.lin@shell.com", "U-1005": "carlos.mendes@shell.com"}[id]
-	return Person{Ref: authz.PersonRef{ID: id, Name: name, JobTitle: job, Active: active}, Email: email,
+		"U-1003": "daniel.okoro@shell.com", "U-1004": "mei.lin@shell.com", "U-1005": "carlos.mendes@shell.com"}[ref.ID]
+	return Person{Ref: ref, Email: email,
 		Roles: append([]authz.RoleAssignment{}, roles...), Teams: append([]authz.TeamRef{}, teams...)}
 }
 

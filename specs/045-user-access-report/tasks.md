@@ -36,15 +36,15 @@ each story.
 
 ## Phase 3: User Story 1 — The report with last sign-in (P1) 🎯 MVP
 
-- [ ] T006 [P] [US1] `backend/internal/measure/useraccess/query_test.go`: `TestQuery_Allowlist_FR006` (q length,
+- [X] T006 [P] [US1] `backend/internal/measure/useraccess/query_test.go`: `TestQuery_Allowlist_FR006` (q length,
   team IDs, status, sort keys, page, page size 5 – 500)
-- [ ] T007 [P] [US1] `rows_test.go`: `TestRows_NoRole_FR005`, `TestRows_InactiveTeamMarked_FR005`,
+- [X] T007 [P] [US1] `rows_test.go`: `TestRows_NoRole_FR005`, `TestRows_InactiveTeamMarked_FR005`,
   `TestFilter_SearchTeamStatus_FR006`, `TestSort_NeverLast_FR006`, `TestPage_FR006`
-- [ ] T008 [P] [US1] `bands_test.go`: `TestBands_Boundaries_FR007` (30, 31, 90, 91 days, never), `TestCards_FR007`
-- [ ] T009 [US1] `model.go`, `ports.go`, `query.go`, `rows.go`, `bands.go`, `service.go`: the rules of T006 – T008,
+- [X] T008 [P] [US1] `bands_test.go`: `TestBands_Boundaries_FR007` (30, 31, 90, 91 days, never), `TestCards_FR007`
+- [X] T009 [US1] `model.go`, `ports.go`, `query.go`, `rows.go`, `bands.go`, `service.go`: the rules of T006 – T008,
   one row builder for screen and export
-- [ ] T010 [US1] `handler.go`: `GET /api/v1/reports/user-access`; `routes_test.go` (`TestRoutes_ReadOnly_FR004`)
-- [ ] T011 [US1] `backend/internal/app/measure_useraccess.go`: adapters over `access.Service.ListPeopleAccess`, the
+- [X] T010 [US1] `handler.go`: `GET /api/v1/reports/user-access`; `routes_test.go` (`TestRoutes_ReadOnly_FR004`)
+- [X] T011 [US1] `backend/internal/app/measure_useraccess.go`: adapters over `access.Service.ListPeopleAccess`, the
   people store and auth's sign-in reads; register and mount; remove 045's line from `notYetServed`; contract tests in
   `useraccess/handler_test.go`: `TestUserAccess_Contract`, `TestUserAccess_NeedsAccessManage_FR002`,
   `TestRows_EqualPeopleTab_SC003`, `TestSignIn_ShowsInReport_SC002`

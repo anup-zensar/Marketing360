@@ -8,14 +8,12 @@ import (
 	"mapp/internal/platform/date"
 )
 
-// The Status filter (FR-006).
 const (
 	StatusActive   = "active"
 	StatusInactive = "inactive"
 	StatusAll      = "all"
 )
 
-// The bands of the Last sign-in widget (FR-007).
 const (
 	BandWithin30Days = "within30Days"
 	BandDays31to90   = "days31to90"
