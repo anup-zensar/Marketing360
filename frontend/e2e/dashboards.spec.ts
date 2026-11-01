@@ -22,6 +22,8 @@ test('036 US1: the Executive dashboard adds up every market a person may see, an
   await signInAs(page, CARLOS);
   await page.goto('/');
   await page.getByRole('link', { name: 'Dashboards' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Dashboards' })).toBeVisible();
+  await page.getByRole('link', { name: 'Executive dashboard' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Executive dashboard' })).toBeVisible();
   await page.getByLabel('Year', { exact: true }).selectOption(String(SEED_YEAR));
   await expect(page).toHaveURL(/year=2026/);
