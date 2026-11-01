@@ -39,3 +39,16 @@ unchanged; `noGoal` is the reason when nothing projects (FR-013).
 
 No projection endpoint for reports: 048–050 call `internal/projection` in Go. No report routes (047-C11).
 No new permission keys (FR-023).
+
+## Cross-feature notes for the integrator
+
+1. **Enforcing the allowed goal stages at goal entry** (FA §E7.5.1, FR-005, 047-C3) belongs to the Plan
+   module's goal screens (features 004 and 006), not here. 047 stores the configuration, serves it on the
+   model, and warns before a narrowing save strands an existing goal; refusing a *new* goal at a stage the
+   plan's model does not allow is a one-line check on those forms, against `model.allowedGoalStages`.
+   Nothing in 047 rewrites or invalidates a goal already set.
+2. **The three new `Model` fields are additive and defaulted** (`inqToMqlVelocityMonths`,
+   `mqlToDealVelocityMonths`, `allowedGoalStages`), so every existing client keeps working; migration 00033
+   backfills zero lag and all three stages, which is exactly what those models meant before.
+3. **The panel's `projected` fields and `projection` stamp** fill what 046's contract reserved. 048–050
+   read the engine in Go (`internal/projection`), not over HTTP: there is no projection endpoint.
