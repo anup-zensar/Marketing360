@@ -2,8 +2,7 @@ package seed
 
 import "context"
 
-// addMeasure adds the Measure demo data (issue #48, lane D) after the demo story: it only creates records and never
-// changes an existing demo record (D-354), so every report has something to show.
+// addMeasure adds the Measure demo data (#48) after the demo story: new records only, never a change (D-354).
 func (d *demo) addMeasure(context.Context) error {
 	return nil
 }
