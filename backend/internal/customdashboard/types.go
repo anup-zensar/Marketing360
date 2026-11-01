@@ -95,9 +95,9 @@ func displayOptions() map[string][]string {
 		"zoom":          {typeBar, typeLine, typeArea, typeCombo, typeScatter},
 		"referenceLine": {typeBar, typeLine, typeArea, typeCombo},
 		"measureStyles": {typeCombo},
-		"gauge":         {typeGauge},
-		"kpi":           {typeKpi},
-		"table":         {typeTable},
+		typeGauge:       {typeGauge},
+		typeKpi:         {typeKpi},
+		typeTable:       {typeTable},
 	}
 }
 

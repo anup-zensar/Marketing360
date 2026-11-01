@@ -39,18 +39,22 @@ func checkFilters(f Filters, p *errs.Problems) {
 	if f.DateFrom != nil && f.DateTo != nil && f.DateFrom.After(*f.DateTo) {
 		p.Add("filters.dateTo", msgDateRange)
 	}
-	checkIDs("filters.planIds", f.PlanIDs, planIDPattern, [2]string{msgTooManyPlans, msgUnknownPlan}, p)
-	checkIDs("filters.teamIds", f.TeamIDs, teamIDPattern, [2]string{msgTooManyTeams, msgUnknownTeam}, p)
+	checkIDs("filters.planIds", f.PlanIDs, idRule{pattern: planIDPattern, tooMany: msgTooManyPlans, unknown: msgUnknownPlan}, p)
+	checkIDs("filters.teamIds", f.TeamIDs, idRule{pattern: teamIDPattern, tooMany: msgTooManyTeams, unknown: msgUnknownTeam}, p)
 }
 
-// checkIDs refuses more than 20 ids (messages[0]) or an id that is not one (messages[1]).
-func checkIDs(field string, ids []string, pattern *regexp.Regexp, messages [2]string, p *errs.Problems) {
-	if len(ids) > maxFilterIDs {
-		p.Add(field, messages[0])
+type idRule struct {
+	pattern          *regexp.Regexp
+	tooMany, unknown string
+}
+
+func checkIDs(field string, list []string, rule idRule, p *errs.Problems) {
+	if len(list) > maxFilterIDs {
+		p.Add(field, rule.tooMany)
 		return
 	}
-	if slices.ContainsFunc(ids, func(id string) bool { return !pattern.MatchString(id) }) {
-		p.Add(field, messages[1])
+	if slices.ContainsFunc(list, func(id string) bool { return !rule.pattern.MatchString(id) }) {
+		p.Add(field, rule.unknown)
 	}
 }
 

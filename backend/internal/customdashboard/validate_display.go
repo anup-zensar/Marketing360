@@ -66,13 +66,17 @@ func checkNumbers(at string, d Display, p *errs.Problems) {
 			}
 		}
 	}
-	if line := d.ReferenceLine; line != nil {
-		if !decimalPattern.MatchString(line.Value) {
-			p.Add(at+".referenceLine.value", msgDecimal)
-		}
-		if tooLong(line.Label, maxLabelLength) {
-			p.Add(at+".referenceLine.label", msgLabelTooLong)
-		}
+	if d.ReferenceLine != nil {
+		checkReferenceLine(at+".referenceLine", *d.ReferenceLine, p)
+	}
+}
+
+func checkReferenceLine(at string, line ReferenceLine, p *errs.Problems) {
+	if !decimalPattern.MatchString(line.Value) {
+		p.Add(at+".value", msgDecimal)
+	}
+	if tooLong(line.Label, maxLabelLength) {
+		p.Add(at+".label", msgLabelTooLong)
 	}
 }
 
@@ -81,20 +85,28 @@ func checkTypeOptions(at string, w Widget, p *errs.Problems) {
 	if q == nil {
 		q = &Query{}
 	}
-	if d.Stack != nil && *d.Stack != "none" && q.Series == nil {
+	if isStacked(d) && q.Series == nil {
 		p.Add(at+".stack", msgStackNeedsSeries)
 	}
 	if d.MeasureStyles != nil && !areMeasureStyles(d.MeasureStyles, len(q.Measures)) {
 		p.Add(at+".measureStyles", msgMeasureStyles)
 	}
+	if d.Table != nil && !areTableColumns(d.Table.Columns, *q) {
+		p.Add(at+".table.columns", msgTableColumns)
+	}
+	checkFigureOptions(at, d, p)
+}
+
+func isStacked(d Display) bool {
+	return d.Stack != nil && *d.Stack != "none"
+}
+
+func checkFigureOptions(at string, d Display, p *errs.Problems) {
 	if d.Gauge != nil {
 		checkGauge(at+".gauge", *d.Gauge, p)
 	}
 	if d.Kpi != nil {
 		checkKpi(at+".kpi", *d.Kpi, p)
-	}
-	if d.Table != nil && !areTableColumns(d.Table.Columns, *q) {
-		p.Add(at+".table.columns", msgTableColumns)
 	}
 }
 

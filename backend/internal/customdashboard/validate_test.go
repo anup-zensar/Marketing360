@@ -2,6 +2,7 @@ package customdashboard
 
 import (
 	"errors"
+	"slices"
 	"strings"
 	"testing"
 
@@ -100,7 +101,7 @@ func TestValidateWidget_RulesByType_FR015(t *testing.T) {
 			want: map[string]string{"widgets[0].query.measures": "A bar chart with a breakdown shows one measure."}},
 		{name: "line with two measures", change: func(w *Widget) { w.Type, w.Query.Measures = typeLine, two },
 			want: map[string]string{}},
-		{name: "area with five measures", change: func(w *Widget) { w.Type, w.Query.Measures = typeArea, append(two, two[0], two[0], two[0]) },
+		{name: "area with five measures", change: func(w *Widget) { w.Type, w.Query.Measures = typeArea, slices.Concat(two, two, two[:1]) },
 			want: map[string]string{"widgets[0].query.measures": "An area chart shows 1 to 4 measures."}},
 		{name: "combo with one measure and a breakdown", change: func(w *Widget) { w.Type, w.Query.Series = typeCombo, series },
 			want: map[string]string{"widgets[0].query.series": "A bar and line chart has no breakdown.",

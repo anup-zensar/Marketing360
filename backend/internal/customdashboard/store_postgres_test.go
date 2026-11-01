@@ -103,17 +103,27 @@ func TestPostgresStoreVisibleDashboards_ScopeIsolation_FR005(t *testing.T) {
 				t.Errorf("ListVisible(%s) mismatch (-want +got):\n%s", tt.personID, diff)
 			}
 			for _, d := range all {
-				got, found, err := s.GetVisible(t.Context(), tt.personID, d.ID)
-				wantFound := containsID(tt.want, d.ID)
-				if err != nil || found != wantFound || (found && !cmp.Equal(d, got, pgDates)) {
-					t.Errorf("GetVisible(%s, %s) = found %v, error %v; want found %v", tt.personID, d.ID, found, err, wantFound)
-				}
+				assertGetVisible(t, s, visibility{personID: tt.personID, dashboard: d, want: containsID(tt.want, d.ID)})
 			}
 			using, err := s.UsingDataset(t.Context(), tt.personID, "DS-1001")
 			if err != nil || !cmp.Equal(tt.using, using) {
 				t.Errorf("UsingDataset(%s) = %v, %v; want %v", tt.personID, using, err, tt.using)
 			}
 		})
+	}
+}
+
+type visibility struct {
+	personID  string
+	dashboard customdashboard.Dashboard
+	want      bool
+}
+
+func assertGetVisible(t *testing.T, s *customdashboard.PostgresStore, v visibility) {
+	t.Helper()
+	got, found, err := s.GetVisible(t.Context(), v.personID, v.dashboard.ID)
+	if err != nil || found != v.want || (found && !cmp.Equal(v.dashboard, got, pgDates)) {
+		t.Errorf("GetVisible(%s, %s) = found %v, error %v; want found %v", v.personID, v.dashboard.ID, found, err, v.want)
 	}
 }
 

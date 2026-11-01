@@ -13,6 +13,8 @@ import (
 const (
 	operatorContains = "contains"
 	operatorBetween  = "between"
+	aggregationCount = "count"
+	aggregationSum   = "sum"
 )
 
 type groupCheck struct {
@@ -112,20 +114,26 @@ func measureCountText(least, most int) string {
 }
 
 func checkMeasure(at string, rule typeRule, m Measure, p *errs.Problems) {
-	if !slices.Contains([]string{"count", "countDistinct", "sum", "avg", "min", "max"}, m.Aggregation) {
-		p.Add(at+".aggregation", msgAggregation)
-		return
+	if message := aggregationProblem(rule, m.Aggregation); message != "" {
+		p.Add(at+".aggregation", message)
 	}
-	if rule.name == typeTreemap && m.Aggregation != "sum" && m.Aggregation != "count" {
-		p.Add(at+".aggregation", msgTreemapAggregation)
-	}
-	countsRecords := m.Aggregation == "count" && m.Field == nil
+	countsRecords := m.Aggregation == aggregationCount && m.Field == nil
 	if !countsRecords && (m.Field == nil || isBlankField(*m.Field)) {
 		p.Add(at+".field", msgMeasureField)
 	}
 	if tooLong(m.Label, maxLabelLength) {
 		p.Add(at+".label", msgLabelTooLong)
 	}
+}
+
+func aggregationProblem(rule typeRule, aggregation string) string {
+	switch {
+	case !slices.Contains([]string{aggregationCount, "countDistinct", aggregationSum, "avg", "min", "max"}, aggregation):
+		return msgAggregation
+	case rule.name == typeTreemap && aggregation != aggregationSum && aggregation != aggregationCount:
+		return msgTreemapAggregation
+	}
+	return ""
 }
 
 func checkWidgetFilters(at string, filters []Filter, p *errs.Problems) {
@@ -153,11 +161,11 @@ func checkWidgetFilter(at string, f Filter, p *errs.Problems) {
 }
 
 func valuesProblem(f Filter, rule valueRule) string {
-	n := len(f.Values)
-	switch {
-	case n < rule.min || n > rule.max:
+	if n := len(f.Values); n < rule.min || n > rule.max {
 		return rule.message
-	case slices.ContainsFunc(f.Values, func(v string) bool { return v == "" || tooLong(v, maxValueLength) }):
+	}
+	switch {
+	case slices.ContainsFunc(f.Values, isBadValue):
 		return msgValueLength
 	case f.Operator == operatorContains && tooLong(f.Values[0], maxContainsLength):
 		return msgContainsLength
@@ -165,6 +173,10 @@ func valuesProblem(f Filter, rule valueRule) string {
 		return msgBetweenOrder
 	}
 	return ""
+}
+
+func isBadValue(v string) bool {
+	return v == "" || tooLong(v, maxValueLength)
 }
 
 // isDescending compares two dates or two decimals; values of another kind are left to the data catalogue.
