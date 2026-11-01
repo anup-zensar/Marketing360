@@ -456,24 +456,24 @@ Pages (each F0 stub exports a component with no props): `DashboardBuilderPage` (
 
 ## Phase 8: Lane F3 — viewer, datasets, sharing, routes (US2, US3, US4)
 
-- [ ] T056 [P] [F3] [US2] `viewer/api.ts` (list, get, delete with Undo, copy, share) and `filters-address.ts` (Zod;
+- [x] T056 [P] [F3] [US2] `viewer/api.ts` (list, get, delete with Undo, copy, share) and `filters-address.ts` (Zod;
   invalid values fall back) — `filters-address.test.ts`
-- [ ] T057 [F3] [US2] `DashboardListPage.tsx`, `DashboardCard.tsx`: Built-in (plans.view), My dashboards, Shared with
+- [x] T057 [F3] [US2] `DashboardListPage.tsx`, `DashboardCard.tsx`: Built-in (plans.view), My dashboards, Shared with
   me, New dashboard, Datasets link, card menu; states — `DashboardListPage.test.tsx` (FR-003, each state, axe)
-- [ ] T058 [F3] [US2] `DashboardViewerPage.tsx`, `FiltersBar.tsx`, `ViewerGrid.tsx` (grid, one column below 960 px),
+- [x] T058 [F3] [US2] `DashboardViewerPage.tsx`, `FiltersBar.tsx`, `ViewerGrid.tsx` (grid, one column below 960 px),
   Refresh, Edit (owner), Make a copy, delete; not-found for private — `DashboardViewerPage.test.tsx` (FR-036–FR-039)
-- [ ] T059 [P] [F3] [US4] `sharing/SharingDialog.tsx` (team checkboxes, note, Enter saves, Escape closes) —
+- [x] T059 [P] [F3] [US4] `sharing/SharingDialog.tsx` (team checkboxes, note, Enter saves, Escape closes) —
   `SharingDialog.test.tsx` (FR-046, axe)
-- [ ] T060 [F3] [US3] `datasets/api.ts`, `DatasetsPage.tsx`, `UploadDialog.tsx` (choose file → check → columns form
+- [x] T060 [F3] [US3] `datasets/api.ts`, `DatasetsPage.tsx`, `UploadDialog.tsx` (choose file → check → columns form
   with Name, Type, Currency, samples, first rows, problems → save), `ColumnTypesForm.tsx`, `DatasetPage.tsx`
   (details, columns rename, rows paged with `RowsTable.tsx`, used by, share, delete with the usage warning) —
   `UploadDialog.test.tsx`, `DatasetsPage.test.tsx`, `DatasetPage.test.tsx` (FR-040–FR-045, each state)
-- [ ] T061 [F3] [US2] Routes of contracts/ui.md (`/dashboards` list instead of the redirect, executive and regional
+- [x] T061 [F3] [US2] Routes of contracts/ui.md (`/dashboards` list instead of the redirect, executive and regional
   before `:dashboardId`, `/builder`, `/builder/:dashboardId`, `/datasets`, `/datasets/:datasetId`) with
   `RequirePermission`, lazy pages — `app/dashboard-routes.tsx`, `app/pages.tsx`; sidebar Dashboards (plans.view or
   dashboards.view) and Dashboard builder (dashboards.build) — `app/navigation.ts`, `app/Sidebar.tsx`,
   `Sidebar.test.tsx`, `router.test.tsx` (FR-002, FR-004)
-- [ ] T062 [F3] Replace F0's stubs `index.ts`, viewer and datasets pages; `pnpm run check`
+- [x] T062 [F3] Replace F0's stubs `index.ts`, viewer and datasets pages; `pnpm run check`
 
 ## Phase 9: Integration (INT)
 

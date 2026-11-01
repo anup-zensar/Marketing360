@@ -1,21 +1,46 @@
-import { Navigate } from 'react-router';
 import type { RouteObject } from 'react-router';
-import type { PageHandle } from '@/session/page-handle';
-import { RequirePermission } from '@/session/RequirePermission';
-import { DashboardsPage } from './pages';
+import {
+  DashboardBuilderPage,
+  DashboardListPage,
+  DashboardsPage,
+  DashboardViewerPage,
+  DatasetPage,
+  DatasetsPage,
+} from './pages';
+import { gated, titled } from './route-helpers';
 
-// Feature 036's pages, apart from routes.tsx only to keep that file within 300 lines.
+// Feature 036's built-in dashboards and feature 051's custom ones, apart from routes.tsx only to
+// keep that file within 300 lines. The list checks its own either-or permission.
 export const DASHBOARD_ROUTES: RouteObject[] = [
-  { path: '/dashboards', element: <Navigate to="/dashboards/executive" replace /> },
+  { path: '/dashboards', element: <DashboardListPage />, ...titled('Dashboards') },
   ...(['executive', 'regional'] as const).map((kind) => ({
     path: `/dashboards/${kind}`,
-    element: (
-      <RequirePermission permission="plans.view">
-        <DashboardsPage kind={kind} />
-      </RequirePermission>
-    ),
-    handle: {
-      title: kind === 'executive' ? 'Executive dashboard' : 'Regional dashboard',
-    } satisfies PageHandle,
+    element: gated('plans.view', <DashboardsPage kind={kind} />),
+    ...titled(kind === 'executive' ? 'Executive dashboard' : 'Regional dashboard'),
   })),
+  {
+    path: '/dashboards/:dashboardId',
+    element: gated('dashboards.view', <DashboardViewerPage />),
+    ...titled('Dashboard'),
+  },
+  {
+    path: '/builder',
+    element: gated('dashboards.build', <DashboardBuilderPage />),
+    ...titled('New dashboard'),
+  },
+  {
+    path: '/builder/:dashboardId',
+    element: gated('dashboards.build', <DashboardBuilderPage />),
+    ...titled('Edit dashboard'),
+  },
+  {
+    path: '/datasets',
+    element: gated('dashboards.build', <DatasetsPage />),
+    ...titled('Datasets'),
+  },
+  {
+    path: '/datasets/:datasetId',
+    element: gated('dashboards.build', <DatasetPage />),
+    ...titled('Dataset'),
+  },
 ];

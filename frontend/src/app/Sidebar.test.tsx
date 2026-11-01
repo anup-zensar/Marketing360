@@ -41,6 +41,7 @@ describe('Sidebar', () => {
       'Financials',
       'Purchase requests',
       'Dashboards',
+      'Dashboard builder',
       'Settings',
       'Recycle bin',
       'Activity log',
