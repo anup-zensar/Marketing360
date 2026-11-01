@@ -43,7 +43,7 @@ export function PacingChart({ report }: { report: PlanBudgetReport }) {
     rows: report.periods.map((p) => ({
       key: p.key,
       cells: [
-        label(p.key),
+        p.state === 'inProgress' ? `${label(p.key)} (in progress)` : label(p.key),
         money(p.budget),
         money(p.planned),
         amount(p.actual),

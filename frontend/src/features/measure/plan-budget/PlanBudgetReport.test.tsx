@@ -92,6 +92,7 @@ describe('PlanBudgetReport (040 US1)', () => {
     const table = screen.getByRole('table', { name: /Spend by month/ });
     expect(within(table).getAllByRole('row')).toHaveLength(14);
     expect(within(table).getByText('Total')).toBeInTheDocument();
+    expect(within(table).getAllByText(/\(in progress\)$/)).toHaveLength(1);
   });
 
   it('names planned cost without dates and in other years under the chart (FR-005)', async () => {
