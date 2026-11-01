@@ -90,11 +90,11 @@ func (s *Service) Get(ctx context.Context, a actor.Actor, id string) (View, erro
 
 // Rows answers a page of the rows as stored: text as written, numbers and money as decimals, dates YYYY-MM-DD.
 func (s *Service) Rows(ctx context.Context, a actor.Actor, id string, q RowsQuery) (RowPage, error) {
-	page, err := pageOf(q)
-	if err != nil {
-		return RowPage{}, err
+	page, pageErr := pageOf(q)
+	if pageErr != nil {
+		return RowPage{}, pageErr
 	}
-	err = s.tx.Read(ctx, func(ctx context.Context) error {
+	err := s.tx.Read(ctx, func(ctx context.Context) error {
 		d, err := s.visible(ctx, a, id)
 		if err != nil {
 			return err

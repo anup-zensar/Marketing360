@@ -13,7 +13,7 @@ import (
 func TestUpdateDataset_OwnerAndVersion_FR044(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
-	priya, view := created(t, server, "Event leads 2026")
+	priya, view := created(t, server)
 	path := datasetsPath + "/" + view.ID
 	decoded[dataset.View](t, priya.Do(t, http.MethodPut, path+"/sharing", map[string]any{"version": 1, "teamIds": []string{europe}}),
 		http.StatusOK)
@@ -39,7 +39,7 @@ func TestUpdateDataset_OwnerAndVersion_FR044(t *testing.T) {
 func TestShareDataset_OwnTeamsOnly_FR046(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
-	priya, view := created(t, server, "Event leads 2026")
+	priya, view := created(t, server)
 	path := datasetsPath + "/" + view.ID + "/sharing"
 
 	notHers := priya.Do(t, http.MethodPut, path, map[string]any{"version": 1, "teamIds": []string{china}})
@@ -60,7 +60,7 @@ func TestShareDataset_OwnTeamsOnly_FR046(t *testing.T) {
 func TestDeleteDataset_ToRecycleBin_FR045(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
-	priya, view := created(t, server, "Event leads 2026")
+	priya, view := created(t, server)
 	path := datasetsPath + "/" + view.ID
 	decoded[dataset.View](t, priya.Do(t, http.MethodPut, path+"/sharing", map[string]any{"version": 1, "teamIds": []string{europe}}),
 		http.StatusOK)
@@ -70,7 +70,7 @@ func TestDeleteDataset_ToRecycleBin_FR045(t *testing.T) {
 	gone := priya.Do(t, http.MethodGet, path, nil)
 	again := priya.Do(t, http.MethodDelete, path, nil)
 
-	if result.RecycleBinEntry.RecordType != "dataset" || result.RecycleBinEntry.RecordName != "Event leads 2026" {
+	if result.RecycleBinEntry.RecordType != "dataset" || result.RecycleBinEntry.RecordName != createdName {
 		t.Errorf("bin entry = %+v", result.RecycleBinEntry)
 	}
 	if got := statuses(byDaniel, gone, again); !slices.Equal(got, []int{403, 404, 404}) {
@@ -81,7 +81,7 @@ func TestDeleteDataset_ToRecycleBin_FR045(t *testing.T) {
 func TestListDatasetRows_PagesAsStored_FR040(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
-	priya, view := created(t, server, "Event leads 2026")
+	priya, view := created(t, server)
 	path := datasetsPath + "/" + view.ID + "/rows"
 
 	page := decoded[dataset.RowPage](t, priya.Do(t, http.MethodGet, path+"?offset=1&limit=1", nil), http.StatusOK)

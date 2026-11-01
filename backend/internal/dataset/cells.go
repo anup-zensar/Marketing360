@@ -123,24 +123,28 @@ func thousandsMark(decimal byte) byte {
 	return ','
 }
 
-// ungrouped removes the thousands separator sep from whole, which must then group its digits by three.
+// ungrouped removes the thousands separator from whole, which must then group its digits by three; with no
+// decimal mark, either separator may group.
 func ungrouped(whole string, sep byte) (string, bool) {
-	other := byte('.')
-	if sep == '.' {
-		other = ','
+	mark := sep
+	if strings.IndexByte(whole, sep) < 0 {
+		mark = thousandsMark(sep)
 	}
-	if strings.IndexByte(whole, other) >= 0 && !strings.ContainsRune(whole, rune(sep)) {
-		return ungrouped(whole, other)
-	}
-	groups := strings.Split(whole, string(sep))
+	groups := strings.Split(whole, string(mark))
 	if len(groups) == 1 {
 		return whole, true
 	}
-	for i, g := range groups {
-		size := len(g)
-		if (i == 0 && (size == 0 || size > groupDigits)) || (i > 0 && size != groupDigits) {
-			return "", false
+	return strings.Join(groups, ""), areGroupsOfThree(groups)
+}
+
+func areGroupsOfThree(groups []string) bool {
+	if first := len(groups[0]); first == 0 || first > groupDigits {
+		return false
+	}
+	for _, g := range groups[1:] {
+		if len(g) != groupDigits {
+			return false
 		}
 	}
-	return strings.Join(groups, ""), true
+	return true
 }

@@ -18,29 +18,20 @@ func TestCreate_StoresTypedRowsAndLogs_FR042_FR045(t *testing.T) {
 	view := f.create(t, priya, "  Event leads 2026 ")
 
 	eur := "EUR"
-	wantColumns := []Column{
+	same(t, "columns", []Column{
 		{Key: "c1", Position: 0, Label: "Event", Kind: KindText}, {Key: "c2", Position: 1, Label: "Date", Kind: KindDate},
 		{Key: "c3", Position: 2, Label: "Leads", Kind: KindNumber},
 		{Key: "c4", Position: 3, Label: "Agency cost", Kind: KindMoney, Currency: &eur},
-	}
-	if diff := cmp.Diff(wantColumns, view.Columns); diff != "" {
-		t.Errorf("columns (-want +got):\n%s", diff)
-	}
-	if view.ID != "DS-1001" || view.Name != "Event leads 2026" || view.RowCount != 2 || !view.IsOwner || view.Version != 1 {
-		t.Errorf("view = %+v", view)
-	}
+	}, view.Columns)
+	same(t, "view", []any{"DS-1001", "Event leads 2026", 2, true, 1}, []any{view.ID, view.Name, view.RowCount, view.IsOwner, view.Version})
 	rows, _ := f.store.Rows(t.Context(), view.ID)
-	wantRows := []Row{
+	same(t, "rows", []Row{
 		{TextCell("Expo Hamburg"), TextCell("2026-01-22"), TextCell("140"), MinorCell(1850000)},
 		{TextCell("Fleet Day"), TextCell("2026-02-12"), TextCell("85"), MinorCell(920000)},
-	}
-	if diff := cmp.Diff(wantRows, rows); diff != "" {
-		t.Errorf("rows (-want +got):\n%s", diff)
-	}
+	}, rows)
 	entries, _, _ := f.history.ListLog(t.Context(), priya, history.LogFilter{RecordID: view.ID, Limit: 10})
-	if len(entries) != 1 || entries[0].Action != history.ActionCreated || entries[0].Details != "Uploaded from 'leads.csv', 2 rows" {
-		t.Errorf("log = %+v, want one created entry with the upload", entries)
-	}
+	same(t, "log", []any{1, history.ActionCreated, "Uploaded from 'leads.csv', 2 rows"},
+		[]any{len(entries), entries[0].Action, entries[0].Details})
 }
 
 func TestCreate_EmptyCellsAreEmptyValues_FR042(t *testing.T) {

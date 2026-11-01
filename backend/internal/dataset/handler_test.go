@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+
 	"mapp/internal/dataset"
 	"mapp/internal/platform/apitest"
 )
@@ -19,6 +21,7 @@ const (
 	datasetsPath = "/api/v1/datasets"
 	europe       = "T-1001"
 	china        = "T-1002"
+	createdName  = "Agency leads"
 	leadsCSV     = "Event,Date,Leads,Cost\nExpo Hamburg,2026-01-22,140,18500\nFleet Day,12/02/2026,85,9200.50\n"
 )
 
@@ -54,11 +57,19 @@ func statuses(responses ...*apitest.Response) []int {
 	return got
 }
 
-// created signs Priya in and stores a dataset of hers, not shared.
-func created(t *testing.T, server *apitest.Server, name string) (*apitest.Client, dataset.View) {
+// created signs Priya in and stores a dataset of hers, not shared, next to the seeded DS-1001.
+func created(t *testing.T, server *apitest.Server) (*apitest.Client, dataset.View) {
 	t.Helper()
 	priya := server.SignIn(t, priyasEmail)
-	return priya, decoded[dataset.View](t, priya.Do(t, http.MethodPost, datasetsPath, createBody(name, leadsCSV)), http.StatusCreated)
+	return priya, decoded[dataset.View](t, priya.Do(t, http.MethodPost, datasetsPath, createBody(createdName, leadsCSV)),
+		http.StatusCreated)
+}
+
+func same(t *testing.T, what string, want, got any) {
+	t.Helper()
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("%s (-want +got):\n%s", what, diff)
+	}
 }
 
 func TestPreviewDataset_ProposesColumns_FR041(t *testing.T) {
@@ -89,10 +100,10 @@ func TestPreviewDataset_ProposesColumns_FR041(t *testing.T) {
 func TestCreateDataset_StoresAndRefuses_FR042_FR043(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
-	priya, view := created(t, server, "Event leads 2026")
+	priya, view := created(t, server)
 
 	badCells := priya.Do(t, http.MethodPost, datasetsPath, createBody("Bad", leadsCSV+"Trade Fair,someday,n/a,1\n"))
-	taken := priya.Do(t, http.MethodPost, datasetsPath, createBody("EVENT LEADS 2026", leadsCSV))
+	taken := priya.Do(t, http.MethodPost, datasetsPath, createBody("AGENCY LEADS", leadsCSV))
 	bySara := server.SignIn(t, sarasEmail).Do(t, http.MethodPost, datasetsPath, createBody("Sara's", leadsCSV))
 
 	if !view.IsOwner || view.RowCount != 2 || len(view.Columns) != 4 || view.Owner.Name != "Priya Raman" || len(view.UsedBy) != 0 {
@@ -110,7 +121,7 @@ func TestCreateDataset_StoresAndRefuses_FR042_FR043(t *testing.T) {
 func TestListDatasets_MineAndSharedWithMe_FR040(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
-	priya, view := created(t, server, "Event leads 2026")
+	priya, view := created(t, server)
 	decoded[dataset.View](t, priya.Do(t, http.MethodPut, datasetsPath+"/"+view.ID+"/sharing",
 		map[string]any{"version": 1, "teamIds": []string{europe}}), http.StatusOK)
 
@@ -133,7 +144,7 @@ func TestListDatasets_MineAndSharedWithMe_FR040(t *testing.T) {
 func TestGetDataset_VisibleOnly_FR044(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
-	priya, view := created(t, server, "Event leads 2026")
+	priya, view := created(t, server)
 	daniel, mei := server.SignIn(t, danielsEmail), server.SignIn(t, meisEmail)
 	path := datasetsPath + "/" + view.ID
 

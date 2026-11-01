@@ -52,7 +52,7 @@ func (s *Service) Update(ctx context.Context, a actor.Actor, id string, in Updat
 		if changed, err = s.save(ctx, a, stored, changed); err != nil {
 			return err
 		}
-		if _, err := s.history.Log(ctx, a, history.LogInput{Kind: kindDataset, RecordID: id, RecordName: changed.Name,
+		if _, err = s.history.Log(ctx, a, history.LogInput{Kind: kindDataset, RecordID: id, RecordName: changed.Name,
 			Action: history.ActionChanged, Changes: changes}); err != nil {
 			return err
 		}

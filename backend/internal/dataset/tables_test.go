@@ -3,10 +3,6 @@ package dataset
 import (
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
-
-	"mapp/internal/platform/date"
-	"mapp/internal/platform/money"
 	"mapp/internal/widgetdata"
 )
 
@@ -16,37 +12,27 @@ func TestTables_VisibleOnlyAndTyped_FR044(t *testing.T) {
 	leads := f.create(t, priya, "Leads")
 	f.create(t, mei, "Mei's private data")
 
-	visibleToSara, err := f.service.Visible(t.Context(), sara)
-	if err != nil || len(visibleToSara) != 0 {
-		t.Fatalf("Visible(Sara) = %v, %v; want none before the share", visibleToSara, err)
-	}
+	before, _ := f.service.Visible(t.Context(), sara)
 	_, hidden := f.service.Table(t.Context(), sara, leads.ID)
 	if _, err := f.service.Share(t.Context(), priya, leads.ID, SharingInput{Version: ptr(1), TeamIDs: []string{europe}}); err != nil {
 		t.Fatalf("Share: %v", err)
 	}
-	visibleToSara, _ = f.service.Visible(t.Context(), sara)
+	after, _ := f.service.Visible(t.Context(), sara)
 	table, err := f.service.Table(t.Context(), sara, leads.ID)
+	if err != nil {
+		t.Fatalf("Table() error = %v", err)
+	}
 
-	if statusOf(hidden) != 404 || err != nil {
-		t.Fatalf("Table() before %v, after %v; want 404 then the table", hidden, err)
-	}
-	if len(visibleToSara) != 1 || visibleToSara[0].ID != leads.ID || visibleToSara[0].Owner.Name != "Priya Raman" {
-		t.Errorf("Visible(Sara) = %+v", visibleToSara)
-	}
-	wantColumns := []widgetdata.DatasetColumn{
+	same(t, "before the share", []any{0, 404}, []any{len(before), statusOf(hidden)})
+	same(t, "after the share", []any{1, leads.ID, "Priya Raman"}, []any{len(after), after[0].ID, after[0].Owner.Name})
+	same(t, "columns", []widgetdata.DatasetColumn{
 		{Key: "c1", Label: "Event", Kind: widgetdata.KindText}, {Key: "c2", Label: "Date", Kind: widgetdata.KindDate},
 		{Key: "c3", Label: "Leads", Kind: widgetdata.KindNumber},
 		{Key: "c4", Label: "Agency cost", Kind: widgetdata.KindMoney, Currency: "EUR"},
-	}
-	if diff := cmp.Diff(wantColumns, table.Info.Columns); diff != "" {
-		t.Errorf("columns (-want +got):\n%s", diff)
-	}
+	}, table.Info.Columns)
 	first := table.Rows[0]
-	wantMoney := money.Money{Amount: money.FromCents(1850000), Currency: "EUR"}
-	if first[0].Text != "Expo Hamburg" || first[1].Date != date.MustParse("2026-01-22") ||
-		first[2].Number != widgetdata.NumberOfUnits(1400000) || first[3].Money != wantMoney {
-		t.Errorf("first row = %+v", first)
-	}
+	same(t, "first row", []string{"Expo Hamburg", "2026-01-22", "140", "18,500.00 EUR"},
+		[]string{first[0].Text, first[1].Date.String(), first[2].Number.String(), first[3].Money.Format()})
 }
 
 func TestTables_EmptyCellsAndDeletedDataset_FR044(t *testing.T) {
@@ -81,15 +67,9 @@ func TestRows_PagesAsStored_FR040(t *testing.T) {
 	for _, cell := range page.Rows[0] {
 		texts = append(texts, *cell)
 	}
-	if diff := cmp.Diff([]string{"Fleet Day", "2026-02-12", "85", "9200.00"}, texts); diff != "" {
-		t.Errorf("row (-want +got):\n%s", diff)
-	}
-	if page.Total != 2 || page.Offset != 1 || page.Limit != 5 || len(page.Columns) != 4 {
-		t.Errorf("page = %+v", page)
-	}
-	if len(fieldErrors(t, badLimit)) != 2 || statusOf(hidden) != 404 {
-		t.Errorf("bad page %v, hidden %v", badLimit, hidden)
-	}
+	same(t, "row", []string{"Fleet Day", "2026-02-12", "85", "9200.00"}, texts)
+	same(t, "page", []int{2, 1, 5, 4}, []int{page.Total, page.Offset, page.Limit, len(page.Columns)})
+	same(t, "refusals", []int{2, 404}, []int{len(fieldErrors(t, badLimit)), statusOf(hidden)})
 }
 
 func TestList_MineAndSharedWithMe_FR040(t *testing.T) {

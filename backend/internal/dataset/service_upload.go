@@ -13,8 +13,7 @@ import (
 
 const maxDatasets = 50
 
-// Preview reads the file and proposes its columns without storing anything; it also says when the person has
-// no room left for another dataset.
+// Preview stores nothing; it also says when the person has no room left for another dataset.
 func (s *Service) Preview(ctx context.Context, a actor.Actor, up Upload) (Preview, error) {
 	f, err := readFile(up)
 	if err != nil {
@@ -22,11 +21,11 @@ func (s *Service) Preview(ctx context.Context, a actor.Actor, up Upload) (Previe
 	}
 	p := previewOf(f)
 	err = s.tx.Read(ctx, func(ctx context.Context) error {
-		full, err := s.isFull(ctx, a)
+		full, countErr := s.isFull(ctx, a)
 		if full {
 			p.Problems = append(p.Problems, msgTooManyDatasets)
 		}
-		return err
+		return countErr
 	})
 	if err != nil {
 		return Preview{}, err
@@ -34,8 +33,7 @@ func (s *Service) Preview(ctx context.Context, a actor.Actor, up Upload) (Previe
 	return p, nil
 }
 
-// Create reads the file again and checks every cell against its column's kind; every problem is answered at
-// once and nothing is stored until there is none.
+// Create answers every problem at once, cells included, and stores nothing until there is none.
 func (s *Service) Create(ctx context.Context, a actor.Actor, in CreateInput) (View, error) {
 	f, err := readFile(Upload{FileName: in.FileName, Content: in.Content})
 	if err != nil {
@@ -50,20 +48,31 @@ func (s *Service) Create(ctx context.Context, a actor.Actor, in CreateInput) (Vi
 	checkDescription(d.Description, &problems)
 	d.Columns = columnsOf(in.Columns, f.width, &problems)
 	rows, cellProblems := typedRows(f, d.Columns)
-	problems = append(problems, cellProblems...)
+	return s.insert(ctx, a, checked{dataset: d, rows: rows, problems: append(problems, cellProblems...)})
+}
+
+type checked struct {
+	dataset  Dataset
+	rows     []Row
+	problems errs.Problems
+}
+
+func (s *Service) insert(ctx context.Context, a actor.Actor, c checked) (View, error) {
 	var view View
-	err = s.tx.Write(ctx, func(ctx context.Context) error {
-		if err := s.checkStorable(ctx, a, d, problems); err != nil {
+	err := s.tx.Write(ctx, func(ctx context.Context) error {
+		d := c.dataset
+		if err := s.checkStorable(ctx, a, d, c.problems); err != nil {
 			return err
 		}
-		if d.ID, err = s.ids.Next(ctx, ids.PrefixDataset); err != nil {
+		id, err := s.ids.Next(ctx, ids.PrefixDataset)
+		if err != nil {
 			return err
 		}
-		d.Meta = record.NewMeta(a, s.now())
-		if err := s.repo.Insert(ctx, d, rows); err != nil {
+		d.ID, d.Meta = id, record.NewMeta(a, s.now())
+		if err = s.repo.Insert(ctx, d, c.rows); err != nil {
 			return err
 		}
-		if _, err := s.history.Log(ctx, a, history.LogInput{Kind: kindDataset, RecordID: d.ID, RecordName: d.Name,
+		if _, err = s.history.Log(ctx, a, history.LogInput{Kind: kindDataset, RecordID: d.ID, RecordName: d.Name,
 			Action: history.ActionCreated, Details: fmt.Sprintf(msgUploaded, d.FileName, d.RowCount)}); err != nil {
 			return err
 		}

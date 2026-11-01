@@ -70,15 +70,8 @@ func FuzzParseCells_RoundTrip_FR042(f *testing.F) {
 		f.Add(seed, int64(12345))
 	}
 	f.Fuzz(func(t *testing.T, text string, units int64) {
-		for _, k := range []Kind{KindNumber, KindDate, KindMoney, KindText} {
-			cell, ok := parseCell(k, text)
-			if !ok || cell.Empty || k == KindMoney {
-				continue
-			}
-			again, ok := parseCell(k, cell.Text)
-			if !ok || again.Text != cell.Text {
-				t.Fatalf("parseCell(%s, %q) = %q, which reads back as %q, %v", k, text, cell.Text, again.Text, ok)
-			}
+		for _, k := range []Kind{KindNumber, KindDate, KindText} {
+			readsBack(t, k, text)
 		}
 		n := widgetdata.NumberOfUnits(units % 1_000_000_000_000_000_000)
 		if cell, ok := parseCell(KindNumber, n.String()); !ok || cell.Text != n.String() {
@@ -89,6 +82,18 @@ func FuzzParseCells_RoundTrip_FR042(f *testing.F) {
 			t.Fatalf("amount %s reads back as %v, %v", cents, cell.Minor, ok)
 		}
 	})
+}
+
+// readsBack checks that a stored text value reads as itself again.
+func readsBack(t *testing.T, k Kind, text string) {
+	t.Helper()
+	cell, ok := parseCell(k, text)
+	if !ok || cell.Empty {
+		return
+	}
+	if again, ok := parseCell(k, cell.Text); !ok || again.Text != cell.Text {
+		t.Fatalf("parseCell(%s, %q) = %q, which reads back as %q, %v", k, text, cell.Text, again.Text, ok)
+	}
 }
 
 func TestInferKinds_FR041(t *testing.T) {

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
-
 	"mapp/internal/history"
 	"mapp/internal/platform/errs"
 )
@@ -26,19 +24,12 @@ func TestUpdate_ColumnKindsNeverChange_FR044(t *testing.T) {
 	for _, c := range view.Columns {
 		labels, kinds = append(labels, c.Label), append(kinds, c.Kind)
 	}
-	if diff := cmp.Diff([]string{"Date", "Event", "Leads", "Agency cost"}, labels); diff != "" {
-		t.Errorf("labels (-want +got):\n%s", diff)
-	}
-	if diff := cmp.Diff([]Kind{KindText, KindDate, KindNumber, KindMoney}, kinds); diff != "" {
-		t.Errorf("kinds (-want +got):\n%s", diff)
-	}
-	if view.Name != "Event leads" || view.Version != 2 {
-		t.Errorf("view = %q v%d, want Event leads v2", view.Name, view.Version)
-	}
+	same(t, "labels", []string{"Date", "Event", "Leads", "Agency cost"}, labels)
+	same(t, "kinds", []Kind{KindText, KindDate, KindNumber, KindMoney}, kinds)
+	same(t, "name and version", []any{"Event leads", 2}, []any{view.Name, view.Version})
 	entries, _, _ := f.history.ListLog(t.Context(), priya, history.LogFilter{RecordID: created.ID, Limit: 10})
-	if len(entries) != 2 || len(entries[0].Changes) != 2 || entries[0].Changes[0].NewText != "Date, Event, Leads, Agency cost" {
-		t.Errorf("log = %+v, want the name and column names changed", entries[0])
-	}
+	same(t, "logged changes", []string{"Date, Event, Leads, Agency cost", "Event leads"},
+		[]string{entries[0].Changes[0].NewText, entries[0].Changes[1].NewText})
 }
 
 func TestUpdate_RulesAndRefusals_FR044(t *testing.T) {
@@ -105,19 +96,12 @@ func TestShare_OwnTeamsOnly_FR046(t *testing.T) {
 	asSara, _ := f.service.Get(t.Context(), sara, created.ID)
 	_, asMei := f.service.Get(t.Context(), mei, created.ID)
 
-	if got := []int{statusOf(notHers), statusOf(bySara), statusOf(stale), statusOf(asMei)}; !cmp.Equal(got, []int{400, 403, 409, 404}) {
-		t.Errorf("refusals = %v, want 400, 403, 409, 404", got)
-	}
-	if len(shared.SharedWith) != 1 || shared.SharedWith[0].Name != "Lubricants Europe" || shared.Version != 2 {
-		t.Errorf("shared = %+v", shared.SharedWith)
-	}
-	if asSara.IsOwner || asSara.Access.Edit.Available || len(asSara.ShareableTeams) != 0 {
-		t.Errorf("as Sara = %+v, want view-only", asSara)
-	}
+	same(t, "refusals", []int{400, 403, 409, 404}, []int{statusOf(notHers), statusOf(bySara), statusOf(stale), statusOf(asMei)})
+	same(t, "shared", []any{1, "Lubricants Europe", 2}, []any{len(shared.SharedWith), shared.SharedWith[0].Name, shared.Version})
+	same(t, "as Sara", []any{false, false, 0}, []any{asSara.IsOwner, asSara.Access.Edit.Available, len(asSara.ShareableTeams)})
 	entries, _, _ := f.history.ListLog(t.Context(), priya, history.LogFilter{RecordID: created.ID, Limit: 10})
-	if entries[0].Details != "Shared with Lubricants Europe" || entries[0].Changes[0].NewText != "Lubricants Europe" {
-		t.Errorf("log = %+v", entries[0])
-	}
+	same(t, "log", []string{"Shared with Lubricants Europe", "Lubricants Europe"},
+		[]string{entries[0].Details, entries[0].Changes[0].NewText})
 }
 
 func TestShare_FormerTeamStaysRemovable_FR046(t *testing.T) {
@@ -156,16 +140,13 @@ func TestDelete_ToRecycleBin_FR045(t *testing.T) {
 	_, gone := f.service.Get(t.Context(), priya, created.ID)
 	f.create(t, priya, "Leads")
 	_, undo := f.history.Undo(t.Context(), priya, entry.ID)
-	restored, err := f.history.Restore(t.Context(), priya, entry.ID)
-
-	if statusOf(bySara) != 403 || statusOf(gone) != 404 || codeOf(undo) != errs.CodeNameTaken || err != nil {
-		t.Fatalf("by Sara %v, gone %v, undo %v, restore %v", bySara, gone, undo, err)
-	}
-	back, err := f.service.Get(t.Context(), sara, created.ID)
+	restored, restoreErr := f.history.Restore(t.Context(), priya, entry.ID)
+	back, _ := f.service.Get(t.Context(), sara, created.ID)
 	rows, _ := f.store.Rows(t.Context(), created.ID)
-	if err != nil || back.Name != "Leads (restored)" || restored.RecordName != back.Name || len(rows) != 2 || len(back.SharedWith) != 1 {
-		t.Errorf("restored = %+v (%v), %d rows", back, err, len(rows))
-	}
+
+	same(t, "refusals", []any{403, 404, errs.CodeNameTaken, true}, []any{statusOf(bySara), statusOf(gone), codeOf(undo), restoreErr == nil})
+	same(t, "restored", []any{"Leads (restored)", "Leads (restored)", 2, 1},
+		[]any{back.Name, restored.RecordName, len(rows), len(back.SharedWith)})
 }
 
 func TestRestoredName_StaysWithin80Characters_FR043(t *testing.T) {

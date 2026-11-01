@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+
 	"mapp/internal/history"
 	"mapp/internal/history/historytest"
 	"mapp/internal/people"
@@ -40,8 +42,8 @@ type fixture struct {
 	db      *fake.DB
 }
 
-func newFixture(t *testing.T) *fixture {
-	t.Helper()
+func newFixture(tb testing.TB) *fixture {
+	tb.Helper()
 	db := fake.NewDB()
 	generator := ids.NewGenerator(fake.NewCounters(db))
 	hist := history.NewService(db, historytest.NewStore(db), generator, func() time.Time { return start })
@@ -51,20 +53,20 @@ func newFixture(t *testing.T) *fixture {
 		Deps{Directory: fakeDirectory{store: store}, Currencies: fakeCurrencies{}})
 	for _, k := range f.service.Kinds() {
 		if err := hist.Register(k); err != nil {
-			t.Fatalf("Register: %v", err)
+			tb.Fatalf("Register: %v", err)
 		}
 	}
-	f.member(t, priya.ID, europe)
-	f.member(t, sara.ID, europe)
-	f.member(t, mei.ID, china)
+	f.member(tb, priya.ID, europe)
+	f.member(tb, sara.ID, europe)
+	f.member(tb, mei.ID, china)
 	return f
 }
 
-func (f *fixture) member(t *testing.T, personID, teamID string) {
-	t.Helper()
+func (f *fixture) member(tb testing.TB, personID, teamID string) {
+	tb.Helper()
 	m := people.Membership{ID: "TM-" + personID + teamID, PersonID: personID, TeamID: teamID}
-	if err := f.db.Write(t.Context(), func(ctx context.Context) error { return f.store.memberships.Put(ctx, m) }); err != nil {
-		t.Fatalf("member: %v", err)
+	if err := f.db.Write(tb.Context(), func(ctx context.Context) error { return f.store.memberships.Put(ctx, m) }); err != nil {
+		tb.Fatalf("member: %v", err)
 	}
 }
 
@@ -104,6 +106,13 @@ func codeOf(err error) string {
 		return apiErr.Code
 	}
 	return ""
+}
+
+func same(t *testing.T, what string, want, got any) {
+	t.Helper()
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("%s (-want +got):\n%s", what, diff)
+	}
 }
 
 func ptr[T any](v T) *T {
