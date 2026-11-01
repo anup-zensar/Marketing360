@@ -13,7 +13,6 @@ func measureRoutes() map[string]Rule {
 		"PATCH /api/v1/reports/{report}/views/{viewId}":  need(authz.ReportsView),
 		"DELETE /api/v1/reports/{report}/views/{viewId}": need(authz.ReportsView),
 
-		// 043–045 (lane D), wave A contract
 		"GET /api/v1/reports/plan-details": need(authz.ReportsView),
 		"GET /api/v1/reports/gsap-link":    need(authz.ReportsView),
 		"GET /api/v1/reports/user-access":  need(authz.AccessManage),

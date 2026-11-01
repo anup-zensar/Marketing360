@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 
 	"mapp/internal/history"
+	"mapp/internal/measure"
 	"mapp/internal/plan"
+	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/memo"
@@ -57,7 +59,17 @@ var openToAll = map[string]bool{"sampleFolder": true, "sampleNote": true}
 var _ history.Access = historyAccess{}
 
 func (h historyAccess) CanSeeEntry(ctx context.Context, e history.Entry) bool {
+	if e.RecordType == measure.KindReportView {
+		return ownOrWholeLog(ctx, e.Actor.ID)
+	}
 	return h.canSee(ctx, e.RecordType, e.RecordID, e.Path, nil)
+}
+
+// ownOrWholeLog: a saved report view is personal (039 FR-025), so its entries are its owner's and the auditors'.
+func ownOrWholeLog(ctx context.Context, personID string) bool {
+	g, restricted := authz.From(ctx)
+	a, _ := actor.From(ctx)
+	return !restricted || g.Has(authz.ActivityLogViewAll) || (a.ID != "" && a.ID == personID)
 }
 
 func (h historyAccess) CanSeeBinEntry(ctx context.Context, e history.BinEntry) bool {

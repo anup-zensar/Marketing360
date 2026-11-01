@@ -43,6 +43,7 @@ type Planning struct {
 	Overspend  OverspendStore
 	Bulk       BulkStore
 	Workbook   WorkbookStore
+	Measure    MeasureStore
 }
 
 type Finance struct {
