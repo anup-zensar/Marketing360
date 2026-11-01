@@ -1,6 +1,7 @@
 # API Contract: GSAP Link Reports (044)
 
-For the **wave A contract** (lane A writes it into `backend/api/openapi.yaml`, tag **Reports**). It follows
+For the **wave A contract**, written into `backend/api/openapi.yaml` (tag **Reports**) by PR #57; `openapi.yaml`
+is the reference where the two differ. It follows
 039's convention (`specs/039-measure-foundation/contracts/api.md`, "The convention every report follows"):
 `GET /api/v1/reports/<path>` with the report filter returns the report's widgets, and the report's
 `measure.Report.Sheets` feeds 039's shared export, so 044 adds **no export operation of its own**. Errors use
@@ -25,7 +26,7 @@ response's `total` and `finance`.
 
 ```yaml
 GsapLinkReport:
-  required: [tab, currency, total, page, pageSize, sort]
+  required: [tab, currency, total, page, pageSize, sort, finance, swbs, waiting, orders]   # the last four null when not set
   properties:
     tab:      { enum: [swbs, waiting, orders] }
     currency: { type: string }            # the report filter's currency, ISO code (D-303)
