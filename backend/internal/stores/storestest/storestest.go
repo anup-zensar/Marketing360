@@ -17,6 +17,7 @@ import (
 	"mapp/internal/history/historytest"
 	"mapp/internal/lineitem/lineitemtest"
 	"mapp/internal/measure/attribution/attributiontest"
+	"mapp/internal/measure/gsaplink/gsaplinktest"
 	"mapp/internal/measure/measuretest"
 	"mapp/internal/overspend/overspendtest"
 	"mapp/internal/people/peopletest"
@@ -60,6 +61,6 @@ func planning(db *fake.DB) stores.Planning {
 func finance(db *fake.DB) stores.Finance {
 	return stores.Finance{
 		Budgets: budgettest.NewStore(db), Financials: financialstest.NewStore(db), SwbsRuns: swbstest.NewStore(db),
-		PurchaseRequests: purchaserequesttest.NewStore(db),
+		PurchaseRequests: purchaserequesttest.NewStore(db), GsapLink: gsaplinktest.NewStore(db),
 	}
 }

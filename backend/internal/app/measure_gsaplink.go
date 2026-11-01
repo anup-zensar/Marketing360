@@ -1,8 +1,14 @@
 package app
 
-import "mapp/internal/measure"
+import (
+	"mapp/internal/measure"
+	"mapp/internal/measure/gsaplink"
+)
 
-// registerGsapLink registers the report of feature 044; its lane replaces the stub with the built report.
-func registerGsapLink(_ *wiring, r *measure.Registry) error {
-	return r.Register(measure.Stub(measure.KeyGsapLink))
+// registerGsapLink registers and mounts the GSAP link report (feature 044) on 039's shared Scope step.
+func registerGsapLink(w *wiring, r *measure.Registry) error {
+	service := gsaplink.NewService(w.set.Tx, gsaplink.Deps{Scoped: w.reports, Store: w.set.GsapLink, Rates: w.settings},
+		w.now)
+	mount(w.signedIn, gsaplink.NewHandler(service))
+	return r.Register(service)
 }
