@@ -162,3 +162,27 @@ func revenueRow(reference, amount, currency string) performance.Row {
 		}},
 	}
 }
+
+func TestActivityPanel_AFactCountsInTheYearOfItsOwnDate_FR015(t *testing.T) {
+	t.Parallel()
+	f, src := panelFixture(t)
+	f.runImport(t, src.ID, map[string]string{"r1": "40"})
+	lastYear := importRows(map[string]string{"r2": "99"})
+	lastYear[0].Date = performance.Cell{Column: "date", Value: "2025-11-01"}
+	if _, err := f.service.RunImport(t.Context(), alex, performance.ImportInput{
+		SourceID: src.ID, FileName: "old.csv", Origin: performance.OriginUpload,
+		Headings: []string{"ref", "date", "inqs"}, Rows: lastYear,
+	}); err != nil {
+		t.Fatalf("RunImport: %v", err)
+	}
+
+	panel, err := f.service.ActivityPanel(t.Context(), alex, "A-1")
+	if err != nil {
+		t.Fatalf("ActivityPanel: %v", err)
+	}
+	for _, stage := range panel.Stages {
+		if stage.Stage == "inq" && (stage.Actual == nil || *stage.Actual != 40) {
+			t.Fatalf("inq actual = %v, want 40: the 2025 fact counts in its own year, not the plan year 2026", stage.Actual)
+		}
+	}
+}

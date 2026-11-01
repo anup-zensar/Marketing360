@@ -40,8 +40,8 @@ func (s *Service) persist(ctx context.Context, a actor.Actor, run Import, result
 	return nil
 }
 
-// openReviewRaws keys the waiting rows - open and dismissed alike - by their raw content, so re-loading an
-// identical file neither queues it twice nor resurrects a dismissal (SC-004).
+// openReviewRaws keys the waiting rows by raw content: an identical re-load neither duplicates a queue
+// entry nor resurrects a dismissal.
 func (s *Service) openReviewRaws(ctx context.Context, sourceID string) (map[string]bool, error) {
 	rows, err := s.repo.ListReviewRows(ctx, ReviewFilter{StatusNot: string(ReviewResolved), SourceID: sourceID, Limit: maxRows})
 	if err != nil {
@@ -157,8 +157,7 @@ func (w factWriter) review(ctx context.Context, result RowResult) error {
 	return nil
 }
 
-// interpretedOf keeps the load-time reading of the row, so a re-check never reinterprets it through the
-// mappings of a later day (FR-007).
+// interpretedOf keeps the load-time reading, so no later mapping change can reinterpret the row.
 func interpretedOf(row Row) Interpreted {
 	return Interpreted{
 		Reference: row.Reference.Value, Date: row.Date.Value, Currency: row.Currency.Value,

@@ -11,8 +11,7 @@ import (
 	"mapp/internal/platform/authz"
 )
 
-// RecheckSource re-checks a source's open rows and held facts on demand (FR-025); every load of the same
-// source runs it too, in its own transaction.
+// RecheckSource re-checks a source's open rows and held facts on demand (FR-025).
 func (s *Service) RecheckSource(ctx context.Context, a actor.Actor, sourceID string) (Counts, error) {
 	if err := authz.Require(ctx, PermissionImport); err != nil {
 		return Counts{}, err
@@ -39,8 +38,8 @@ func (s *Service) RecheckAfterLoad(ctx context.Context, a actor.Actor, sourceID 
 	return resolved, nil
 }
 
-// releaseApprovedHolds is FR-025's second half: held facts re-check too, so a release the approval hook
-// never saw - a restore from the bin, above all - still happens at the next load or on demand.
+// releaseApprovedHolds is FR-025's second half: a release the approval hook never saw - a restore from the
+// bin, above all - still happens here.
 func (s *Service) releaseApprovedHolds(ctx context.Context, a actor.Actor, sourceID string) error {
 	if s.approvals == nil {
 		return nil
@@ -64,8 +63,7 @@ func (s *Service) releaseApprovedHolds(ctx context.Context, a actor.Actor, sourc
 	return nil
 }
 
-// recheck pages through every open row (FR-025 covers the whole queue, not the first page), classifying
-// each batch from its stored load-time interpretation, never today's mappings (FR-007).
+// recheck classifies each batch from its stored load-time interpretation, never today's mappings (FR-007).
 func (s *Service) recheck(ctx context.Context, a actor.Actor, sourceID string) (Counts, error) {
 	counts := Counts{}
 	seen := map[string]bool{}
@@ -80,9 +78,8 @@ func (s *Service) recheck(ctx context.Context, a actor.Actor, sourceID string) (
 	}
 }
 
-// openBatch pages by what the last pass left open; rows of undone imports are skipped, because a fact must
-// never hang on an upload that no longer stands. A queue over maxRows that will not shrink re-checks its
-// newest page only - reported in the PR rather than hidden.
+// openBatch pages by what the last pass left open, skipping undone imports; a queue over maxRows that will
+// not shrink re-checks its newest page only (noted in the PR).
 func (s *Service) openBatch(ctx context.Context, sourceID string, seen map[string]bool) ([]ReviewRowView, error) {
 	page, err := s.repo.ListReviewRows(ctx, ReviewFilter{Status: string(ReviewOpen), SourceID: sourceID, Limit: maxRows})
 	if err != nil {
@@ -169,8 +166,7 @@ func (s *Service) recheckEnv(ctx context.Context, sourceID string, rows []Row) (
 	return Env{Today: s.now(), Currencies: currencies, Resolved: resolved, Approved: approved}, nil
 }
 
-// newestPerReference keeps one row per reference in a batch - the newest - and supersedes the rest, so the
-// in-file repeated-reference rule never fires across old imports.
+// newestPerReference supersedes all but the newest row per reference, so the in-file rule stays in-file.
 func (s *Service) newestPerReference(ctx context.Context, a actor.Actor, views []ReviewRowView) ([]ReviewRowView, error) {
 	kept := make([]ReviewRowView, 0, len(views))
 	byReference := map[string]int{}

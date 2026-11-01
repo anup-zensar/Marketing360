@@ -107,9 +107,9 @@ func TestClassify_MeasuresAreParsedOnceAndCarried_FR014(t *testing.T) {
 	}
 }
 
-// FuzzClassify checks what every caller relies on, whatever a file holds: the summary always reconciles,
-// every row gets exactly one of the five outcomes, and nothing panics.
-func FuzzClassify(f *testing.F) {
+// FuzzClassify_FR022 checks what every caller relies on, whatever a file holds: the summary always
+// reconciles, every row gets exactly one of the five outcomes, and nothing panics.
+func FuzzClassify_FR022(f *testing.F) {
 	f.Add("r1", "2026-02-01", "5", "A-1", "USD")
 	f.Add("", "", "", "", "")
 	f.Add("r1", "not-a-date", "-1.5", "A-missing", "ZZZ")

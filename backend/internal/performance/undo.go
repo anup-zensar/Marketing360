@@ -10,8 +10,7 @@ import (
 	"mapp/internal/platform/errs"
 )
 
-// UndoImport takes a whole load back (FR-017); it restates figures someone may have read, so it needs
-// settings.manage on top of performance.import (046-C16).
+// UndoImport takes a whole load back; it restates figures, so settings.manage joins performance.import.
 func (s *Service) UndoImport(ctx context.Context, a actor.Actor, importID string) (Import, error) {
 	if err := authz.Require(ctx, PermissionImport); err != nil {
 		return Import{}, err
@@ -43,8 +42,7 @@ func (s *Service) undoImport(ctx context.Context, a actor.Actor, importID string
 	if err != nil {
 		return Import{}, err
 	}
-	// Deleting before restoring keeps the identity index satisfied: restoring first would put two current
-	// facts on one identity for the length of a statement.
+	// Deleting before restoring keeps the identity index satisfied at every moment.
 	replaced, err := s.repo.FactsReplacedBy(ctx, factIDs(facts))
 	if err != nil {
 		return Import{}, err

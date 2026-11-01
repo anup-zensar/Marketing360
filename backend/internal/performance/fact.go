@@ -41,7 +41,6 @@ type Counts struct {
 	Unmatched    int `json:"unmatched"`
 }
 
-// Reconciles is the invariant the database also carries as a CHECK (FR-022).
 func (c Counts) Reconciles() bool {
 	return c.Read == c.Matched+c.Held+c.Unattributed+c.Rejected+c.Unmatched
 }

@@ -2,6 +2,8 @@ package performance_test
 
 import (
 	"errors"
+	"os"
+	"strings"
 	"testing"
 
 	"mapp/internal/performance"
@@ -104,5 +106,23 @@ func TestDeleteAlias_NeedsPerformanceLink_FR043(t *testing.T) {
 	var refusal *errs.Error
 	if !errors.As(err, &refusal) || refusal.Code != errs.CodeForbidden {
 		t.Fatalf("DeleteAlias without performance.link = %v, want forbidden", err)
+	}
+}
+
+// FR-036's generation belongs to feature 006; what 046 must prove is the negative - none of its SQL ever
+// writes the external name it matches on (046-C14). A scan of this feature's own queries pins that.
+func TestQueries_NeverWriteTheExternalName_FR036(t *testing.T) {
+	t.Parallel()
+
+	queries, err := os.ReadFile("../platform/database/queries/performance.sql")
+	if err != nil {
+		t.Fatalf("read the feature's queries: %v", err)
+	}
+	for _, statement := range strings.Split(string(queries), ";") {
+		lowered := strings.ToLower(statement)
+		writes := strings.Contains(lowered, "update activities") || strings.Contains(lowered, "insert into activities")
+		if writes && strings.Contains(lowered, "external_name") {
+			t.Fatalf("a performance query writes activities.external_name, which feature 006 owns:\n%s", statement)
+		}
 	}
 }

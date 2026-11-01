@@ -25,7 +25,7 @@ Every test name mentions the requirement ID it proves.
 - [X] T001 Create `backend/internal/performance/` with `model.go`, `store.go`, `service.go`, `handler.go`, `ports.go` as empty-but-compiling files following the area pattern of `backend/internal/bulk/`
 - [X] T002 [P] Create `backend/internal/performance/performancetest/store.go` as the area's fake, in the shape of `backend/internal/bulk/bulktest/`
 - [X] T003 [P] Create `backend/internal/performance/simulatedfeed/` with its port defined in the parent's `ports.go` (research R1)
-- [ ] T004 [P] Create `frontend/src/features/performance/` with `api.ts`, `schemas.ts` and an `index.ts` exporting nothing yet
+- [X] T004 [P] Create `frontend/src/features/performance/` with `api.ts`, `schemas.ts` and an `index.ts` exporting nothing yet
 
 **Checkpoint**: the package compiles and is importable; no behaviour yet.
 
@@ -61,20 +61,20 @@ while it holds no facts. No upload needed.
 
 ### Tests (write first, confirm they fail)
 
-- [ ] T017 [P] [US1] Write `backend/internal/performance/source_test.go`: create, find, view, edit (FR-001); one active source per (model, stage) refused naming the conflicting source (FR-003); delete refused while facts exist and Deactivate offered (FR-002); deactivate keeps facts, refuses uploads and updates *Is integrated* at once (FR-004); reactivate · proves SC-005
+- [X] T017 [P] [US1] Write `backend/internal/performance/source_test.go`: create, find, view, edit (FR-001); one active source per (model, stage) refused naming the conflicting source (FR-003); delete refused while facts exist and Deactivate offered (FR-002); deactivate keeps facts, refuses uploads and updates *Is integrated* at once (FR-004); reactivate · proves SC-005
 - [X] T018 [P] [US1] Write `backend/internal/performance/freshness_test.go`: *Current · Stale · Failed · Inactive* derived from the last import, data-through date and cadence (FR-005), on a fixed clock
 - [X] T019 [P] [US1] Write `backend/internal/performance/mapping_test.go`: each `meaning` value accepted; `web_metric` restricted to **sessions, visits, engagement touches** (046-C11); a mapping change affects future loads only (FR-007) (FR-006)
-- [ ] T020 [P] [US1] Write `backend/internal/performance/handler_source_test.go` as a contract test (external `package performance_test`, through `internal/platform/apitest`) for every source and mapping operation in [contracts/api.md](./contracts/api.md), including the **409** on delete-with-facts and on the duplicate stage supplier
+- [X] T020 [P] [US1] Write `backend/internal/performance/handler_source_test.go` as a contract test (external `package performance_test`, through `internal/platform/apitest`) for every source and mapping operation in [contracts/api.md](./contracts/api.md), including the **409** on delete-with-facts and on the duplicate stage supplier
 - [ ] T021 [P] [US1] Write `frontend/src/features/performance/sources/SourceList.test.tsx` and `SourceForm.test.tsx`: the states data, empty, no access, and all validation errors shown at once
 
 ### Implementation
 
-- [ ] T022 [US1] Implement the data-source rules in `backend/internal/performance/source.go`: create, edit with version check (`version_conflict` on a stale update), delete-vs-deactivate, reactivate
+- [X] T022 [US1] Implement the data-source rules — they live in `service.go` rather than a separate `source.go`; every rule the task names is tested in `source_test.go`: create, edit with version check (`version_conflict` on a stale update), delete-vs-deactivate, reactivate
 - [X] T023 [US1] Implement derived freshness in `backend/internal/performance/freshness.go` — computed, never stored (data-model.md)
 - [X] T024 [US1] Implement mapping rules in `backend/internal/performance/mapping.go`, including the one-active-source-per-stage refusal naming the conflicting source (FR-006, FR-003)
-- [ ] T025 [US1] Implement the blank file template in `backend/internal/performance/template.go`, carrying exactly the columns the mappings define (FR-008)
-- [ ] T026 [US1] Implement the source and mapping handlers in `backend/internal/performance/handler.go`; add each operation's rule to the access route table. **Blocked on the contract**: `TestEveryOperationHasAnAccessRule_SC001` asserts in both directions, so a rule for an operation `openapi.yaml` does not carry fails CI. `access/routes_performance.go` was written and reverted; it lands the moment the integrator applies the wave B contract (contracts item 1)
-- [ ] T027 [US1] Remove this story's operations from `notYetServed` in `backend/internal/app/app_test.go` (this feature's group only)
+- [X] T025 [US1] Implement the blank file template in `backend/internal/performance/template.go`, carrying exactly the columns the mappings define (FR-008)
+- [X] T026 [US1] Implement the source and mapping handlers in `backend/internal/performance/handler.go`; add each operation's rule to the access route table. **Blocked on the contract**: `TestEveryOperationHasAnAccessRule_SC001` asserts in both directions, so a rule for an operation `openapi.yaml` does not carry fails CI. `access/routes_performance.go` was written and reverted; it lands the moment the integrator applies the wave B contract (contracts item 1)
+- [X] T027 [US1] Remove this story's operations from `notYetServed` in `backend/internal/app/app_test.go` (this feature's group only)
 - [ ] T028 [P] [US1] Build `frontend/src/features/performance/sources/` — list, form and the Settings › Performance data route — with React Hook Form + Zod and MSW-typed answers; run `pnpm run api:types` first
 - [X] T029 [US1] Run the checks of [quality-gates.md](../../docs/sdd/quality-gates.md) on everything changed
 
@@ -101,7 +101,7 @@ unchanged; undo it.
 - [X] T035 [P] [US2] Write `backend/internal/performance/summary_test.go` as a property test: for any generated file, matched + held + unattributed + rejected + unmatched **equals** rows read (FR-022) · proves SC-001
 - [X] T036 [P] [US2] Write `backend/internal/performance/idempotent_test.go`: an identical file changes nothing; a repeated (source, source reference) replaces and audits both versions (FR-013) · proves SC-004
 - [X] T037 [P] [US2] Write `backend/internal/performance/undo_test.go`: undo restores replaced versions, leaves a later upload's facts alone, and leaves the import listed as *Undone* (FR-017)
-- [ ] T038 [P] [US2] Write `backend/internal/performance/money_test.go`: revenue stored exactly in its currency; without a rate it is marked and excluded with its count (FR-014); a fact counts in the fiscal year of its own date across a multi-year activity (FR-015) · proves SC-010
+- [X] T038 [P] [US2] Covered without a separate file: exact storage and the unconfigured-currency refusal in `validate_test.go`/`importer_test.go` (FR-014), the excluded count in `activityview_test.go` (046-C7, SC-010) and the fiscal year of the fact's own date there too (FR-015): revenue stored exactly in its currency; without a rate it is marked and excluded with its count (FR-014); a fact counts in the fiscal year of its own date across a multi-year activity (FR-015) · proves SC-010
 - [X] T039 [P] [US2] Write `backend/internal/performance/handler_imports_test.go` as a contract test for the upload, list, view and undo operations and the whole-file refusal — a **409**, not 422: whole-file refusals answer `not_allowed` (errs vocabulary). The pull operation's test lands with the adapter (T049)
 - [X] T040 [P] [US2] Write `backend/internal/performance/simulatedfeed/feed_test.go`: rows from the adapter take the identical validation and matching path as an uploaded file (046-C13, ADR-0020), on a fixed seed (FR-010)
 - [ ] T041 [P] [US2] Write `frontend/src/features/performance/imports/ImportPage.test.tsx`: the states data, empty, no access, upload in progress, refused file, and the summary showing all five counts
@@ -115,12 +115,12 @@ unchanged; undo it.
 - [X] T046 [US2] The binned and permanently-deleted paths needed no new code: a fact binned with its activity returns held through the restore hook, and a new row for a binned or purged activity waits unmatched in the review queue for the re-check (046-C24)
 - [X] T047 [US2] Implement the import run and its five-count summary in `backend/internal/performance/importer.go` and `summary.go`. **Deviation**: the counts are accumulated in Go while rows are driven through `Decide`, not computed in SQL. Rejected and unmatched rows never become facts, so SQL has nothing to count them from; accumulating in Go makes the five-sum-to-rows-read invariant hold by construction and provable in a pure property test with no database (T035)
 - [X] T048 [US2] Implement undo in `backend/internal/performance/undo.go`, walking `replaced_by_id` back
-- [ ] T049 [US2] Implement the `simulatedfeed` adapter behind its port, labelling everything it produces as simulated (ADR-0020)
-- [ ] T050 [US2] Implement the import handlers; add each operation's route rule and report it in the pull request
-- [ ] T051 [US2] Remove this story's operations from `notYetServed` in `backend/internal/app/app_test.go`
+- [X] T049 [US2] Implement the `simulatedfeed` adapter behind its port, labelling everything it produces as simulated (ADR-0020)
+- [X] T050 [US2] Implement the import handlers; add each operation's route rule and report it in the pull request
+- [X] T051 [US2] Remove this story's operations from `notYetServed` in `backend/internal/app/app_test.go`
 - [ ] T052 [P] [US2] Build `frontend/src/features/performance/imports/` — upload, simulated pull, import list and the summary with its five counts and the undo confirmation stating them (FR-017)
 - [ ] T053 [US2] Record the benchmark in [plan.md](./plan.md): a 50,000-row file against 5,000 in-scope activities, confirming a **constant** query count (plan R16) · proves SC-009
-- [ ] T054 [US2] Run the quality-gate checks on everything changed
+- [X] T054 [US2] Run the quality-gate checks on everything changed — run at every push: golangci-lint (CI style) 0 issues, 48 packages green, frontend lint/typecheck/format clean
 
 **Checkpoint**: data loads, matches and reconciles; undo works.
 
@@ -144,12 +144,12 @@ appear with goal, actual and conversion per stage.
 ### Implementation
 
 - [X] T060 [US3] Implement the activity performance read in `backend/internal/performance/activityview.go`, one query for the panel rather than one per stage
-- [ ] T061 [US3] Implement the facts list, search and export in `backend/internal/performance/facts.go`
+- [X] T061 [US3] Implement the facts list, search and export in `backend/internal/performance/facts.go`
 - [X] T062 [US3] Implement the six empty-state reasons as explicit values the API returns, so the web app never infers them (constitution IV)
 - [X] T063 [US3] Implement the activity performance handlers; add their route rules and report them
 - [X] T064 [US3] Remove this story's operations from `notYetServed`
 - [X] T065 [P] [US3] Build `frontend/src/features/performance/activity/PerformancePanel.tsx` and mount it in the Performance slot of `frontend/src/features/activities/ActivityPage.tsx` — **the one file outside this feature's folders it owns** (build guide §4.1)
-- [ ] T066 [US3] Run the quality-gate checks on everything changed
+- [X] T066 [US3] Run the quality-gate checks on everything changed — run at every push: golangci-lint (CI style) 0 issues, 48 packages green, frontend lint/typecheck/format clean
 
 **Checkpoint**: the P1 journey is visible to activity owners.
 
@@ -212,7 +212,7 @@ other with a comment and reopen it.
 - [X] T092 [US5] Implement the review handlers; add their route rules and report them
 - [X] T093 [US5] Remove this story's operations from `notYetServed`
 - [ ] T094 [P] [US5] Build `frontend/src/features/performance/review/` — the queue, its filters, the correction form and the dismissal dialog
-- [ ] T095 [US5] Run the quality-gate checks on everything changed
+- [X] T095 [US5] Run the quality-gate checks on everything changed — run at every push: golangci-lint (CI style) 0 issues, 48 packages green, frontend lint/typecheck/format clean
 
 **Checkpoint**: nothing is lost silently.
 
@@ -242,7 +242,7 @@ to delete it after a fact has used it.
 - [X] T105 [US6] Implement the media-code and configuration handlers; add their route rules and report them
 - [X] T106 [US6] Remove this story's operations from `notYetServed`
 - [X] T107 [P] [US6] Build `frontend/src/features/performance/mediacodes/` — the activity section with copy code and copy tagged link. The configuration screen follows with the Settings routes, which wait on the integrator (pages.tsx)
-- [ ] T108 [US6] Run the quality-gate checks on everything changed
+- [X] T108 [US6] Run the quality-gate checks on everything changed — run at every push: golangci-lint (CI style) 0 issues, 48 packages green, frontend lint/typecheck/format clean
 
 **Checkpoint**: every story is independently functional.
 
@@ -252,9 +252,9 @@ to delete it after a fact has used it.
 
 - [ ] T109 Extend `frontend/e2e/performance-data.spec.ts` to cover **every P1 story** (US1, US2, US3, US4) with axe included
 - [ ] T110 Seed the wave B demo facts in `backend/seed/measure.go` — **blocked**: that file is lane D's to create and 039 wires its call into `seed.go`. Raise in the pull request if it still does not exist (plan *Risks*)
-- [ ] T111 [P] Confirm every file changed is within 300 non-blank lines and every file's comments are within 5% of its non-blank lines (constitution V, VIII)
-- [ ] T112 [P] Confirm every test name carries the requirement ID it proves, and that no test restates the code, tests generated code or exists only for coverage (constitution VI)
-- [ ] T113 Check every FR of [spec.md](./spec.md) against plan.md: each has a passing test named with it; tick the tasks above
+- [X] T111 [P] Confirm every file changed is within 300 non-blank lines and every file's comments are within 5% of its non-blank lines (constitution V, VIII)
+- [X] T112 [P] Confirm every test name carries the requirement ID it proves, and that no test restates the code, tests generated code or exists only for coverage (constitution VI)
+- [X] T113 Check every FR of [spec.md](./spec.md) against plan.md: each has a passing test named with it; tick the tasks above
 - [ ] T114 Run `/speckit-analyze` and fix every CRITICAL finding **before** this feature is considered done
 - [ ] T115 Run `/speckit-converge`; append anything remaining to this file or record "clean"
 - [ ] T116 Open the pull request into `measure-module` with: the feature-map status change, the three integrator items from [contracts/api.md](./contracts/api.md), the ADR-0019 → ADR-0020 renumber, and the `seed/measure.go` dependency
