@@ -34,6 +34,33 @@ Hive9's PR Dashboard also shows goods receipts (GRSP) and a vendor performance p
 sends no receipts (033, Q-030), so this report shows commitment, invoiced and paid only and does not offer a
 GRSP card, a GRSP column or a vendor performance chart.
 
+## Clarifications
+
+### Session 2026-11-02
+
+- **042-C1** — Q: Which requests count as commitment? → A: **Approved and Closed only**, each line in the calendar
+  month of its delivery date at its current amount (a Closed request's lines already hold what GSAP invoiced, 032).
+  Created, Submitted, In review and Declined requests appear in the status widget and the counts but add nothing
+  to commitment. Reason: commitment is what Shell has agreed to receive, and the issue says so. Applied to FR-009,
+  US1 scenarios 3 to 5.
+- **042-C2** — Q: Which months does the commitment axis cover? → A: **From the earliest to the latest delivery
+  month of the committed lines in view, every month between them shown** (a month with no line is a real 0.00),
+  then **No delivery date** last when a line has none. It is not limited to the report year, because delivery can
+  fall after it. Applied to FR-010, FR-012 and the edge cases.
+- **042-C3** — Q: What does the grid's page size count, and what is kept in the address? → A: **Vendors, the top
+  level**; each vendor opens to all its requests, lines and line items. Sort, search, page, page size and the
+  chosen columns are kept in the address; which vendors are open is not. Applied to FR-014, FR-016, FR-017.
+- **042-C4** — Q: Whose amounts show "—"? → A: **Amounts of a plan whose financial data the person may not see**
+  (`finance.view`, D-301), for the plan of the purchase request; counts, statuses and dates always show, and the
+  page says how many plans each amount leaves out. Applied to FR-020.
+- **042-C5** — Q: What is **Invoiced**? → A: **The sum of the invoices, less credit notes, on the purchase order
+  lines of the requests in view** (015, 033), in the display currency; a line with a purchase order and no invoice
+  shows 0.00, a line without a purchase order "—". Applied to FR-006, FR-019.
+- **042-C6** — Q: Which filters does the report own, and what do they match? → A: **Vendor** (the name as
+  entered, "Not filled in" for none), **Owner of the purchase request** (person) and **Status** (the six words of
+  032), each repeatable; an unknown value matches nothing and answers 200 with empty figures, not an error.
+  Malformed `sort`, `order`, `page`, `pageSize` or `columns` answer 400. Applied to FR-004 and the edge cases.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See what is committed to each vendor and owner, by delivery month (Priority: P1)
