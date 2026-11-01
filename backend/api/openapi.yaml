@@ -10239,20 +10239,52 @@ components:
         items:
           type: array
           items: { $ref: "#/components/schemas/PerformanceFact" }
+    SplitMonth:
+      type: object
+      description: One month split at today (047 FR-010); the month in progress carries both figures.
+      required: [month, actual, projected, inProgress]
+      properties:
+        month: { type: string, example: "2026-02" }
+        actual: { type: [integer, "null"] }
+        projected: { type: [integer, "null"] }
+        inProgress: { type: boolean }
+    SplitMoneyMonth:
+      type: object
+      required: [month, actual, projected, inProgress]
+      properties:
+        month: { type: string, example: "2026-02" }
+        actual:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        projected:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        inProgress: { type: boolean }
+    ProjectionStamp:
+      type: object
+      description: The model behind the projected figures and when its parameters last changed (047 FR-012).
+      required: [modelName, parametersChangedAt]
+      properties:
+        modelName: { type: string }
+        parametersChangedAt: { type: string, format: date-time }
     StageFigure:
       type: object
-      required: [stage, goal, actual, conversion, reason]
+      required: [stage, goal, actual, projected, conversion, reason, months]
       properties:
         stage: { type: string, enum: [inq, mql] }
         goal: { type: [integer, "null"] }
         actual: { type: [integer, "null"] }
+        projected:
+          type: [integer, "null"]
+          description: The plan-year figure from today onwards (047 FR-010); null with a reason when nothing projects.
         conversion:
           type: [number, "null"]
           description: Actual over the previous stage's actual, one decimal; null where it cannot be worked out.
         reason: { type: string, enum: ["", noSource, noGoal, failed, stale, noData] }
+        months:
+          type: array
+          items: { $ref: "#/components/schemas/SplitMonth" }
     RevenueFigure:
       type: object
-      required: [goal, actual, excludedCount, reason]
+      required: [goal, actual, projected, excludedCount, reason, months]
       properties:
         goal:
           oneOf:
@@ -10263,8 +10295,14 @@ components:
             - { $ref: "#/components/schemas/Money" }
             - { type: "null" }
           description: One USD total at the current rate (046-C7).
+        projected:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+          description: Deals from today onwards at the model's average deal size (047 FR-007).
         excludedCount: { type: integer, description: "Facts left out because their currency has no rate (SC-010)." }
         reason: { type: string, enum: ["", notApproved, noSource, noGoal, failed, stale, noData] }
+        months:
+          type: array
+          items: { $ref: "#/components/schemas/SplitMoneyMonth" }
     MetricFigure:
       type: object
       required: [metric, months]
@@ -10289,7 +10327,7 @@ components:
     PerformancePanel:
       type: object
       description: The activity's Performance area (FR-029); gated until the activity counts as approved.
-      required: [state, stages, revenue, webMetrics, sources]
+      required: [state, stages, revenue, webMetrics, sources, projection]
       properties:
         state: { type: string, enum: [ok, notApproved] }
         stages:
@@ -10302,6 +10340,8 @@ components:
         sources:
           type: array
           items: { $ref: "#/components/schemas/PanelSource" }
+        projection:
+          oneOf: [{ $ref: "#/components/schemas/ProjectionStamp" }, { type: "null" }]
     CodeAttribute:
       type: object
       required: [name, required]

@@ -16,19 +16,22 @@ function panel(overrides: Partial<Panel> = {}): Panel {
   return {
     state: 'ok',
     stages: [
-      { stage: 'inq', goal: 100, actual: 80, conversion: null, reason: '' },
-      { stage: 'mql', goal: 10, actual: 8, conversion: 10.0, reason: '' },
+      { stage: 'inq', goal: 100, actual: 80, conversion: null, reason: '', projected: null, months: [] },
+      { stage: 'mql', goal: 10, actual: 8, conversion: 10.0, reason: '', projected: null, months: []  },
     ],
     revenue: {
       goal: { amount: '5000.00', currency: 'USD' },
       actual: { amount: '1000.00', currency: 'USD' },
       excludedCount: 1,
       reason: '',
+      projected: null,
+      months: [],
     },
     webMetrics: [{ metric: 'sessions', months: [{ month: '2026-02', value: 1200 }] }],
     sources: [
       { sourceId: 'PS-1001', sourceName: 'Eloqua', freshness: 'stale', dataThrough: '2026-02-01' },
     ],
+    projection: null,
     ...overrides,
   };
 }
@@ -38,12 +41,13 @@ function emptyStages(
 ): Partial<Panel> {
   return {
     stages: [
-      { stage: 'inq', goal: null, actual: null, conversion: null, reason },
-      { stage: 'mql', goal: null, actual: null, conversion: null, reason },
+      { stage: 'inq', goal: null, actual: null, conversion: null, reason, projected: null, months: [] },
+      { stage: 'mql', goal: null, actual: null, conversion: null, reason, projected: null, months: [] },
     ],
-    revenue: { goal: null, actual: null, excludedCount: 0, reason },
+    revenue: { goal: null, actual: null, excludedCount: 0, reason, projected: null, months: [] },
     webMetrics: [],
     sources: [],
+    projection: null,
   };
 }
 
@@ -69,7 +73,7 @@ describe('PerformancePanel', () => {
   });
 
   it('046 FR-027 gates a non-approved activity with the stated message and no figures', async () => {
-    renderPanel(panel({ state: 'notApproved', stages: [], webMetrics: [], sources: [] }));
+    renderPanel(panel({ state: 'notApproved', stages: [], webMetrics: [], sources: [], projection: null }));
 
     expect(
       await screen.findByText('Approve the activity to see performance data.'),

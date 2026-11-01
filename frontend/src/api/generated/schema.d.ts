@@ -5289,24 +5289,51 @@ export interface components {
         PerformanceFactList: {
             items: components["schemas"]["PerformanceFact"][];
         };
+        /** @description One month split at today (047 FR-010); the month in progress carries both figures. */
+        SplitMonth: {
+            /** @example 2026-02 */
+            month: string;
+            actual: number | null;
+            projected: number | null;
+            inProgress: boolean;
+        };
+        SplitMoneyMonth: {
+            /** @example 2026-02 */
+            month: string;
+            actual: components["schemas"]["Money"] | null;
+            projected: components["schemas"]["Money"] | null;
+            inProgress: boolean;
+        };
+        /** @description The model behind the projected figures and when its parameters last changed (047 FR-012). */
+        ProjectionStamp: {
+            modelName: string;
+            /** Format: date-time */
+            parametersChangedAt: string;
+        };
         StageFigure: {
             /** @enum {string} */
             stage: "inq" | "mql";
             goal: number | null;
             actual: number | null;
+            /** @description The plan-year figure from today onwards (047 FR-010); null with a reason when nothing projects. */
+            projected: number | null;
             /** @description Actual over the previous stage's actual, one decimal; null where it cannot be worked out. */
             conversion: number | null;
             /** @enum {string} */
             reason: "" | "noSource" | "noGoal" | "failed" | "stale" | "noData";
+            months: components["schemas"]["SplitMonth"][];
         };
         RevenueFigure: {
             goal: components["schemas"]["Money"] | null;
             /** @description One USD total at the current rate (046-C7). */
             actual: components["schemas"]["Money"] | null;
+            /** @description Deals from today onwards at the model's average deal size (047 FR-007). */
+            projected: components["schemas"]["Money"] | null;
             /** @description Facts left out because their currency has no rate (SC-010). */
             excludedCount: number;
             /** @enum {string} */
             reason: "" | "notApproved" | "noSource" | "noGoal" | "failed" | "stale" | "noData";
+            months: components["schemas"]["SplitMoneyMonth"][];
         };
         MetricFigure: {
             /** @enum {string} */
@@ -5332,6 +5359,7 @@ export interface components {
             revenue: components["schemas"]["RevenueFigure"];
             webMetrics: components["schemas"]["MetricFigure"][];
             sources: components["schemas"]["PanelSource"][];
+            projection: components["schemas"]["ProjectionStamp"] | null;
         };
         CodeAttribute: {
             name: string;
