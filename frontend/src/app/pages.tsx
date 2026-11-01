@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import type { ReportKey } from '@/features/measure';
 import { loadSettingsSections } from './settings-sections';
 
 // Each page comes with its feature's code, loaded the first time one of its pages is shown (F8).
@@ -13,6 +14,7 @@ const financials = () => import('@/features/financials');
 const globalBudgets = () => import('@/features/global-budgets');
 const home = () => import('@/features/home');
 const lineItems = () => import('@/features/line-items');
+const measure = () => import('@/features/measure');
 const overspend = () => import('@/features/overspend');
 const people = () => import('@/features/people');
 const plans = () => import('@/features/plans');
@@ -46,6 +48,17 @@ export const ApprovalsPage = lazy(() =>
 );
 export const DashboardsPage = lazy(() =>
   dashboards().then((feature) => ({ default: feature.DashboardsPage })),
+);
+export const ReportsPage = lazy(() =>
+  measure().then((feature) => ({ default: feature.ReportsPage })),
+);
+export const ReportPage = lazy(() =>
+  measure().then((feature) => ({
+    default: ({ reportKey }: { reportKey: ReportKey }) => {
+      const Report = feature.REPORT_PAGES[reportKey];
+      return <Report />;
+    },
+  })),
 );
 export const ComponentGalleryPage = lazy(() =>
   dev().then((feature) => ({ default: feature.ComponentGalleryPage })),

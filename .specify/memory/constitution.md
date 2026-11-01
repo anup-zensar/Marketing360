@@ -15,7 +15,7 @@ Sync Impact Report
 - Templates: no change needed (plan-template.md reads its gates from this file)
 - Follow-up TODOs:
   - TODO(DARK_TOKENS): dark-theme values for Disabled Text, Link Hover and an error-text red
-  - ADR-0019 (simulated performance feed) is written with feature 046's plan
+  - ADR-0020 (simulated performance feed) is written with feature 046's plan
 -->
 
 
@@ -85,7 +85,7 @@ cheapest place to fix a defect. Traceability lets a maintainer find why any beha
 - **Performance data comes from a simulated feed.** The reports' performance facts (inquiries,
   MQLs, deals, revenue, web metrics) arrive by file upload or a simulated pull behind an adapter
   interface that the live CRM, marketing-automation and web-analytics connectors will implement
-  later (D-370, ADR-0019); they are labelled as simulated like everything the simulated GSAP produces.
+  later (D-370, ADR-0020); they are labelled as simulated like everything the simulated GSAP produces.
 
 **Rationale:** users already know Shell's words and process; they must not have to learn Hive9's
 screens.
@@ -143,7 +143,7 @@ recovered from code alone, so they are written down where maintainers look.
   file-import endpoints (check, then import), a simulated GSAP that answers SWBS requests and
   creates GSAP PRs and POs, a simulated performance feed for the reports (D-370), and demo seed
   data. **Later:** the real feed implements the same
-  interface, with no change to services or the web app (ADR-0009, ADR-0016, ADR-0019).
+  interface, with no change to services or the web app (ADR-0009, ADR-0016, ADR-0020).
 
 **Rationale:** a small, predictable structure is easy for new developers and AI agents to follow,
 and keeps the moves to Azure and Shell's live systems cheap.
@@ -532,7 +532,7 @@ both be non-negotiable without conflict.
 | Storage | PostgreSQL behind store interfaces (B5): installed natively or through the optional `compose.yaml` | Azure Database for PostgreSQL, same major version |
 | Sign-in and access | Demo sign-in with seeded users; roles, permissions and team scopes kept in MAPP (ADR-0008) | Microsoft Entra ID single sign-on; roles may come from Entra app roles or groups |
 | Shell integrations | Simulated GSAP feeds and a simulated GSAP for SWBS codes, GSAP PRs and POs, behind adapters (ADR-0009, ADR-0016) | Live GSAP feeds implementing the same adapters |
-| Performance data | A simulated performance feed (file upload or simulated pull) behind an adapter, matched to activities (D-370, ADR-0019) | Live CRM, marketing-automation and web-analytics connectors implementing the same adapter |
+| Performance data | A simulated performance feed (file upload or simulated pull) behind an adapter, matched to activities (D-370, ADR-0020) | Live CRM, marketing-automation and web-analytics connectors implementing the same adapter |
 | Visual design | Shell palette (Principle X), Jost and Arial, MAPP's own mark | Shell's typeface and pecten once Shell supplies them and consents |
 | Containers | Optional: `compose.yaml` runs PostgreSQL, or builds and runs the whole app locally for reviewers (ADR-0012), with Docker or Podman | Production images, registry and scanning, chosen by ADR before hosting |
 | Hosting | Local laptop | Azure Container Apps behind Azure Front Door (see `docs/reference/README.md`) |

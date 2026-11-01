@@ -1,4 +1,5 @@
 import {
+  ChartColumnIncreasing,
   CircleCheckBig,
   ClipboardList,
   FileText,
@@ -77,6 +78,13 @@ const DASHBOARDS: NavItem = {
   permission: 'plans.view',
 };
 
+const REPORTS: NavItem = {
+  label: 'Reports',
+  path: '/reports',
+  icon: ChartColumnIncreasing,
+  permission: 'reports.view',
+};
+
 const FINANCIALS: NavItem = {
   label: 'Financials',
   path: '/financials',
@@ -114,6 +122,7 @@ export const MAIN_ITEMS: NavItem[] = [
   FINANCIALS,
   PURCHASE_REQUESTS,
   DASHBOARDS,
+  REPORTS,
 ];
 
 export const MORE_ITEMS: NavItem[] = [SETTINGS, RECYCLE_BIN, ACTIVITY_LOG];
