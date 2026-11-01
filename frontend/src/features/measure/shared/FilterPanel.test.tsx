@@ -52,7 +52,7 @@ describe('FilterPanel (039 FR-008 – FR-013)', () => {
     );
   });
 
-  it('treats every value and no value ticked alike: no restriction (FR-012)', async () => {
+  it('keeps Apply off, with the reason, while a group has nothing ticked (FR-013)', async () => {
     const { user, onApply } = renderPanel(reportFrame().choices, {
       ...DEFAULT_ADDRESS,
       planTypes: ['strategic'],
@@ -62,8 +62,39 @@ describe('FilterPanel (039 FR-008 – FR-013)', () => {
     await user.click(within(planType).getByRole('button', { name: 'Clear all' }));
 
     expect(within(planType).getByText('(0 / 3)')).toBeInTheDocument();
+    expect(screen.getByText('Tick at least one value in Plan type.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
+
+    await user.click(within(planType).getByRole('button', { name: 'Select all' }));
     await user.click(screen.getByRole('button', { name: 'Apply' }));
     expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ planTypes: [] }));
+  });
+
+  it('changes the year at once, saying first that it clears the chosen plans (FR-013)', async () => {
+    const { user, onApply } = renderPanel(reportFrame().choices, {
+      ...DEFAULT_ADDRESS,
+      plans: ['P-1001'],
+    });
+    const year = screen.getByRole('combobox', { name: 'Year' });
+    expect(year).toHaveAccessibleDescription('Another year clears the plan you chose.');
+
+    await user.selectOptions(year, '2025');
+
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ year: 2025, plans: [] }));
+  });
+
+  it('closes on Escape without change and returns focus to Filters (n) (FR-013)', async () => {
+    const { user, onApply } = renderPanel();
+    const toggle = screen.getByRole('button', { name: 'Filters (0)' });
+    await user.click(toggle);
+    await user.click(screen.getByRole('checkbox', { name: 'FY2026 Mobility' }));
+
+    await user.keyboard('{Escape}');
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle).toHaveFocus();
+    expect(screen.getByRole('checkbox', { name: 'FY2026 Mobility' })).toBeChecked();
+    expect(onApply).not.toHaveBeenCalled();
   });
 
   it('offers a search above ten values (FR-010)', async () => {

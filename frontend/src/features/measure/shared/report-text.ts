@@ -57,8 +57,11 @@ export function leftOutText(count: number): string {
 }
 
 export function coverageText(plans: number, of: number): string | null {
-  return plans === of
-    ? null
+  if (plans === of) {
+    return null;
+  }
+  return plans === 0
+    ? "You can't see the financial data of these plans"
     : `Covers ${plans.toLocaleString('en-GB')} of ${of.toLocaleString('en-GB')} plans`;
 }
 
