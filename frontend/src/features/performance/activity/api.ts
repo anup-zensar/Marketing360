@@ -64,3 +64,27 @@ export function useDeleteAlias(activityId: string) {
     onSettled: () => queryClient.invalidateQueries({ queryKey: areaKeys.area(activityId) }),
   });
 }
+
+export type PerformancePanel = Schemas2['PerformancePanel'];
+export type StageFigure = Schemas2['StageFigure'];
+export type RevenueFigure = Schemas2['RevenueFigure'];
+export type MetricFigure = Schemas2['MetricFigure'];
+export type PanelSource = Schemas2['PanelSource'];
+
+type Schemas2 = components['schemas'];
+
+export const panelKeys = {
+  panel: (activityId: string) => ['performance', 'activity', activityId, 'panel'] as const,
+};
+
+export function usePerformancePanel(activityId: string) {
+  return useQuery({
+    queryKey: panelKeys.panel(activityId),
+    queryFn: () =>
+      call(
+        api.GET('/api/v1/activities/{activityId}/performance', {
+          params: { path: { activityId } },
+        }),
+      ),
+  });
+}

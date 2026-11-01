@@ -53,6 +53,19 @@ function openPage(
 ) {
   const api = mockApi([
     ...HISTORY_ANSWERS,
+    reply(
+      'GET /api/v1/activities/{activityId}/performance',
+      {
+        body: {
+          state: 'notApproved',
+          stages: [],
+          revenue: { goal: null, actual: null, excludedCount: 0, reason: 'notApproved' },
+          webMetrics: [],
+          sources: [],
+        },
+      },
+      { activityId: 'A-1042' },
+    ),
     reply('GET /api/v1/activities/{activityId}/performance/sources', {
       body: {
         externalName: '',

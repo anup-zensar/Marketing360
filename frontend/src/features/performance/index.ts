@@ -4,3 +4,4 @@ export { PERFORMANCE_SETTINGS_SECTIONS } from './settings-sections';
 export { usePerformanceSources } from './api';
 export type { PerformanceSource, ColumnMapping } from './api';
 export { DataSourcesArea } from './activity/DataSourcesArea';
+export { PerformancePanel } from './activity/PerformancePanel';

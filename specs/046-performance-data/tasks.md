@@ -138,7 +138,7 @@ appear with goal, actual and conversion per stage.
 - [X] T055 [P] [US3] Write `backend/internal/performance/activityview_test.go`: a non-approved activity returns the stated reason and **no figures** (FR-027); an approved one returns per-stage goal, actual, projected and conversion, and revenue naming its model (FR-029)
 - [X] T056 [P] [US3] Write `backend/internal/performance/facts_list_test.go`: the fact list carries date, source, stage or metric, value, currency, **the key matched on** and the import (FR-030), searchable and exportable
 - [X] T057 [P] [US3] Write `backend/internal/performance/handler_activity_test.go` as a contract test for the four activity performance operations
-- [ ] T058 [P] [US3] Write `frontend/src/features/performance/activity/PerformancePanel.test.tsx` with **one test per state** — not approved, no source, no goal, no data yet, stale, failed (FR-032) — asserting no sample figure appears in any of them · proves SC-008
+- [X] T058 [P] [US3] Write `frontend/src/features/performance/activity/PerformancePanel.test.tsx` with **one test per state** — not approved, no source, no goal, no data yet, stale, failed (FR-032) — asserting no sample figure appears in any of them · proves SC-008
 - [ ] T059 [P] [US3] Write `frontend/e2e/performance-data.spec.ts` covering US3's journey with axe: Submitted activity shows the gate, approval releases its facts
 
 ### Implementation
@@ -148,7 +148,7 @@ appear with goal, actual and conversion per stage.
 - [X] T062 [US3] Implement the six empty-state reasons as explicit values the API returns, so the web app never infers them (constitution IV)
 - [X] T063 [US3] Implement the activity performance handlers; add their route rules and report them
 - [X] T064 [US3] Remove this story's operations from `notYetServed`
-- [ ] T065 [P] [US3] Build `frontend/src/features/performance/activity/PerformancePanel.tsx` and mount it in the Performance slot of `frontend/src/features/activities/ActivityPage.tsx` — **the one file outside this feature's folders it owns** (build guide §4.1)
+- [X] T065 [P] [US3] Build `frontend/src/features/performance/activity/PerformancePanel.tsx` and mount it in the Performance slot of `frontend/src/features/activities/ActivityPage.tsx` — **the one file outside this feature's folders it owns** (build guide §4.1)
 - [ ] T066 [US3] Run the quality-gate checks on everything changed
 
 **Checkpoint**: the P1 journey is visible to activity owners.
