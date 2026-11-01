@@ -90,3 +90,7 @@ func unitsOf(whole, fraction string) (int64, error) {
 	}
 	return w*numberScale + f, nil
 }
+
+func (n Number) MarshalJSON() ([]byte, error) {
+	return []byte(strconv.Quote(n.String())), nil
+}
