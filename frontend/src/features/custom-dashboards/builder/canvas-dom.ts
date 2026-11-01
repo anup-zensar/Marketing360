@@ -29,3 +29,7 @@ export function draggedType(types: readonly string[]): WidgetType | null {
   const named = types.find((type) => type.startsWith(prefix))?.slice(prefix.length);
   return WIDGET_TYPES.find((info) => info.type.toLowerCase() === named)?.type ?? null;
 }
+
+export function widgetCellName(name: string, layout: WidgetLayout): string {
+  return `Widget: ${name}, column ${layout.x + 1}, row ${layout.y + 1}`;
+}

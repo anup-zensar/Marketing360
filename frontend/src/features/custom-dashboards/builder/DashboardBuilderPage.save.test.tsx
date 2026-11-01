@@ -1,18 +1,31 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import type { HttpHandler } from 'msw';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { mockApi } from '@/testing/mock-api';
 import { findMessages, renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
 import { NO_PLANS } from '@/testing/fixtures/session';
 import { testUser } from '@/testing/fixtures/users';
-import { dashboard, NOTE_WIDGET } from './builder-fixtures';
+import { widgetData } from '../charts/widget-fixtures';
+import { dashboard, NOTE_WIDGET, SOURCES } from './builder-fixtures';
 import { DashboardBuilderPage } from './DashboardBuilderPage';
+
+vi.mock('echarts/core', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  init: () => ({ setOption: () => {}, resize: () => {}, dispose: () => {} }),
+}));
 
 const CHOICES: HttpHandler[] = [
   ...NO_PLANS,
   reply('GET /api/v1/teams', { body: { items: [], total: 0 } }),
+  reply('GET /api/v1/data-sources', { body: { items: SOURCES } }),
+  reply('POST /api/v1/data-sources/query', { body: widgetData() }),
 ];
+
+function cell(name: string): RegExp {
+  return new RegExp(`^Widget: ${name}, column \\d+, row \\d+$`);
+}
+
 const SAVED = dashboard();
 
 function renderBuilder(route: string, answers: HttpHandler[] = []) {
@@ -48,7 +61,7 @@ describe('051 US1-8, FR-033: Save checks everything at once and saves nothing wh
       within(summary).getByRole('link', { name: 'Bar chart: Choose a source.' }),
     ).toBeInTheDocument();
     expect(summary.parentElement).toHaveFocus();
-    const widget = screen.getByRole('region', { name: 'Bar chart' });
+    const widget = screen.getByRole('group', { name: cell('Bar chart') });
     expect(within(widget).getByText('Choose a source.')).toBeInTheDocument();
     expect(api.requests.filter((request) => request.method === 'POST')).toEqual([]);
   });

@@ -5,7 +5,7 @@ import { cx } from '@/ui/cx';
 import { WidgetView } from '../charts';
 import type { CustomDashboardFilters, Widget, WidgetLayout } from '../model';
 import type { BuilderAction } from './builder-reducer';
-import { gridArea, KEYS_HELP_ID, widgetHandleId } from './canvas-dom';
+import { gridArea, KEYS_HELP_ID, widgetCellName, widgetHandleId } from './canvas-dom';
 import type { Step } from './grid';
 import { usePointerDrag } from './usePointerDrag';
 import type { Pitch } from './usePointerDrag';
@@ -72,8 +72,9 @@ export function CanvasWidget({
   }
 
   return (
-    <section
-      aria-label={name}
+    <div
+      role="group"
+      aria-label={widgetCellName(name, layout)}
       className={cx(styles.widget, isSelected && styles.selected)}
       style={gridArea(layout)}
     >
@@ -126,6 +127,6 @@ export function CanvasWidget({
       >
         <MoveDiagonal2 size={16} aria-hidden="true" />
       </button>
-    </section>
+    </div>
   );
 }

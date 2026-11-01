@@ -4,7 +4,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
+import { reply } from '@/testing/replies';
 import { testUser } from '@/testing/fixtures/users';
+import { widgetData } from '../charts/widget-fixtures';
 import type { CustomDashboard } from '../model';
 import { dashboard } from './builder-fixtures';
 import { builderReducer, initialState } from './builder-reducer';
@@ -13,6 +15,11 @@ import { WIDGET_MIME } from './canvas-dom';
 import { WidgetPalette } from './WidgetPalette';
 
 const GRID_WIDTH = 1184;
+
+vi.mock('echarts/core', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  init: () => ({ setOption: () => {}, resize: () => {}, dispose: () => {} }),
+}));
 
 function Harness({ start }: { start: CustomDashboard | null }) {
   const [state, dispatch] = useReducer(builderReducer, start, initialState);
@@ -31,12 +38,16 @@ function Harness({ start }: { start: CustomDashboard | null }) {
 }
 
 function renderCanvas(start: CustomDashboard | null = dashboard()) {
-  mockApi([]);
+  mockApi([reply('POST /api/v1/data-sources/query', { body: widgetData() })]);
   return renderWithProviders(<Harness start={start} />, { user: testUser() });
 }
 
+function cell(name: string): RegExp {
+  return new RegExp(`^Widget: ${name}, column \\d+, row \\d+$`);
+}
+
 function widget(name: string) {
-  return screen.getByRole('region', { name });
+  return screen.getByRole('group', { name: cell(name) });
 }
 
 function handle(name: string) {
@@ -44,7 +55,10 @@ function handle(name: string) {
 }
 
 function announced() {
-  return screen.getByRole('status').textContent;
+  const outsideWidgets = screen
+    .getAllByRole('status')
+    .filter((status) => !status.closest('[role="group"]'));
+  return outsideWidgets[0]?.textContent;
 }
 
 beforeEach(() => {
@@ -67,6 +81,14 @@ describe('051 FR-028: moving and resizing widgets with the keyboard', () => {
 
     expect(widget('About')).toHaveStyle({ gridColumn: '7 / span 4', gridRow: '2 / span 2' });
     expect(announced()).toBe('Moved to column 7, row 2.');
+  });
+
+  it('names each widget once, with its place on the grid (SC-006)', () => {
+    renderCanvas();
+    expect(
+      screen.getByRole('group', { name: 'Widget: About, column 7, row 1' }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByRole('region', { name: 'Planned cost by type' })).toHaveLength(1);
   });
 
   it('resizes one cell with Shift and an arrow key', async () => {
@@ -111,7 +133,7 @@ describe('051 FR-029: duplicating and deleting from the keyboard and the menu', 
     handle('About').focus();
     await user.keyboard('{Control>}d{/Control}');
 
-    expect(screen.getAllByRole('region', { name: 'About' })).toHaveLength(2);
+    expect(screen.getAllByRole('group', { name: cell('About') })).toHaveLength(2);
     expect(announced()).toBe("'About' duplicated.");
   });
 
@@ -120,7 +142,7 @@ describe('051 FR-029: duplicating and deleting from the keyboard and the menu', 
     handle('About').focus();
     await user.keyboard('{Delete}');
 
-    expect(screen.queryByRole('region', { name: 'About' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: cell('About') })).not.toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Canvas' })).toHaveFocus();
     expect(announced()).toBe("'About' deleted.");
   });
@@ -130,7 +152,7 @@ describe('051 FR-029: duplicating and deleting from the keyboard and the menu', 
     await user.click(screen.getByRole('button', { name: "Actions for 'About'" }));
     await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
 
-    expect(screen.queryByRole('region', { name: 'About' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: cell('About') })).not.toBeInTheDocument();
   });
 });
 

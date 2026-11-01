@@ -8,7 +8,7 @@ import { usePageTitle } from '@/ui/usePageTitle';
 import { WidgetView } from '../charts';
 import type { CustomDashboard } from '../model';
 import { useCopyDashboard } from './api';
-import { gridArea } from './canvas-dom';
+import { gridArea, widgetCellName } from './canvas-dom';
 import { widgetName } from './widget-defaults';
 import styles from './Builder.module.css';
 
@@ -56,9 +56,10 @@ export function ViewOnlyBuilder({ dashboard }: ViewOnlyBuilderProps) {
       <div className={styles.canvas}>
         <div className={styles.grid}>
           {dashboard.widgets.map((widget) => (
-            <section
+            <div
               key={widget.id}
-              aria-label={widgetName(widget)}
+              role="group"
+              aria-label={widgetCellName(widgetName(widget), widget.layout)}
               className={styles.widget}
               style={gridArea(widget.layout)}
             >
@@ -71,7 +72,7 @@ export function ViewOnlyBuilder({ dashboard }: ViewOnlyBuilderProps) {
                   viewerOwnsDashboard={false}
                 />
               </div>
-            </section>
+            </div>
           ))}
         </div>
       </div>
