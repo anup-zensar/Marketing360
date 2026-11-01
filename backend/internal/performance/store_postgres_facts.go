@@ -2,11 +2,8 @@ package performance
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
-
-	"github.com/jackc/pgx/v5"
 
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
@@ -70,17 +67,18 @@ func (s *PostgresStore) PutFact(ctx context.Context, f Fact) error {
 	return nil
 }
 
-func (s *PostgresStore) CurrentFactByReference(ctx context.Context, sourceID, reference string) (Fact, bool, error) {
-	row, err := s.db.Queries(ctx).CurrentFactByReference(ctx, sqlcdb.CurrentFactByReferenceParams{
-		SourceID: sourceID, SourceReference: reference,
+func (s *PostgresStore) CurrentFacts(ctx context.Context, sourceID string, references []string) ([]Fact, error) {
+	rows, err := s.db.Queries(ctx).CurrentFactsByReferences(ctx, sqlcdb.CurrentFactsByReferencesParams{
+		SourceID: sourceID, SourceReferences: references,
 	})
-	if errors.Is(err, pgx.ErrNoRows) {
-		return Fact{}, false, nil
-	}
 	if err != nil {
-		return Fact{}, false, fmt.Errorf("select the current fact of %s/%s: %w", sourceID, reference, err)
+		return nil, fmt.Errorf("select the current facts of %s: %w", sourceID, err)
 	}
-	return factOf(row.PerformanceFact), true, nil
+	facts := make([]Fact, 0, len(rows))
+	for _, r := range rows {
+		facts = append(facts, factOf(r.PerformanceFact))
+	}
+	return facts, nil
 }
 
 // ReleaseHeld clears the hold on an activity's facts in one statement, inside the caller's transaction, so
@@ -93,4 +91,28 @@ func (s *PostgresStore) ReleaseHeld(ctx context.Context, activityID string, by a
 		return 0, fmt.Errorf("release the held facts of activity %s: %w", activityID, err)
 	}
 	return int(released), nil
+}
+
+func (s *PostgresStore) ListFactsOfImport(ctx context.Context, importID string) ([]Fact, error) {
+	rows, err := s.db.Queries(ctx).ListFactsOfImport(ctx, importID)
+	if err != nil {
+		return nil, fmt.Errorf("select the facts of import %s: %w", importID, err)
+	}
+	facts := make([]Fact, 0, len(rows))
+	for _, r := range rows {
+		facts = append(facts, factOf(r.PerformanceFact))
+	}
+	return facts, nil
+}
+
+func (s *PostgresStore) FactsReplacedBy(ctx context.Context, replacerIDs []string) ([]Fact, error) {
+	rows, err := s.db.Queries(ctx).FactsReplacedBy(ctx, replacerIDs)
+	if err != nil {
+		return nil, fmt.Errorf("select the facts the import replaced: %w", err)
+	}
+	facts := make([]Fact, 0, len(rows))
+	for _, r := range rows {
+		facts = append(facts, factOf(r.PerformanceFact))
+	}
+	return facts, nil
 }

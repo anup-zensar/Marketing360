@@ -17,11 +17,12 @@ import (
 const maxNameLength = 120
 
 type Service struct {
-	tx      Transactor
-	repo    Store
-	ids     *ids.Generator
-	history *history.Service
-	now     clock.Clock
+	tx        Transactor
+	repo      Store
+	ids       *ids.Generator
+	history   *history.Service
+	now       clock.Clock
+	approvals Approvals
 }
 
 func NewService(tools history.Tools, repo Store) *Service {

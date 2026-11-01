@@ -203,3 +203,33 @@ func nonNil(faults []Fault) []Fault {
 	}
 	return faults
 }
+
+func (s *PostgresStore) PutBreakdown(ctx context.Context, importID string, groups []Breakdown) error {
+	if err := s.db.Queries(ctx).DeletePerformanceImportBreakdown(ctx, importID); err != nil {
+		return fmt.Errorf("clear the breakdown of import %s: %w", importID, err)
+	}
+	for _, g := range groups {
+		err := s.db.Queries(ctx).PutPerformanceImportBreakdown(ctx, sqlcdb.PutPerformanceImportBreakdownParams{
+			ImportID: importID, Stage: g.Stage, WebMetric: string(g.WebMetric),
+			RowsRead: g.Counts.Read, RowsMatched: g.Counts.Matched, RowsHeld: g.Counts.Held,
+			RowsUnattributed: g.Counts.Unattributed, RowsRejected: g.Counts.Rejected,
+			RowsUnmatched: g.Counts.Unmatched,
+		})
+		if err != nil {
+			return fmt.Errorf("save the breakdown of import %s: %w", importID, err)
+		}
+	}
+	return nil
+}
+
+func (s *PostgresStore) CurrencyCodes(ctx context.Context) (map[string]bool, error) {
+	codes, err := s.db.Queries(ctx).ListCurrencyCodes(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("select the currency codes: %w", err)
+	}
+	known := make(map[string]bool, len(codes))
+	for _, code := range codes {
+		known[code] = true
+	}
+	return known, nil
+}

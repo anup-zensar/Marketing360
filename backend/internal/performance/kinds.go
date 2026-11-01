@@ -12,8 +12,19 @@ func (s *Service) Kinds() []history.Kind {
 	return append([]history.Kind{{
 		Name: sourceKind, Singular: sourceKindSingular, Plural: sourceKindPlural,
 		Snapshot: s.snapshotSource, Remove: s.removeSource, Put: s.restoreSource,
+	}, {
+		Name: importKind, Singular: importKindSingular, Plural: importKindPlural,
+		Snapshot: neverBinned, Remove: noRemove, Put: noPut,
 	}}, s.childKinds()...)
 }
+
+func neverBinned(context.Context, string) (history.Snapshot, bool, error) {
+	return history.Snapshot{}, false, nil
+}
+
+func noRemove(context.Context, string) error { return nil }
+
+func noPut(context.Context, history.Snapshot) error { return nil }
 
 func (s *Service) snapshotSource(ctx context.Context, id string) (history.Snapshot, bool, error) {
 	found, err := s.repo.ListSources(ctx, id)

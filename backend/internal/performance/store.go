@@ -62,13 +62,17 @@ type Matching interface {
 type Facts interface {
 	ListFactsForActivity(ctx context.Context, scope authz.Scope, activityID string, countedOnly bool) ([]FactView, error)
 	PutFact(ctx context.Context, f Fact) error
-	CurrentFactByReference(ctx context.Context, sourceID, reference string) (Fact, bool, error)
+	CurrentFacts(ctx context.Context, sourceID string, references []string) ([]Fact, error)
+	ListFactsOfImport(ctx context.Context, importID string) ([]Fact, error)
+	FactsReplacedBy(ctx context.Context, replacerIDs []string) ([]Fact, error)
 	ReleaseHeld(ctx context.Context, activityID string, by actor.Actor, at time.Time) (int, error)
 }
 
 type Imports interface {
 	ListImports(ctx context.Context, id, sourceID string, limit int) ([]Import, error)
 	PutImport(ctx context.Context, i Import) error
+	PutBreakdown(ctx context.Context, importID string, groups []Breakdown) error
+	CurrencyCodes(ctx context.Context) (map[string]bool, error)
 }
 
 type Review interface {

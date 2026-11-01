@@ -79,49 +79,63 @@ func (q *Queries) AliasIDsOfActivities(ctx context.Context, activityIds []string
 	return items, nil
 }
 
-const currentFactByReference = `-- name: CurrentFactByReference :one
+const currentFactsByReferences = `-- name: CurrentFactsByReferences :many
 SELECT performance_facts.id, performance_facts.source_id, performance_facts.import_id, performance_facts.source_reference, performance_facts.activity_id, performance_facts.matched_on, performance_facts.fact_date, performance_facts.stage, performance_facts.web_metric, performance_facts.count_value, performance_facts.amount_minor, performance_facts.currency, performance_facts.held, performance_facts.replaced_by_id, performance_facts.version, performance_facts.created_at, performance_facts.created_by_id, performance_facts.created_by_name, performance_facts.updated_at, performance_facts.updated_by_id, performance_facts.updated_by_name
 FROM performance_facts
-WHERE source_id = $1 AND source_reference = $2
+WHERE source_id = $1 AND source_reference = ANY($2::text[])
     AND replaced_by_id IS NULL
+ORDER BY source_reference COLLATE "C", stage COLLATE "C", web_metric COLLATE "C"
 `
 
-type CurrentFactByReferenceParams struct {
-	SourceID        string
-	SourceReference string
+type CurrentFactsByReferencesParams struct {
+	SourceID         string
+	SourceReferences []string
 }
 
-type CurrentFactByReferenceRow struct {
+type CurrentFactsByReferencesRow struct {
 	PerformanceFact PerformanceFact
 }
 
-func (q *Queries) CurrentFactByReference(ctx context.Context, arg CurrentFactByReferenceParams) (CurrentFactByReferenceRow, error) {
-	row := q.db.QueryRow(ctx, currentFactByReference, arg.SourceID, arg.SourceReference)
-	var i CurrentFactByReferenceRow
-	err := row.Scan(
-		&i.PerformanceFact.ID,
-		&i.PerformanceFact.SourceID,
-		&i.PerformanceFact.ImportID,
-		&i.PerformanceFact.SourceReference,
-		&i.PerformanceFact.ActivityID,
-		&i.PerformanceFact.MatchedOn,
-		&i.PerformanceFact.FactDate,
-		&i.PerformanceFact.Stage,
-		&i.PerformanceFact.WebMetric,
-		&i.PerformanceFact.CountValue,
-		&i.PerformanceFact.AmountMinor,
-		&i.PerformanceFact.Currency,
-		&i.PerformanceFact.Held,
-		&i.PerformanceFact.ReplacedByID,
-		&i.PerformanceFact.Version,
-		&i.PerformanceFact.CreatedAt,
-		&i.PerformanceFact.CreatedByID,
-		&i.PerformanceFact.CreatedByName,
-		&i.PerformanceFact.UpdatedAt,
-		&i.PerformanceFact.UpdatedByID,
-		&i.PerformanceFact.UpdatedByName,
-	)
-	return i, err
+func (q *Queries) CurrentFactsByReferences(ctx context.Context, arg CurrentFactsByReferencesParams) ([]CurrentFactsByReferencesRow, error) {
+	rows, err := q.db.Query(ctx, currentFactsByReferences, arg.SourceID, arg.SourceReferences)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CurrentFactsByReferencesRow{}
+	for rows.Next() {
+		var i CurrentFactsByReferencesRow
+		if err := rows.Scan(
+			&i.PerformanceFact.ID,
+			&i.PerformanceFact.SourceID,
+			&i.PerformanceFact.ImportID,
+			&i.PerformanceFact.SourceReference,
+			&i.PerformanceFact.ActivityID,
+			&i.PerformanceFact.MatchedOn,
+			&i.PerformanceFact.FactDate,
+			&i.PerformanceFact.Stage,
+			&i.PerformanceFact.WebMetric,
+			&i.PerformanceFact.CountValue,
+			&i.PerformanceFact.AmountMinor,
+			&i.PerformanceFact.Currency,
+			&i.PerformanceFact.Held,
+			&i.PerformanceFact.ReplacedByID,
+			&i.PerformanceFact.Version,
+			&i.PerformanceFact.CreatedAt,
+			&i.PerformanceFact.CreatedByID,
+			&i.PerformanceFact.CreatedByName,
+			&i.PerformanceFact.UpdatedAt,
+			&i.PerformanceFact.UpdatedByID,
+			&i.PerformanceFact.UpdatedByName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const deleteAliases = `-- name: DeleteAliases :exec
@@ -242,6 +256,59 @@ func (q *Queries) FactIDsOfActivities(ctx context.Context, activityIds []string)
 			return nil, err
 		}
 		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const factsReplacedBy = `-- name: FactsReplacedBy :many
+SELECT performance_facts.id, performance_facts.source_id, performance_facts.import_id, performance_facts.source_reference, performance_facts.activity_id, performance_facts.matched_on, performance_facts.fact_date, performance_facts.stage, performance_facts.web_metric, performance_facts.count_value, performance_facts.amount_minor, performance_facts.currency, performance_facts.held, performance_facts.replaced_by_id, performance_facts.version, performance_facts.created_at, performance_facts.created_by_id, performance_facts.created_by_name, performance_facts.updated_at, performance_facts.updated_by_id, performance_facts.updated_by_name
+FROM performance_facts
+WHERE replaced_by_id = ANY($1::text[])
+ORDER BY id COLLATE "C"
+`
+
+type FactsReplacedByRow struct {
+	PerformanceFact PerformanceFact
+}
+
+func (q *Queries) FactsReplacedBy(ctx context.Context, replacerIds []string) ([]FactsReplacedByRow, error) {
+	rows, err := q.db.Query(ctx, factsReplacedBy, replacerIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []FactsReplacedByRow{}
+	for rows.Next() {
+		var i FactsReplacedByRow
+		if err := rows.Scan(
+			&i.PerformanceFact.ID,
+			&i.PerformanceFact.SourceID,
+			&i.PerformanceFact.ImportID,
+			&i.PerformanceFact.SourceReference,
+			&i.PerformanceFact.ActivityID,
+			&i.PerformanceFact.MatchedOn,
+			&i.PerformanceFact.FactDate,
+			&i.PerformanceFact.Stage,
+			&i.PerformanceFact.WebMetric,
+			&i.PerformanceFact.CountValue,
+			&i.PerformanceFact.AmountMinor,
+			&i.PerformanceFact.Currency,
+			&i.PerformanceFact.Held,
+			&i.PerformanceFact.ReplacedByID,
+			&i.PerformanceFact.Version,
+			&i.PerformanceFact.CreatedAt,
+			&i.PerformanceFact.CreatedByID,
+			&i.PerformanceFact.CreatedByName,
+			&i.PerformanceFact.UpdatedAt,
+			&i.PerformanceFact.UpdatedByID,
+			&i.PerformanceFact.UpdatedByName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -393,6 +460,30 @@ func (q *Queries) IntegrationIDsOfActivities(ctx context.Context, activityIds []
 	return items, nil
 }
 
+const listCurrencyCodes = `-- name: ListCurrencyCodes :many
+SELECT code FROM currencies ORDER BY code
+`
+
+func (q *Queries) ListCurrencyCodes(ctx context.Context) ([]string, error) {
+	rows, err := q.db.Query(ctx, listCurrencyCodes)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var code string
+		if err := rows.Scan(&code); err != nil {
+			return nil, err
+		}
+		items = append(items, code)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listFactsForActivity = `-- name: ListFactsForActivity :many
 SELECT performance_facts.id, performance_facts.source_id, performance_facts.import_id, performance_facts.source_reference, performance_facts.activity_id, performance_facts.matched_on, performance_facts.fact_date, performance_facts.stage, performance_facts.web_metric, performance_facts.count_value, performance_facts.amount_minor, performance_facts.currency, performance_facts.held, performance_facts.replaced_by_id, performance_facts.version, performance_facts.created_at, performance_facts.created_by_id, performance_facts.created_by_name, performance_facts.updated_at, performance_facts.updated_by_id, performance_facts.updated_by_name, s.name AS source_name
 FROM performance_facts
@@ -458,6 +549,59 @@ func (q *Queries) ListFactsForActivity(ctx context.Context, arg ListFactsForActi
 			&i.PerformanceFact.UpdatedByID,
 			&i.PerformanceFact.UpdatedByName,
 			&i.SourceName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listFactsOfImport = `-- name: ListFactsOfImport :many
+SELECT performance_facts.id, performance_facts.source_id, performance_facts.import_id, performance_facts.source_reference, performance_facts.activity_id, performance_facts.matched_on, performance_facts.fact_date, performance_facts.stage, performance_facts.web_metric, performance_facts.count_value, performance_facts.amount_minor, performance_facts.currency, performance_facts.held, performance_facts.replaced_by_id, performance_facts.version, performance_facts.created_at, performance_facts.created_by_id, performance_facts.created_by_name, performance_facts.updated_at, performance_facts.updated_by_id, performance_facts.updated_by_name
+FROM performance_facts
+WHERE import_id = $1
+ORDER BY id COLLATE "C"
+`
+
+type ListFactsOfImportRow struct {
+	PerformanceFact PerformanceFact
+}
+
+func (q *Queries) ListFactsOfImport(ctx context.Context, importID string) ([]ListFactsOfImportRow, error) {
+	rows, err := q.db.Query(ctx, listFactsOfImport, importID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListFactsOfImportRow{}
+	for rows.Next() {
+		var i ListFactsOfImportRow
+		if err := rows.Scan(
+			&i.PerformanceFact.ID,
+			&i.PerformanceFact.SourceID,
+			&i.PerformanceFact.ImportID,
+			&i.PerformanceFact.SourceReference,
+			&i.PerformanceFact.ActivityID,
+			&i.PerformanceFact.MatchedOn,
+			&i.PerformanceFact.FactDate,
+			&i.PerformanceFact.Stage,
+			&i.PerformanceFact.WebMetric,
+			&i.PerformanceFact.CountValue,
+			&i.PerformanceFact.AmountMinor,
+			&i.PerformanceFact.Currency,
+			&i.PerformanceFact.Held,
+			&i.PerformanceFact.ReplacedByID,
+			&i.PerformanceFact.Version,
+			&i.PerformanceFact.CreatedAt,
+			&i.PerformanceFact.CreatedByID,
+			&i.PerformanceFact.CreatedByName,
+			&i.PerformanceFact.UpdatedAt,
+			&i.PerformanceFact.UpdatedByID,
+			&i.PerformanceFact.UpdatedByName,
 		); err != nil {
 			return nil, err
 		}

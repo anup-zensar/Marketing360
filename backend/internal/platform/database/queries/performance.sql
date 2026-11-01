@@ -182,11 +182,12 @@ ON CONFLICT (id) DO UPDATE SET
     updated_at = excluded.updated_at, updated_by_id = excluded.updated_by_id,
     updated_by_name = excluded.updated_by_name;
 
--- name: CurrentFactByReference :one
+-- name: CurrentFactsByReferences :many
 SELECT sqlc.embed(performance_facts)
 FROM performance_facts
-WHERE source_id = sqlc.arg(source_id) AND source_reference = sqlc.arg(source_reference)
-    AND replaced_by_id IS NULL;
+WHERE source_id = sqlc.arg(source_id) AND source_reference = ANY(sqlc.arg(source_references)::text[])
+    AND replaced_by_id IS NULL
+ORDER BY source_reference COLLATE "C", stage COLLATE "C", web_metric COLLATE "C";
 
 -- name: PutMediaCode :exec
 INSERT INTO media_codes (
@@ -283,3 +284,18 @@ DELETE FROM performance_import_breakdown WHERE import_id = sqlc.arg(import_id);
 SELECT * FROM performance_import_breakdown
 WHERE import_id = ANY(sqlc.arg(import_ids)::text[])
 ORDER BY import_id COLLATE "C", stage COLLATE "C", web_metric COLLATE "C";
+
+-- name: ListCurrencyCodes :many
+SELECT code FROM currencies ORDER BY code;
+
+-- name: ListFactsOfImport :many
+SELECT sqlc.embed(performance_facts)
+FROM performance_facts
+WHERE import_id = sqlc.arg(import_id)
+ORDER BY id COLLATE "C";
+
+-- name: FactsReplacedBy :many
+SELECT sqlc.embed(performance_facts)
+FROM performance_facts
+WHERE replaced_by_id = ANY(sqlc.arg(replacer_ids)::text[])
+ORDER BY id COLLATE "C";

@@ -26,7 +26,10 @@ type Store struct {
 	// Keys stands in for the matching tables: a key, lower-cased, to the activities it reaches.
 	Keys map[performance.MatchedOn]map[string][]string
 	// NextCode is the media-code counter the configuration holds in PostgreSQL.
-	NextCode     int64
+	NextCode int64
+	// Currencies stands in for the currencies table; tests set what the organisation has configured.
+	Currencies   map[string]bool
+	breakdowns   map[string][]performance.Breakdown
 	aliases      map[string]performance.Alias
 	integrations map[string]performance.IntegrationID
 }
@@ -189,17 +192,18 @@ func (s *Store) PutFact(ctx context.Context, f performance.Fact) error {
 	return s.facts.Put(ctx, f)
 }
 
-func (s *Store) CurrentFactByReference(_ context.Context, sourceID, reference string) (performance.Fact, bool, error) {
+func (s *Store) CurrentFacts(_ context.Context, sourceID string, references []string) ([]performance.Fact, error) {
 	all, err := s.facts.List()
 	if err != nil {
-		return performance.Fact{}, false, err
+		return nil, err
 	}
+	found := []performance.Fact{}
 	for _, f := range all {
-		if f.SourceID == sourceID && f.SourceReference == reference && f.ReplacedByID == "" {
-			return f, true, nil
+		if f.SourceID == sourceID && slices.Contains(references, f.SourceReference) && f.ReplacedByID == "" {
+			found = append(found, f)
 		}
 	}
-	return performance.Fact{}, false, nil
+	return found, nil
 }
 
 func (s *Store) ReleaseHeld(ctx context.Context, activityID string, by actor.Actor, at time.Time) (int, error) {
@@ -418,4 +422,51 @@ func (s *Store) ExternalNameHolders(_ context.Context, name string) ([]string, e
 	}
 	holders = append(holders, s.Keys[performance.MatchedExternalName][key]...)
 	return holders, nil
+}
+
+func (s *Store) ListFactsOfImport(_ context.Context, importID string) ([]performance.Fact, error) {
+	all, err := s.facts.List()
+	if err != nil {
+		return nil, err
+	}
+	found := []performance.Fact{}
+	for _, f := range all {
+		if f.ImportID == importID {
+			found = append(found, f)
+		}
+	}
+	return found, nil
+}
+
+func (s *Store) FactsReplacedBy(_ context.Context, replacerIDs []string) ([]performance.Fact, error) {
+	all, err := s.facts.List()
+	if err != nil {
+		return nil, err
+	}
+	found := []performance.Fact{}
+	for _, f := range all {
+		if f.ReplacedByID != "" && slices.Contains(replacerIDs, f.ReplacedByID) {
+			found = append(found, f)
+		}
+	}
+	return found, nil
+}
+
+func (s *Store) PutBreakdown(_ context.Context, importID string, groups []performance.Breakdown) error {
+	if s.breakdowns == nil {
+		s.breakdowns = map[string][]performance.Breakdown{}
+	}
+	s.breakdowns[importID] = slices.Clone(groups)
+	return nil
+}
+
+func (s *Store) BreakdownOf(importID string) []performance.Breakdown {
+	return s.breakdowns[importID]
+}
+
+func (s *Store) CurrencyCodes(_ context.Context) (map[string]bool, error) {
+	if s.Currencies == nil {
+		return map[string]bool{"USD": true}, nil
+	}
+	return s.Currencies, nil
 }

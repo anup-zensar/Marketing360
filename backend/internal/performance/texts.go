@@ -31,6 +31,15 @@ const (
 const (
 	deactivatedVerb = "deactivated"
 	reactivatedVerb = "reactivated"
+	undoneVerb      = "undone"
+
+	importKind         = "performanceImport"
+	importKindSingular = "upload"
+	importKindPlural   = "uploads"
+
+	msgPersonalData   = "Not loaded - the file carries personal data in %s. Remove those columns and upload it again."
+	msgImportNotFound = "This upload doesn't exist or you can't see it."
+	msgNotUndoable    = "Not undone - %s is not a completed upload."
 )
 
 func codeText(code int64) string {
