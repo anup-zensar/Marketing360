@@ -119,7 +119,7 @@ unchanged; undo it.
 - [X] T050 [US2] Implement the import handlers; add each operation's route rule and report it in the pull request
 - [X] T051 [US2] Remove this story's operations from `notYetServed` in `backend/internal/app/app_test.go`
 - [ ] T052 [P] [US2] Build `frontend/src/features/performance/imports/` — upload, simulated pull, import list and the summary with its five counts and the undo confirmation stating them (FR-017)
-- [ ] T053 [US2] Record the benchmark in [plan.md](./plan.md): a 50,000-row file against 5,000 in-scope activities, confirming a **constant** query count (plan R16) · proves SC-009
+- [X] T053 [US2] Record the benchmark in [plan.md](./plan.md): a 50,000-row file against 5,000 in-scope activities, confirming a **constant** query count (plan R16) · proves SC-009
 - [X] T054 [US2] Run the quality-gate checks on everything changed — run at every push: golangci-lint (CI style) 0 issues, 48 packages green, frontend lint/typecheck/format clean
 
 **Checkpoint**: data loads, matches and reconciles; undo works.

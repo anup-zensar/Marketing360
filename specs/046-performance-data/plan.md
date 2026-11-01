@@ -162,6 +162,11 @@ Recorded here per issue #39 and constitution B9. Volumes are feature 028's.
 | Measurement | Target |
 |---|---|
 | Match a 50,000-row file against 5,000 in-scope activities | under 10 s, and a **constant** query count (R16) |
+
+**Measured (T053, 2026-11-01)**: `BenchmarkClassify_SC009` classifies and summarises the 50,000-row file
+against 5,000 activities in **~22 ms** per run (Apple M-series, `-benchtime=3x`), and
+`TestRunImport_MatchQueriesStayConstantWhateverTheFileSize_SC009` proves a 10-row and a 1,000-row load issue
+the **same number of matching queries**. Both live in `importer_bench_test.go`.
 | Open the Performance panel of an approved activity with 2,000 facts | under 1 s, matching 028's page target |
 | Summarise an import (the five counts) | one query, under 200 ms |
 | Re-check open review rows after a new import from the same source | constant query count, independent of queue size |

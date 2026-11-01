@@ -23,6 +23,7 @@ type fixture struct {
 	store   *performancetest.Store
 	service *performance.Service
 	history *history.Service
+	tools   history.Tools
 }
 
 func newFixture(t *testing.T) *fixture {
@@ -32,8 +33,8 @@ func newFixture(t *testing.T) *fixture {
 	generator := ids.NewGenerator(fake.NewCounters(db))
 	f := &fixture{store: performancetest.NewStore(db)}
 	f.history = history.NewService(db, historytest.NewStore(db), generator, now)
-	f.service = performance.NewService(
-		history.Tools{Tx: db, IDs: generator, Log: f.history, Now: now}, f.store)
+	f.tools = history.Tools{Tx: db, IDs: generator, Log: f.history, Now: now}
+	f.service = performance.NewService(f.tools, f.store)
 	// history refuses a child before its parent, so the activity kind is registered first exactly as the
 	// app must wire the activity area before the performance area.
 	if err := f.history.Register(history.Kind{
