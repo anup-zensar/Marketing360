@@ -42,7 +42,8 @@ type activityView struct {
 func (s *Service) scopeAndActivities(ctx context.Context, a actor.Actor, f measure.Filter, category string) (
 	measure.Scope, []activityView, error,
 ) {
-	sc, err := s.deps.Scoper.Scope(ctx, a, f, nil)
+	// Nodes carry a goal only when the scope is asked for it (measure.Service.Scope, allwork's addActivityGoals).
+	sc, err := s.deps.Scoper.Scope(ctx, a, f, []string{"inq", "mql", "revenue"})
 	if err != nil {
 		return measure.Scope{}, nil, err
 	}

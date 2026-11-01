@@ -19,7 +19,7 @@ function renderPage(
     reply('GET /api/v1/me', { body: testUser() }),
     reply('GET /api/v1/reports/frame', { body: reportFrame() }),
     reply('GET /api/v1/reports/{report}/views', { body: { items: [], total: 0 } }),
-    reply('GET /api/v1/settings/activity-categories', { body: { items: [] } }),
+    reply('GET /api/v1/settings/activity-categories', { body: { items: [], total: 0 } }),
     reply('GET /api/v1/reports/funnel', report),
     reply('GET /api/v1/reports/funnel/ranked', { body: funnelRanked() }),
   ]);

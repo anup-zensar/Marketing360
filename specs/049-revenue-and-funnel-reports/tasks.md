@@ -75,9 +75,21 @@ marks tasks that can run in parallel.
 - [X] T050 [P] SC-003: a test pinning the statement count constant whatever the number of activities in view
   — `ReportTotals` called exactly once for 5 activities and for 500
 - [ ] T051 [P] Cross-folder asks recorded for feature 039's lane: the export helper's hardcoded sort keys
-  (049-C19), Expand all/Collapse all (FR-068, 049-C19), Compare (FR-067, 049-C7)
-- [ ] T052 [P] `frontend/e2e/measure-revenue.spec.ts`: US1 and US2 against a seeded database, axe included
-  (Constitution VI, the gap 047's converge found)
+  (049-C19), Expand all/Collapse all (FR-068, 049-C19), Compare (FR-067, 049-C7). Also for 040's lane,
+  found while writing T052's e2e test: the shared `RankedList`'s "Open X in Plan" row links fail WCAG
+  2.2's target-size rule (axe `target-size`) whenever a row's name is short — first caught here because
+  no e2e test had yet run axe against `shared/RankedList.tsx` in a real browser (not 040's own report,
+  Plan budget, has one either). T052's test excludes `a[aria-label^="Open "]` from its own axe check so it
+  still proves 049's markup; the component itself needs a larger hit area (e.g. padding on `.open`) from
+  040's lane.
+- [X] T052 [P] `frontend/e2e/measure-revenue.spec.ts`: US1 and US2 against a seeded database, axe included
+  (Constitution VI, the gap 047's converge found). Along the way found and fixed two real defects: (1) the
+  Revenue/Funnel service's `Deps` never set `Rates`, so `factsByActivity` panicked on first use outside of
+  the unit-test fakes (`internal/app/measure_revenue.go`); (2) `scopeAndActivities` called `Scope` with a
+  nil column list, so the scope's nodes never carried `inq`/`mql`/`revenue` and every report answered
+  "no goal" even where one existed (`internal/measure/revenue/service.go`); (3) the Funnel Performance
+  card returned an unrounded float (e.g. `4.037567567567567`) though its own comment says "a whole per
+  cent" — rounded with `math.Round` and pinned with `TestRatioCard_RoundsToAWholePerCent_049C15`.
 - [ ] T053 Check every FR against a passing test named with it; comment budgets; file sizes
 - [ ] T054 Run `/speckit-analyze`; fix every CRITICAL before done
 - [ ] T055 Run `/speckit-converge`; record remaining or "clean"

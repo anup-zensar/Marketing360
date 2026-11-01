@@ -1,5 +1,7 @@
 package revenue
 
+import "math"
+
 // funnelCards builds the fixed Funnel card set (049-C9, 049-C13).
 func funnelCards(periods []FunnelPeriod, anyGoal bool, previousActual *int64) FunnelCards {
 	var goal, actual, projected int64
@@ -44,7 +46,7 @@ func ratioCard(value, goal int64, anyGoal bool) NumberCard {
 	if !anyGoal || goal == 0 {
 		return NumberCard{Reason: ReasonNoGoal}
 	}
-	pct := float64(value) / float64(goal) * 100
+	pct := math.Round(float64(value) / float64(goal) * 100)
 	return NumberCard{Value: &pct}
 }
 

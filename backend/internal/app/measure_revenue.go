@@ -31,6 +31,7 @@ func revenueService(w *wiring) *revenue.Service {
 		Scoper: w.reports, Facts: w.set.Revenue,
 		Goals:      revenueGoals{plans: w.set.Plans, activities: w.set.Activities, settings: w.settings},
 		Categories: revenueCategories{settings: w.settings},
+		Rates:      w.settings,
 	}
 	return revenue.NewService(w.set.Tx, deps, w.now)
 }
