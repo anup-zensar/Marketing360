@@ -60,9 +60,9 @@ marks tasks that can run in parallel.
 
 ## Phase 4 — US3 Activity category grouping (P2)
 
-- [ ] T040 Tests first: `category` parameter narrows cards/series/ranked (FR-019); Uncategorised loses no
+- [X] T040 Tests first: `category` parameter narrows cards/series/ranked (FR-019); Uncategorised loses no
   activity, All categories counts each once (FR-020); saved views keep the parameter (049-C10)
-- [ ] T041 Category parameter on both reports, read via `settings.ListActivityCategories` (047)
+- [X] T041 Category parameter on both reports, read via the `Categories` port over `settings.ListActivityCategories`
 - [ ] T042 [P] Frontend category selector on both report pages
 - [ ] T043 Gate: lint, tests, budgets
 

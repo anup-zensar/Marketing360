@@ -21,7 +21,7 @@ func (s *Service) RankedFunnel(ctx context.Context, a actor.Actor, f measure.Fil
 		if err != nil {
 			return err
 		}
-		in := funnelRankedInput{views: views, nodes: sc.Nodes, stage: stageOf(q.Stage, availableStages(views)),
+		in := funnelRankedInput{views: views, nodes: nodesForRanking(sc, views), stage: stageOf(q.Stage, availableStages(views)),
 			show: showLevel(f.Show), w: window{today: date.Today(s.now()), year: sc.Year}, q: q}
 		out = buildFunnelRanked(in)
 		return nil

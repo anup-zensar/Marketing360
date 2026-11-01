@@ -31,16 +31,14 @@ func NewService(tx Transactor, deps Deps, now clock.Clock) *Service {
 	return &Service{tx: tx, deps: deps, now: now}
 }
 
-// activityView is one activity in the report's view with everything its figures need: the node itself
-// (goals as shown, 010), its projected series (research R3, R4) and its counted facts, month by month.
+// activityView is one activity with its projected series (research R3, R4) and its counted facts.
 type activityView struct {
 	node       allwork.Node
 	projection projection.Projection
 	facts      activityTotals
 }
 
-// scopeAndActivities resolves the frame's scope, narrows it to the activities in view and this feature's
-// own category parameter (049-C10), and projects and sums each activity's series.
+// scopeAndActivities resolves the scope, applies the category parameter (049-C10), and projects each activity.
 func (s *Service) scopeAndActivities(ctx context.Context, a actor.Actor, f measure.Filter, category string) (
 	measure.Scope, []activityView, error,
 ) {
@@ -85,8 +83,7 @@ func (s *Service) scopeAndActivities(ctx context.Context, a actor.Actor, f measu
 	return sc, views, nil
 }
 
-// activitiesInView is the Show-level matched activity nodes, narrowed to one activity category or
-// "uncategorised" (049-C10, 049-C7's "All categories" default when category is "").
+// activitiesInView is the matched activities, narrowed to one category or "uncategorised" (049-C10).
 func (s *Service) activitiesInView(sc measure.Scope, category string, categories []Category) []allwork.Node {
 	typeCategory := map[string]string{}
 	for _, c := range categories {
@@ -128,4 +125,18 @@ func idsOf(nodes []allwork.Node) []string {
 		out = append(out, n.ID)
 	}
 	return out
+}
+
+// nodesForRanking keeps the whole hierarchy but narrows the activity leaves to the ones in view (049-C10).
+func nodesForRanking(sc measure.Scope, views []activityView) []allwork.Node {
+	kept := make([]allwork.Node, 0, len(sc.Nodes))
+	for _, n := range sc.Nodes {
+		if n.Level != allwork.LevelActivity {
+			kept = append(kept, n)
+		}
+	}
+	for _, v := range views {
+		kept = append(kept, v.node)
+	}
+	return kept
 }

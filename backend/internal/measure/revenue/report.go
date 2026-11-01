@@ -16,7 +16,7 @@ func (s *Service) RankedRevenue(ctx context.Context, a actor.Actor, f measure.Fi
 			return err
 		}
 		show := showLevel(f.Show)
-		out = revenueRanked(views, sc.Nodes, show, q)
+		out = revenueRanked(views, nodesForRanking(sc, views), show, q)
 		return nil
 	})
 	return out, err
