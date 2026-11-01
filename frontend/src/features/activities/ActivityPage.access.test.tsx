@@ -37,6 +37,11 @@ function openPage(access: Activity['access'], person: CurrentUser, formAllowed: 
   const section = launchFilmSection({ activity: activity({ id: 'A-1042' }) });
   mockApi([
     reply(
+      'GET /api/v1/activities/{activityId}/media-codes',
+      { body: { requiresCodes: false, items: [] } },
+      { activityId: 'A-1042' },
+    ),
+    reply(
       'GET /api/v1/activities/{activityId}/performance',
       {
         body: {

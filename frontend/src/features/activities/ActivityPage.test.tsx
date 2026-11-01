@@ -54,6 +54,11 @@ function openPage(
   const api = mockApi([
     ...HISTORY_ANSWERS,
     reply(
+      'GET /api/v1/activities/{activityId}/media-codes',
+      { body: { requiresCodes: false, items: [] } },
+      { activityId: 'A-1042' },
+    ),
+    reply(
       'GET /api/v1/activities/{activityId}/performance',
       {
         body: {

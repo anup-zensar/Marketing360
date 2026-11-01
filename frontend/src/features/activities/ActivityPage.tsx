@@ -12,7 +12,7 @@ import { usePageTitle } from '@/ui/usePageTitle';
 import { allows } from '@/session/gate-action';
 import { ViewOnlyNote } from '@/ui/ViewOnlyNote/ViewOnlyNote';
 import { ViewOnlyArea } from '@/ui/ViewOnlyNote/view-only-area';
-import { DataSourcesArea, PerformancePanel } from '@/features/performance';
+import { DataSourcesArea, MediaCodesSection, PerformancePanel } from '@/features/performance';
 import { changesNothingIn } from './activity-access';
 import { useActivity } from './api';
 import type { Activity } from './api';
@@ -228,6 +228,7 @@ function ActivityView({ activity, openReadyFirst }: ActivityViewProps) {
               {/* Feature 046's slot: the figures, then the matching keys and what each source delivered. */}
               <PerformancePanel activityId={activity.id} />
               <DataSourcesArea activityId={activity.id} />
+              <MediaCodesSection activityId={activity.id} />
             </div>
           )}
           {tab === 'approval' && (

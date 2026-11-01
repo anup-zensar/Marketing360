@@ -231,7 +231,7 @@ to delete it after a fact has used it.
 - [X] T097 [P] [US6] Write `backend/internal/performance/mediacode_rules_test.go`: the area appears only where the activity type requires codes and a code never attaches to a line item or any other level (FR-040); every missing required attribute is reported at once (FR-041); delete allowed only while unused, otherwise deactivate
 - [X] T098 [P] [US6] Write `backend/internal/performance/configuration_test.go`: the activity types requiring codes, the attribute catalogue and the start number live in **this feature's** Settings › Performance data configuration, not on the activity type record (046-C12) (FR-039)
 - [X] T099 [P] [US6] Write `backend/internal/performance/handler_mediacode_test.go` as a contract test for the five media-code operations and the two configuration operations, including the **409** on delete-when-used
-- [ ] T100 [P] [US6] Write `frontend/src/features/performance/mediacodes/MediaCodes.test.tsx`: hidden for a type that does not require codes; all missing attributes shown at once; copy code and copy tagged link
+- [X] T100 [P] [US6] Write `frontend/src/features/performance/mediacodes/MediaCodes.test.tsx`: hidden for a type that does not require codes; all missing attributes shown at once; copy code and copy tagged link
 
 ### Implementation
 
@@ -241,7 +241,7 @@ to delete it after a fact has used it.
 - [X] T104 [US6] Extend the matcher to resolve media codes, keeping the strict order of T044
 - [X] T105 [US6] Implement the media-code and configuration handlers; add their route rules and report them
 - [X] T106 [US6] Remove this story's operations from `notYetServed`
-- [ ] T107 [P] [US6] Build `frontend/src/features/performance/mediacodes/` and the configuration screen in Settings › Performance data
+- [X] T107 [P] [US6] Build `frontend/src/features/performance/mediacodes/` — the activity section with copy code and copy tagged link. The configuration screen follows with the Settings routes, which wait on the integrator (pages.tsx)
 - [ ] T108 [US6] Run the quality-gate checks on everything changed
 
 **Checkpoint**: every story is independently functional.

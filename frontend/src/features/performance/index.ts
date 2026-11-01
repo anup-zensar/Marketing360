@@ -5,3 +5,4 @@ export { usePerformanceSources } from './api';
 export type { PerformanceSource, ColumnMapping } from './api';
 export { DataSourcesArea } from './activity/DataSourcesArea';
 export { PerformancePanel } from './activity/PerformancePanel';
+export { MediaCodesSection } from './mediacodes/MediaCodesSection';
