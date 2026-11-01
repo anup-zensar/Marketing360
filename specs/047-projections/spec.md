@@ -64,7 +64,8 @@ US7, client 016 FR-033–FR-039, FA §E3.2.6 and §E7.5.1, MA §5–§6, domain 
   facts change, stamped with the model and its rates' last change. → A: **Projections are derived at read
   time and never stored** — the same rule as 046's freshness (a stored value would go stale by itself) —
   so recalculation is automatic; the stamp is the model's name and its record's `updatedAt`, served with
-  every projection.
+  every projection. A separate "parameters changed" timestamp was rejected: it needs a second column that
+  every writer must remember to set, and an `updatedAt` that moves on a rename only ever over-reports.
 
 - **047-C9** — Q: 016 FR-026 wants period boundaries in the acting user's time zone. → A: **The engine uses
   the server's injected clock, UTC calendar dates** (constitution: timestamps UTC, deterministic clock).
@@ -146,10 +147,11 @@ hand-calculated table (SC-001) without any report page.
 
 **Acceptance Scenarios**:
 
-1. **Given** an activity goal of 1,200 INQ phased over Jan–Dec 2026, a model with rates 2 % and 5 %,
-   velocities 1 and 2 and deal size 10,000 USD, **When** the panel is read with today fixed mid-year,
-   **Then** INQ projects 100 per month from today, MQL projects 2 per month shifted one month, deals land
-   two further months on, revenue = deals × 10,000 USD, and nothing is projected after December.
+1. **Given** an activity goal of 365,000 INQ across the whole of 2026 — 1,000 a day — a model with rates
+   2 % and 5 %, velocities 1 and 2 and deal size 10,000 USD, **When** the panel is read with today fixed
+   mid-year, **Then** each month carries its own day count × 1,000 (January 31,000, February 28,000 …),
+   MQL is 2 % of each month placed one month later, deals are 5 % of each MQL month placed two further
+   months on, revenue = deals × 10,000 USD, and the conversions shifted past December are dropped.
 2. **Given** the same activity, **When** today's month is read, **Then** that month carries both its
    actual-to-date and its projected value, months before it only actual, months after it only projected.
 3. **Given** an activity with "Set later stages myself" and typed INQ, MQL and revenue, **When** the panel
@@ -226,9 +228,9 @@ check — plus the type assignment, without any report.
 
 **The projection** *(client 020 FR-048–FR-053, 016 FR-033–FR-037; domain model §4.5)*
 
-- **FR-006**: The goal-stage series MUST phase the activity's goal evenly across the activity's months
-  within the plan year, day-exactly within months; an evergreen or undated activity phases to plan-year
-  end (047-C4, edge cases).
+- **FR-006**: The goal-stage series MUST phase the activity's goal **day-proportionally** across the
+  activity's days inside the plan year, collapsed to months, so a part month carries only its own days; an
+  evergreen or undated activity phases to plan-year end (047-C4, edge cases).
 - **FR-007**: Each later stage MUST be the previous stage's series × that transition's conversion rate,
   shifted forward by its velocity in whole months, rounded half-up per month; projected revenue MUST be
   the deal series × average deal size in USD (047-C4).
@@ -237,20 +239,27 @@ check — plus the type assignment, without any report.
 - **FR-009**: A "Set later stages myself" activity MUST project each typed stage from its own phased goal,
   ignoring the rates and velocity (047-C6).
 - **FR-010**: The plan-year figure MUST be actual to the end of the last whole month before today plus
-  projected from today; the month containing today MUST carry both (047-C5, 016 FR-028/FR-037).
+  projected from today, and that single figure — not the from-today part alone — is what the panel serves
+  as `projected`, so a closed plan year shows the actual and nothing is ever added twice. The month
+  containing today MUST carry both its actual and its projected value (047-C5, 016 FR-028/FR-037).
 - **FR-011**: Projections MUST be derived at read time, never stored, so every change to goals, dates,
   model parameters or facts is reflected at once (047-C8, 020 FR-052).
-- **FR-012**: Every projected figure MUST be served with the model's name and the date its parameters last
-  changed (047-C8, 020 FR-052, SC-011 of client 020).
+- **FR-012**: Every projected figure MUST be served with the model's name and the date **the model was
+  last changed** (047-C8, 020 FR-052, SC-011 of client 020). The record's own `updatedAt` is that date: it
+  moves on any edit to the model, which is the honest conservative answer — it never says "unchanged" when
+  a rate did change.
 - **FR-013**: An activity without a goal MUST show no projection, with the reason *no goal* — never a zero
-  (016 FR-036, measure-metrics header).
+  (016 FR-036, measure-metrics header). That reason MUST be carried separately from the reason a figure
+  has no **actual**: a stage can have facts and still no goal, and an actual must never swallow the
+  explanation of a missing projection.
 - **FR-014**: Actual inputs MUST be 046's counted facts — held, unmatched and replaced facts excluded;
   revenue facts without a rate excluded and counted (047-C10, 046-C7) — until feature 050 swaps the source.
 - **FR-015**: The engine MUST live in a pure package with no HTTP, SQL or clock of its own: inputs in,
   series out, so 048/049/050 call it as a port and SC-001's table drives it directly.
 - **FR-016**: 046's activity panel MUST gain the projected figures its contract reserved: a projected
-  value per stage, projected revenue, and the months split per FR-010, under 046's existing scope and
-  approval rules (047-C11).
+  value for each stage **the panel shows** (INQ and MQL), projected revenue, and the months split per
+  FR-010, under 046's existing scope and approval rules (047-C11). Deals stay an internal stage of the
+  waterfall, observable through revenue and through the Go port that 048–050 call.
 - **FR-017**: Today MUST come from the injected clock as a UTC calendar date (047-C9).
 
 **Activity categories** *(016 FR-003, FR-022; FA L89, L2622)*
@@ -260,12 +269,13 @@ check — plus the type assignment, without any report.
   (047-C7).
 - **FR-019**: An activity type MUST belong to at most one category; assigning it elsewhere moves it; types
   in none count as *Uncategorised*, a bucket the reports can select so no activity is ever lost (047-C7).
-- **FR-020**: At most one category MUST be the default; marking a new default unmarks the old; with none,
-  consumers open on the alphabetically first active category (047-C7).
+- **FR-020**: At most one category MUST be the default, and marking a new default MUST unmark the old in
+  the same change (047-C7). What a report opens on when no category is marked is that report's rule
+  (048/049), not this feature's.
 - **FR-021**: Deleting a category MUST move it to the recycle bin, release its types to Uncategorised and
   restore its assignments on restore; a category's deletion MUST warn when the category is in use.
-- **FR-022**: The categories and each type's category MUST be served for the reports and the activity-type
-  Settings page to read.
+- **FR-022**: The categories, and each activity type's category, MUST be **served** so the reports and the
+  activity-type Settings page can read them; how either chooses to show it is theirs.
 
 **Access and records** *(constitution 7; 014 Table A)*
 
@@ -292,14 +302,15 @@ check — plus the type assignment, without any report.
   047-C4 (client 020 SC-006).
 - **SC-002**: With a fixed clock, reading the same activity twice gives identical projections; changing a
   rate, a goal or today changes them with no other action (FR-011).
-- **SC-003**: The sum of a stage's monthly projections equals the phased goal × its cumulative rates for
-  every month the plan year keeps — nothing is lost except conversions dropped past December, and those
-  are exactly the shifted tail (FR-008).
+- **SC-003**: The goal stage's months sum to the goal exactly. A later stage's months sum to the earlier
+  stage's kept months at its rate, **within the per-month rounding** (each month is rounded half-up on its
+  own, so the total may differ from rounding the sum by less than one unit per month), with the
+  conversions shifted past December dropped — those are exactly the shifted tail (FR-007, FR-008).
 - **SC-004**: The activity panel with projections answers within the panel's existing budget (046 SC-008's
   one read, no per-month queries) — the engine adds arithmetic, not queries.
-- **SC-005**: Every rule above has a test naming its FR; the engine's parser-free inputs need no fuzz
-  test, but phasing gets a property test: any goal, any dates, any velocities → series non-negative,
-  bounded by the year, and reconciling per SC-003.
+- **SC-005**: Every rule above has a test naming its FR, and the engine gets a property test driven by Go's
+  fuzzer over any goal, any dates and any velocities: twelve months, no negative month, nothing above the
+  goal, and the goal stage summing to the goal exactly (SC-003).
 - **SC-006**: A reviewer can reproduce any projected figure from what is served with it: the goal, the
   model's parameters, their last-changed date and this spec's rule (020 SC-011).
 

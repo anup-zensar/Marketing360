@@ -92,8 +92,6 @@ func (s *Service) activityTypeViews(ctx context.Context, types []ActivityType) (
 	return views, nil
 }
 
-// categoryOfType inverts the grouping so a type names its category, as it already names the models that
-// allow it (047 FR-022). A type in no category is Uncategorised, which is an absent reference, not a row.
 func (s *Service) categoryOfType(ctx context.Context) (map[string]*SettingRef, error) {
 	categories, err := s.repo.ListActivityCategories(ctx)
 	if err != nil {

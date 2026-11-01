@@ -60,21 +60,22 @@ backend/internal/projection/            # pure: no Gin, no SQL, no clock (R3, FR
 │   └── split.go                        # actual/projected split at today (FR-010)
 ├── backend/internal/settings/          # 047's declared outside-folder touch (build guide §4.1)
 │   ├── model.go + service_models.go    # velocities + allowed stages, validation, impact (FR-001–004)
-│   ├── category.go · service_categories.go · categories_read.go · handler_categories.go
+│   ├── service_activity_categories.go · activity_categories_read.go · views_activity_categories.go
+│   ├── handler_activity_categories.go · kinds_categories.go · store_postgres_categories.go
 │   └── store (postgres + fakes) + queries/settings_categories.sql
 ├── backend/internal/performance/       # ports.go gains dates; panel fills projected (FR-016)
 ├── backend/internal/access/routes_activity_categories.go
 ├── backend/internal/platform/database/migrations/00033_projections.sql
 ├── frontend/src/features/settings/models/        # velocity + stages fields, example extended
 ├── frontend/src/features/settings/activity-categories/
-└── frontend/src/features/measure/shared/         # Projection… parts for 048/049 (and the panel)
+└── frontend/src/features/performance/activity/   # the panel's projected column and model note
 ```
 
 ## Rules, and the tests that prove them
 
 | # | Rule | Proof |
 |---|---|---|
-| R1 | Velocity 0–24 whole months, every fault at once (FR-001) | settings model validation test |
+| R1 | Velocity 0–24 whole months, every fault at once (FR-001); the worked example shows the lag (FR-004) | settings model validation test; `WaterfallExample.test.tsx` |
 | R2 | Allowed stages non-empty subset; narrowing warns via impact (FR-002/003) | impact + validation tests |
 | R3 | Phasing is day-exact across the activity's months; evergreen/undated runs to year end (FR-006) | engine table + property test |
 | R4 | Later stage = previous × rate half-up, shifted by velocity; drop past December (FR-007/008) | SC-001 table |

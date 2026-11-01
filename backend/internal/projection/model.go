@@ -25,7 +25,7 @@ type Model struct {
 	AverageDealSize         money.Money
 	InqToMqlVelocityMonths  int
 	MqlToDealVelocityMonths int
-	ParametersChangedAt     time.Time
+	ModelChangedAt          time.Time
 }
 
 type Goals struct {
@@ -63,8 +63,8 @@ type Series struct {
 }
 
 type Stamp struct {
-	ModelName           string    `json:"modelName"`
-	ParametersChangedAt time.Time `json:"parametersChangedAt"`
+	ModelName      string    `json:"modelName"`
+	ModelChangedAt time.Time `json:"modelChangedAt"`
 }
 
 // Projection is the answer; Present is false when there is no goal, so the figures show a reason, not a zero.

@@ -29,8 +29,6 @@ func digitalAnswer(types, isDefault, usage string) string {
 		`],"active":true,"usage":` + usage + `,"version":1,` + alexAtStart + `}`
 }
 
-// The categories are listed and read with the activity types they group; a new one answers 201 and takes
-// the types out of the category they were in; every problem of a new one comes at once (FR-018, FR-019).
 func TestActivityCategoriesAPI_ListCreateGet_FR018(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
@@ -61,8 +59,6 @@ func TestActivityCategoriesAPI_ListCreateGet_FR018(t *testing.T) {
 	assertAnswer(t, after, http.StatusOK, digitalAnswer("", "true", unusedBody))
 }
 
-// A category is deleted to the recycle bin, which releases its activity types, and Undo brings it back with
-// them (FR-021).
 func TestActivityCategoriesAPI_DeleteAndUndo_FR021(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t, apitest.WithoutDemoHistory())
@@ -83,7 +79,6 @@ func TestActivityCategoriesAPI_DeleteAndUndo_FR021(t *testing.T) {
 		http.StatusOK, digitalAnswer(eventRef, "false", groupsOneType))
 }
 
-// Reading the categories needs only a sign-in; changing them needs settings.manage (FR-023).
 func TestActivityCategoriesAPI_ChangedWithSettingsManage_FR023(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)

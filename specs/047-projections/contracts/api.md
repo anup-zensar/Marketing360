@@ -22,18 +22,24 @@ answer gains the goals stranded by a narrowed `allowedGoalStages` (FR-003).
 | updateActivityCategory | PATCH `/settings/activity-categories/{categoryId}` | settings.manage |
 | deleteActivityCategory | DELETE `/settings/activity-categories/{categoryId}` | settings.manage (recycle bin) |
 
-A category carries `name`, `isDefault`, `active`, `activityTypeIds` (each type in at most one category —
-saving a type here moves it), `usage`, and the record envelope (version + created/updated). Validation
+A category **answers** with `name`, `isDefault`, `active`, `activityTypes` (`SettingRef[]`, sorted by
+name), `usage` and the record envelope; create and update **take** `activityTypeIds` instead (each type is
+in at most one category, so sending it here moves it). Validation
 errors all at once; duplicate name ignoring case refused; version_conflict on stale saves; delete answers
 the bin entry for Undo.
 
 ## Activity panel (extended — 046's getActivityPerformance, additive fields)
 
-`StageFigure` gains `projected` (integer, null with `reason` when absent) and `months` (the split series:
-month, `actual`, `projected` — the month containing today carries both). `RevenueFigure` gains `projected`
-(Money, null with reason) and the same months. The panel gains `projection` metadata: the model's name and
-`parametersChangedAt` (047-C8, 020 FR-052). 046's rules (approval gate, scope, reasons vocabulary) are
-unchanged; `noGoal` is the reason when nothing projects (FR-013).
+`StageFigure` gains `projected` — the **plan-year figure**: actual to the end of the last whole month
+before today plus projected from today, so a closed year equals the actual and `actual` and `projected`
+must never be added (FR-010) — plus `projectedReason` (`""` | `noGoal`, which `reason` cannot carry when
+the stage has an actual) and `months` (month, `actual`, `projected`, `inProgress`). `RevenueFigure` gains
+the same three. The panel gains `projection`: the model's name and `modelChangedAt` (047-C8, 020 FR-052).
+046's rules (approval gate, scope, reasons vocabulary) are unchanged. Only the stages the panel shows —
+INQ and MQL — carry a projected figure; deals stay internal to the engine.
+
+`ActivityType` gains a required `category` (`SettingRef` or null): the category grouping that type, so the
+reports and the Activity types page can read it without inverting the category list (FR-022).
 
 ## Not in this contract
 

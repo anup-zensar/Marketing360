@@ -27,18 +27,22 @@ type StageFigure struct {
 	Projected  *int64   `json:"projected"`
 	Conversion *float64 `json:"conversion"`
 	Reason     string   `json:"reason"`
+	// ProjectedReason says why the projection is absent, which the stage's own reason cannot: a figure can
+	// have an actual and still no goal to project from (047 FR-013).
+	ProjectedReason string `json:"projectedReason"`
 	// Months splits the plan year at today: actual behind it, projected from it, both in the month in
 	// progress (047 FR-010).
 	Months []projection.SplitMonth `json:"months"`
 }
 
 type RevenueFigure struct {
-	Goal          *money.Money                 `json:"goal"`
-	Actual        *money.Money                 `json:"actual"`
-	Projected     *money.Money                 `json:"projected"`
-	ExcludedCount int                          `json:"excludedCount"`
-	Reason        string                       `json:"reason"`
-	Months        []projection.SplitMoneyMonth `json:"months"`
+	Goal            *money.Money                 `json:"goal"`
+	Actual          *money.Money                 `json:"actual"`
+	Projected       *money.Money                 `json:"projected"`
+	ExcludedCount   int                          `json:"excludedCount"`
+	Reason          string                       `json:"reason"`
+	ProjectedReason string                       `json:"projectedReason"`
+	Months          []projection.SplitMoneyMonth `json:"months"`
 }
 
 type MonthCount struct {

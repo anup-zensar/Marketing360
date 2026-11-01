@@ -99,7 +99,9 @@ function StageTable({ stages, revenue }: { stages: StageFigure[]; revenue: Reven
                   {stage.actual === null ? '—' : formatWhole(stage.actual)}
                 </td>
                 <td className={styles.numeric}>
-                  {stage.projected === null ? '—' : formatWhole(stage.projected)}
+                  {stage.projected === null
+                    ? (REASON_WORDS[stage.projectedReason] ?? '—')
+                    : formatWhole(stage.projected)}
                 </td>
                 <td className={styles.numeric}>
                   {stage.conversion === null ? '—' : `${stage.conversion.toFixed(1)} %`}
@@ -136,7 +138,11 @@ function RevenueRow({ revenue }: { revenue: RevenueFigure }) {
           <span className={styles.reason}> · {revenue.excludedCount} excluded without a rate</span>
         )}
       </td>
-      <td className={styles.numeric}>{revenue.projected ? money(revenue.projected) : '—'}</td>
+      <td className={styles.numeric}>
+        {revenue.projected
+          ? money(revenue.projected)
+          : (REASON_WORDS[revenue.projectedReason] ?? '—')}
+      </td>
       <td className={styles.numeric}>—</td>
     </tr>
   );
@@ -147,7 +153,7 @@ function ProjectionNote({ stamp }: { stamp: NonNullable<Panel['projection']> }) 
   const { date } = useFormatters();
   return (
     <p className={styles.notice}>
-      Projected from {stamp.modelName}, last changed {date(stamp.parametersChangedAt)}.
+      Projected from {stamp.modelName}, last changed {date(stamp.modelChangedAt)}.
     </p>
   );
 }

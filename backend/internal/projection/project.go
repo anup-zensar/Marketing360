@@ -8,7 +8,7 @@ import (
 // Project runs the model forward from the goal stage only, never past the plan year (FR-006 - FR-009).
 func Project(in Inputs) Projection {
 	start, end, covered := window(in)
-	out := Projection{Stamp: Stamp{ModelName: in.Model.Name, ParametersChangedAt: in.Model.ParametersChangedAt}}
+	out := Projection{Stamp: Stamp{ModelName: in.Model.Name, ModelChangedAt: in.Model.ModelChangedAt}}
 	if !hasGoal(in.Goals) {
 		return out
 	}

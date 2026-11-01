@@ -70,6 +70,7 @@ function openPage(
             excludedCount: 0,
             reason: 'notApproved',
             projected: null,
+            projectedReason: '',
             months: [],
           },
           webMetrics: [],

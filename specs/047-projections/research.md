@@ -46,8 +46,9 @@ fields. 048–050 call the same package through their own adapters.
 
 **Why**: the build plan names `measure/projection (pure)`; a pure package makes SC-001's hand-calculated
 table the whole test harness and keeps 048/049 free of HTTP round-trips (constitution: the server is the
-source of truth, reports compute server-side). GoalFacts already carries ModelID and PlanYear; dates are
-the only missing input and the port is lane B's own file.
+source of truth, reports compute server-side). GoalFacts already carries ModelID and PlanYear; it gains
+the activity's dates **and the model's own parameters**, so the panel projects without `performance`
+reaching into Settings itself. The port is lane B's own file.
 
 **Alternatives rejected**: an HTTP projection endpoint for the reports (server-internal consumers need a
 function, not a route); putting the engine inside `performance` (046 is matching and facts; 048–050 would

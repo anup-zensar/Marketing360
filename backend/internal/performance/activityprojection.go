@@ -19,7 +19,7 @@ func (s *Service) withProjection(ctx context.Context, panel Panel, in panelInput
 		Today: date.Today(s.now()),
 	})
 	if !forecast.Present {
-		return panel
+		return noProjection(panel)
 	}
 	stamp := forecast.Stamp
 	panel.Projection = &stamp
@@ -30,10 +30,20 @@ func (s *Service) withProjection(ctx context.Context, panel Panel, in panelInput
 			continue
 		}
 		split := projection.SplitCounts(monthlyCounts(in.totals, figure.Stage, year), series.Months, today, year)
-		total := split.Projected
+		total := split.Total
 		panel.Stages[i].Projected, panel.Stages[i].Months = &total, split.Months
 	}
 	panel.Revenue = s.projectedRevenue(ctx, panel.Revenue, forecast, in)
+	return panel
+}
+
+// noProjection says why each figure has no projection, which an actual alone would otherwise swallow: the
+// stage's own reason answers "why no actual", and a figure can have one and not the other (FR-013).
+func noProjection(panel Panel) Panel {
+	for i := range panel.Stages {
+		panel.Stages[i].ProjectedReason = reasonNoGoal
+	}
+	panel.Revenue.ProjectedReason = reasonNoGoal
 	return panel
 }
 
@@ -42,7 +52,7 @@ func (s *Service) projectedRevenue(ctx context.Context, figure RevenueFigure, fo
 ) RevenueFigure {
 	today, year := date.Today(s.now()), in.goals.PlanYear
 	split := projection.SplitAmounts(s.monthlyRevenue(ctx, in.totals, year), forecast.Revenue, today, year)
-	projected := split.Projected
+	projected := split.Total
 	figure.Projected, figure.Months = &projected, split.Months
 	return figure
 }

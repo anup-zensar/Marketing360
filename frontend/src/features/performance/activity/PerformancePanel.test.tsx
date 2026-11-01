@@ -23,6 +23,7 @@ function panel(overrides: Partial<Panel> = {}): Panel {
         conversion: null,
         reason: '',
         projected: null,
+        projectedReason: '',
         months: [],
       },
       {
@@ -32,6 +33,7 @@ function panel(overrides: Partial<Panel> = {}): Panel {
         conversion: 10.0,
         reason: '',
         projected: null,
+        projectedReason: '',
         months: [],
       },
     ],
@@ -41,6 +43,7 @@ function panel(overrides: Partial<Panel> = {}): Panel {
       excludedCount: 1,
       reason: '',
       projected: null,
+      projectedReason: '',
       months: [],
     },
     webMetrics: [{ metric: 'sessions', months: [{ month: '2026-02', value: 1200 }] }],
@@ -64,6 +67,7 @@ function emptyStages(
         conversion: null,
         reason,
         projected: null,
+        projectedReason: '',
         months: [],
       },
       {
@@ -73,10 +77,19 @@ function emptyStages(
         conversion: null,
         reason,
         projected: null,
+        projectedReason: '',
         months: [],
       },
     ],
-    revenue: { goal: null, actual: null, excludedCount: 0, reason, projected: null, months: [] },
+    revenue: {
+      goal: null,
+      actual: null,
+      excludedCount: 0,
+      reason,
+      projected: null,
+      projectedReason: '',
+      months: [],
+    },
     webMetrics: [],
     sources: [],
     projection: null,
@@ -166,6 +179,7 @@ describe('projected figures (047)', () => {
             projected: 120,
             conversion: null,
             reason: '',
+            projectedReason: '',
             months: [],
           },
           {
@@ -175,10 +189,11 @@ describe('projected figures (047)', () => {
             projected: 12,
             conversion: 10.0,
             reason: '',
+            projectedReason: '',
             months: [],
           },
         ],
-        projection: { modelName: 'Lubricants 1.0', parametersChangedAt: '2026-01-02T09:00:00Z' },
+        projection: { modelName: 'Lubricants 1.0', modelChangedAt: '2026-01-02T09:00:00Z' },
       }),
     );
 
@@ -192,4 +207,26 @@ describe('projected figures (047)', () => {
     expect(await screen.findAllByText('—')).not.toHaveLength(0);
     expect(screen.queryByText(/Projected from/)).not.toBeInTheDocument();
   });
+});
+
+it('047 FR-013 says why nothing projects even when the stage has an actual', async () => {
+  renderPanel(
+    panel({
+      stages: [
+        {
+          stage: 'inq',
+          goal: null,
+          actual: 40,
+          projected: null,
+          conversion: null,
+          reason: '',
+          projectedReason: 'noGoal',
+          months: [],
+        },
+      ],
+    }),
+  );
+
+  expect(await screen.findByText('40')).toBeInTheDocument();
+  expect(screen.getByText('No goal is set for this figure.')).toBeInTheDocument();
 });

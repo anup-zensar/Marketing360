@@ -20,7 +20,7 @@ func lubricants() projection.Model {
 		InqToMqlRate: money.PercentFromHundredths(200), MqlToDealRate: money.PercentFromHundredths(500),
 		AverageDealSize:        money.USD(money.FromCents(1_000_000)),
 		InqToMqlVelocityMonths: 1, MqlToDealVelocityMonths: 2,
-		ParametersChangedAt: changedAt,
+		ModelChangedAt: changedAt,
 	}
 }
 
@@ -78,7 +78,7 @@ func TestProject_MatchesTheHandCalculatedTable_FR007_SC001(t *testing.T) {
 	if got.Total.Amount.String() != "2730000.00" || got.Total.Currency != "USD" {
 		t.Errorf("projected revenue = %s %s, want 2730000.00 USD (273 deals × 10,000)", got.Total.Amount, got.Total.Currency)
 	}
-	if got.Stamp.ModelName != "Lubricants 1.0" || !got.Stamp.ParametersChangedAt.Equal(changedAt) {
+	if got.Stamp.ModelName != "Lubricants 1.0" || !got.Stamp.ModelChangedAt.Equal(changedAt) {
 		t.Errorf("stamp = %+v, want the model and when its parameters last changed (FR-012)", got.Stamp)
 	}
 }

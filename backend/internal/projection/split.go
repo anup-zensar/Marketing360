@@ -20,11 +20,12 @@ type Split struct {
 	Total     int64        `json:"total"`
 }
 
-// splitAt is where today falls: 0 before the plan year, Months after it.
+// splitAt is where today falls. Before the plan year it is -1, so no month is behind today and none is in
+// progress; after it, Months, so every month has happened and nothing is still expected.
 func splitAt(today date.Date, planYear int) int {
 	switch {
 	case today.Year() < planYear:
-		return 0
+		return -1
 	case today.Year() > planYear:
 		return Months
 	default:

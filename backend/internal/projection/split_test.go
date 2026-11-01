@@ -127,3 +127,27 @@ func boundedMonth(n int) int {
 }
 
 func timeMonth(n int) time.Month { return time.Month(n) }
+
+func TestSplitCounts_OutsideThePlanYearNoMonthIsInProgress_FR010(t *testing.T) {
+	t.Parallel()
+	actual := counts(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+	projected := counts(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2)
+
+	before := projection.SplitCounts(actual, projected, date.MustParse("2025-12-31"), 2026)
+	for _, month := range before.Months {
+		if month.InProgress || month.Actual != nil {
+			t.Fatalf("%s = %+v before the plan year, want nothing behind today and no month in progress",
+				month.Month, month)
+		}
+	}
+
+	after := projection.SplitCounts(actual, projected, date.MustParse("2027-01-01"), 2026)
+	for _, month := range after.Months {
+		if month.InProgress || month.Projected != nil {
+			t.Fatalf("%s = %+v after the plan year, want nothing still expected", month.Month, month)
+		}
+	}
+	if after.Total != 12 {
+		t.Errorf("a closed year totals %d, want the actual 12: the plan-year figure is what happened", after.Total)
+	}
+}

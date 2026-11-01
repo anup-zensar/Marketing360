@@ -6,19 +6,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// listActivityCategories answers GET /api/v1/settings/activity-categories.
 func (h *Handler) listActivityCategories(c *gin.Context) {
 	categories, err := h.service.ListActivityCategories(c.Request.Context(), actorOf(c))
 	respond(c, http.StatusOK, ActivityCategoryPage{Items: categories, Total: len(categories)}, err)
 }
 
-// getActivityCategory answers GET /api/v1/settings/activity-categories/{categoryId}.
 func (h *Handler) getActivityCategory(c *gin.Context) {
 	category, err := h.service.GetActivityCategory(c.Request.Context(), actorOf(c), c.Param("categoryId"))
 	respond(c, http.StatusOK, category, err)
 }
 
-// createActivityCategory answers POST /api/v1/settings/activity-categories with 201 and the new category.
 func (h *Handler) createActivityCategory(c *gin.Context) {
 	var input ActivityCategoryInput
 	if !readBody(c, &input) {
@@ -28,7 +25,6 @@ func (h *Handler) createActivityCategory(c *gin.Context) {
 	respond(c, http.StatusCreated, category, err)
 }
 
-// updateActivityCategory answers PATCH /api/v1/settings/activity-categories/{categoryId}.
 func (h *Handler) updateActivityCategory(c *gin.Context) {
 	var update ActivityCategoryUpdate
 	if !readBody(c, &update) {
@@ -38,8 +34,6 @@ func (h *Handler) updateActivityCategory(c *gin.Context) {
 	respond(c, http.StatusOK, category, err)
 }
 
-// deleteActivityCategory answers DELETE /api/v1/settings/activity-categories/{categoryId} with the
-// recycle-bin entry.
 func (h *Handler) deleteActivityCategory(c *gin.Context) {
 	entry, err := h.service.DeleteActivityCategory(c.Request.Context(), actorOf(c), c.Param("categoryId"))
 	respondDeleted(c, entry, err)

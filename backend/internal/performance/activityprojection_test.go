@@ -16,7 +16,7 @@ func projectingModel() projection.Model {
 		InqToMqlRate: money.PercentFromHundredths(200), MqlToDealRate: money.PercentFromHundredths(500),
 		AverageDealSize:        money.USD(money.FromCents(1_000_000)),
 		InqToMqlVelocityMonths: 1, MqlToDealVelocityMonths: 2,
-		ParametersChangedAt: time.Date(2026, 1, 2, 9, 0, 0, 0, time.UTC),
+		ModelChangedAt: time.Date(2026, 1, 2, 9, 0, 0, 0, time.UTC),
 	}
 }
 
@@ -51,8 +51,10 @@ func TestActivityPanel_ProjectsEachStageAndStampsTheModel_FR012_FR016(t *testing
 		t.Fatalf("INQ = %+v, want a projected figure and the plan year's months", inq)
 	}
 	// The clock sits in March 2026, so January and February are behind today and the rest is still expected.
+	// No facts are loaded, so the plan-year figure is the projection alone: the goal less the two whole
+	// months already behind today.
 	if *inq.Projected != 365_000-31_000-28_000 {
-		t.Errorf("projected INQ = %d, want the goal less the two whole months already behind today (FR-010)", *inq.Projected)
+		t.Errorf("projected INQ = %d, want the plan-year figure (FR-010)", *inq.Projected)
 	}
 	if panel.Revenue.Projected == nil || panel.Revenue.Projected.Currency != "USD" {
 		t.Errorf("projected revenue = %+v, want the deals priced at the model's average deal size", panel.Revenue.Projected)
@@ -113,8 +115,8 @@ func TestActivityPanel_WithoutAGoalNothingIsProjected_FR013(t *testing.T) {
 		t.Errorf("stamp = %+v, want none: there is nothing to reproduce", panel.Projection)
 	}
 	inq := stageOf(t, panel, "inq")
-	if inq.Projected != nil || inq.Reason == "" {
-		t.Errorf("INQ = %+v, want no projected figure and a reason, never a zero", inq)
+	if inq.Projected != nil || inq.ProjectedReason != "noGoal" {
+		t.Errorf("INQ = %+v, want no projected figure and the reason noGoal, never a zero", inq)
 	}
 }
 
@@ -171,5 +173,26 @@ func TestActivityPanel_TodayComesFromTheInjectedClock_FR017(t *testing.T) {
 			t.Errorf("%s inProgress = %t, want only March to be in progress under the injected clock",
 				month.Month, month.InProgress)
 		}
+	}
+}
+
+func TestActivityPanel_AStageWithFactsButNoGoalStillSaysWhy_FR013(t *testing.T) {
+	t.Parallel()
+	f, src := panelFixture(t)
+	f.service.UseFigures(figuresStub{known: true, goals: performance.GoalFacts{PlanYear: 2026, ModelID: "MOD-1"}})
+	f.runImport(t, src.ID, map[string]string{"r1": "40"})
+
+	panel, err := f.service.ActivityPanel(t.Context(), alex, "A-1")
+	if err != nil {
+		t.Fatalf("ActivityPanel: %v", err)
+	}
+
+	inq := stageOf(t, panel, "inq")
+	if inq.Actual == nil || *inq.Actual != 40 {
+		t.Fatalf("INQ actual = %v, want the loaded fact: an actual without a goal still shows", inq.Actual)
+	}
+	if inq.Projected != nil || inq.ProjectedReason != "noGoal" {
+		t.Errorf("INQ = %+v, want the projection absent with its own reason — the actual must not swallow it",
+			inq)
 	}
 }

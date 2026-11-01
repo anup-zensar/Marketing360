@@ -69,22 +69,19 @@ const DefaultSection = "Shell attributes"
 // Model is the rulebook a plan uses (table "models", data model §2): its conversion rates, its average deal
 // size and the activity types it allows.
 type Model struct {
-	ID              string        `json:"id"`              // "MOD-1001"
-	Name            string        `json:"name"`            // 1–80 characters, unique among models
-	InqToMqlRate    money.Percent `json:"inqToMqlRate"`    // above 0 and at most 100.00
-	MqlToDealRate   money.Percent `json:"mqlToDealRate"`   // above 0 and at most 100.00
-	AverageDealSize money.Money   `json:"averageDealSize"` // USD, above 0 and at most 100,000,000.00
-	ActivityTypeIDs []string      `json:"activityTypeIds"` // at least one; in the order of the activity-type list (by name)
-	// The velocities are whole months per transition, 0–24 (047-C1); the allowed goal stages a non-empty
-	// subset of inq · mql · revenue in funnel order (047-C2).
-	InqToMqlVelocityMonths  int      `json:"inqToMqlVelocityMonths"`
-	MqlToDealVelocityMonths int      `json:"mqlToDealVelocityMonths"`
-	AllowedGoalStages       []string `json:"allowedGoalStages"`
-	Active                  bool     `json:"active"`
+	ID                      string        `json:"id"`                      // "MOD-1001"
+	Name                    string        `json:"name"`                    // 1–80 characters, unique among models
+	InqToMqlRate            money.Percent `json:"inqToMqlRate"`            // above 0 and at most 100.00
+	MqlToDealRate           money.Percent `json:"mqlToDealRate"`           // above 0 and at most 100.00
+	AverageDealSize         money.Money   `json:"averageDealSize"`         // USD, above 0 and at most 100,000,000.00
+	ActivityTypeIDs         []string      `json:"activityTypeIds"`         // at least one; in the order of the activity-type list (by name)
+	InqToMqlVelocityMonths  int           `json:"inqToMqlVelocityMonths"`  // whole months, 0–24 (047-C1)
+	MqlToDealVelocityMonths int           `json:"mqlToDealVelocityMonths"` // whole months, 0–24
+	AllowedGoalStages       []string      `json:"allowedGoalStages"`       // non-empty, in funnel order (047-C2)
+	Active                  bool          `json:"active"`
 	record.Meta
 }
 
-// The goal stages, in funnel order.
 const (
 	GoalStageINQ     = "inq"
 	GoalStageMQL     = "mql"
@@ -93,8 +90,7 @@ const (
 
 func allGoalStages() []string { return []string{GoalStageINQ, GoalStageMQL, GoalStageRevenue} }
 
-// Normalised fills what a model saved before 047 lacks — a bin snapshot, a fixture — with the migration's
-// own backfill: zero lag, every stage allowed.
+// Normalised fills what a model saved before 047 lacks with the migration's own backfill.
 func (m Model) Normalised() Model {
 	if len(m.AllowedGoalStages) == 0 {
 		m.AllowedGoalStages = allGoalStages()
@@ -124,8 +120,7 @@ type ActivityType struct {
 	record.Meta
 }
 
-// ActivityCategory groups activity types (table "activity_categories", 047-C7). Its ActivityTypeIDs are the
-// types assigned to it, read back from the join table whose primary key keeps each type in one category.
+// ActivityCategory groups activity types for the reports (table "activity_categories", 047-C7).
 type ActivityCategory struct {
 	ID              string   `json:"id"`        // "CAT-1001"
 	Name            string   `json:"name"`      // 1–80 characters, unique among categories ignoring letter case

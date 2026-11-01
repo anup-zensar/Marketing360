@@ -121,14 +121,12 @@ func (p performanceFigures) calculated(ctx context.Context, facts performance.Go
 	return facts, true, nil
 }
 
-// projectionModel is the model as 047's engine reads it: the same parameters, stamped with when the model
-// last changed so every projected figure can be reproduced (047 FR-012).
 func projectionModel(m settings.Model) projection.Model {
 	return projection.Model{
 		Name: m.Name, InqToMqlRate: m.InqToMqlRate, MqlToDealRate: m.MqlToDealRate,
 		AverageDealSize:        m.AverageDealSize,
 		InqToMqlVelocityMonths: m.InqToMqlVelocityMonths, MqlToDealVelocityMonths: m.MqlToDealVelocityMonths,
-		ParametersChangedAt: m.UpdatedAt,
+		ModelChangedAt: m.UpdatedAt,
 	}
 }
 

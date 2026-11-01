@@ -10386,30 +10386,37 @@ components:
     ProjectionStamp:
       type: object
       description: The model behind the projected figures and when its parameters last changed (047 FR-012).
-      required: [modelName, parametersChangedAt]
+      required: [modelName, modelChangedAt]
       properties:
         modelName: { type: string }
-        parametersChangedAt: { type: string, format: date-time }
+        modelChangedAt: { type: string, format: date-time }
     StageFigure:
       type: object
-      required: [stage, goal, actual, projected, conversion, reason, months]
+      required: [stage, goal, actual, projected, conversion, reason, projectedReason, months]
       properties:
         stage: { type: string, enum: [inq, mql] }
         goal: { type: [integer, "null"] }
         actual: { type: [integer, "null"] }
         projected:
           type: [integer, "null"]
-          description: The plan-year figure from today onwards (047 FR-010); null with a reason when nothing projects.
+          description: >-
+            The plan-year figure: actual to the end of the last whole month before today plus projected
+            from today, so a closed year equals the actual (047 FR-010). Null with projectedReason when
+            nothing projects. Never add this to actual — they overlap.
         conversion:
           type: [number, "null"]
           description: Actual over the previous stage's actual, one decimal; null where it cannot be worked out.
         reason: { type: string, enum: ["", noSource, noGoal, failed, stale, noData] }
+        projectedReason:
+          type: string
+          enum: ["", noGoal]
+          description: Why nothing projects, which reason cannot say when the stage has an actual (047 FR-013).
         months:
           type: array
           items: { $ref: "#/components/schemas/SplitMonth" }
     RevenueFigure:
       type: object
-      required: [goal, actual, projected, excludedCount, reason, months]
+      required: [goal, actual, projected, excludedCount, reason, projectedReason, months]
       properties:
         goal:
           oneOf:
@@ -10422,9 +10429,12 @@ components:
           description: One USD total at the current rate (046-C7).
         projected:
           oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
-          description: Deals from today onwards at the model's average deal size (047 FR-007).
+          description: >-
+            The plan-year figure, as StageFigure.projected, with the deals from today priced at the
+            model's average deal size (047 FR-007, FR-010).
         excludedCount: { type: integer, description: "Facts left out because their currency has no rate (SC-010)." }
         reason: { type: string, enum: ["", notApproved, noSource, noGoal, failed, stale, noData] }
+        projectedReason: { type: string, enum: ["", noGoal] }
         months:
           type: array
           items: { $ref: "#/components/schemas/SplitMoneyMonth" }

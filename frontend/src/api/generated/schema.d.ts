@@ -5348,31 +5348,38 @@ export interface components {
         ProjectionStamp: {
             modelName: string;
             /** Format: date-time */
-            parametersChangedAt: string;
+            modelChangedAt: string;
         };
         StageFigure: {
             /** @enum {string} */
             stage: "inq" | "mql";
             goal: number | null;
             actual: number | null;
-            /** @description The plan-year figure from today onwards (047 FR-010); null with a reason when nothing projects. */
+            /** @description The plan-year figure: actual to the end of the last whole month before today plus projected from today, so a closed year equals the actual (047 FR-010). Null with projectedReason when nothing projects. Never add this to actual — they overlap. */
             projected: number | null;
             /** @description Actual over the previous stage's actual, one decimal; null where it cannot be worked out. */
             conversion: number | null;
             /** @enum {string} */
             reason: "" | "noSource" | "noGoal" | "failed" | "stale" | "noData";
+            /**
+             * @description Why nothing projects, which reason cannot say when the stage has an actual (047 FR-013).
+             * @enum {string}
+             */
+            projectedReason: "" | "noGoal";
             months: components["schemas"]["SplitMonth"][];
         };
         RevenueFigure: {
             goal: components["schemas"]["Money"] | null;
             /** @description One USD total at the current rate (046-C7). */
             actual: components["schemas"]["Money"] | null;
-            /** @description Deals from today onwards at the model's average deal size (047 FR-007). */
+            /** @description The plan-year figure, as StageFigure.projected, with the deals from today priced at the model's average deal size (047 FR-007, FR-010). */
             projected: components["schemas"]["Money"] | null;
             /** @description Facts left out because their currency has no rate (SC-010). */
             excludedCount: number;
             /** @enum {string} */
             reason: "" | "notApproved" | "noSource" | "noGoal" | "failed" | "stale" | "noData";
+            /** @enum {string} */
+            projectedReason: "" | "noGoal";
             months: components["schemas"]["SplitMoneyMonth"][];
         };
         MetricFigure: {

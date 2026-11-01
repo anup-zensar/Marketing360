@@ -12,8 +12,6 @@ import (
 // usedByActivityType is the usage kind of the activity types a category groups (contract UsagePart.kind).
 const usedByActivityType = "activityType"
 
-// ListActivityCategories returns every activity category, active and inactive, by name ignoring letter
-// case, each with the activity types it groups (FR-018, FR-022). Every signed-in person may see them.
 func (s *Service) ListActivityCategories(ctx context.Context, _ actor.Actor) ([]ActivityCategoryView, error) {
 	var views []ActivityCategoryView
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
@@ -28,7 +26,6 @@ func (s *Service) ListActivityCategories(ctx context.Context, _ actor.Actor) ([]
 	return views, err
 }
 
-// GetActivityCategory returns the activity category id with the types it groups (FR-022).
 func (s *Service) GetActivityCategory(ctx context.Context, _ actor.Actor, id string) (ActivityCategoryView, error) {
 	var view ActivityCategoryView
 	err := s.tx.Read(ctx, func(ctx context.Context) error {

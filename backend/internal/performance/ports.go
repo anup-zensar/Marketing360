@@ -37,9 +37,7 @@ type GoalFacts struct {
 	ModelID              string
 	ActivityTypeID       string
 	PlanYear             int
-	// Model carries the plan's rates, deal size and velocities, so the panel projects without reaching
-	// into Settings itself (047 R3).
-	Model projection.Model
+	Model                projection.Model
 }
 
 // Figures answers the goals as shown, the plan's model, type and year; unset, the panel has no goals.

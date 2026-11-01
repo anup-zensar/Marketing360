@@ -60,7 +60,7 @@ marks tasks that can run in parallel. The migrations are the truth the documents
 - [X] T042 Route rules in `internal/access/routes_activity_categories.go` — signedIn reads,
   settings.manage writes, fail closed (FR-024)
 - [X] T043 [P] Contract: the five operations in openapi.yaml + api:types; contract tests
-- [ ] T044 [P] Frontend `settings/activity-categories/`: list (template A, status filter, counts), side
+- [X] T044 [P] Frontend `settings/activity-categories/`: list (template A, status filter, counts), side
   panel form with type assignment and default toggle, view-only notice; tests per state; the Settings hub
   card in `settings-sections.ts` (additive shared edit, as 046's)
 - [X] T045 Serve each type's category for the reports and the activity-type page (FR-022) with its test

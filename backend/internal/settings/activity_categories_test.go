@@ -50,8 +50,6 @@ func typeNames(view ActivityCategoryView) []string {
 	return names
 }
 
-// A new activity category is active, keeps its audit trail and its activity types, and is written to the
-// activity log (FR-018).
 func TestCreateActivityCategory_AuditAndTypes_FR018(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
@@ -80,8 +78,6 @@ func TestCreateActivityCategory_AuditAndTypes_FR018(t *testing.T) {
 	}
 }
 
-// Every problem of an activity category is reported at once: the name (1 to 80 characters, unique ignoring
-// letter case and spaces) and the activity types ticked. Nothing is saved (FR-018).
 func TestActivityCategory_Validation_FR018(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
@@ -104,7 +100,6 @@ func TestActivityCategory_Validation_FR018(t *testing.T) {
 	}
 }
 
-// A save from an out-of-date copy of an activity category is refused with version_conflict (FR-018).
 func TestUpdateActivityCategory_VersionConflict_FR018(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
@@ -131,8 +126,6 @@ func TestUpdateActivityCategory_VersionConflict_FR018(t *testing.T) {
 	}
 }
 
-// An activity type belongs to one category at a time: putting it in another moves it out of the first
-// (FR-019); a type in no category stays Uncategorised.
 func TestActivityCategory_TypeMovesBetweenCategories_FR019(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
@@ -158,8 +151,6 @@ func TestActivityCategory_TypeMovesBetweenCategories_FR019(t *testing.T) {
 	}
 }
 
-// At most one activity category is the default: marking a new one unmarks the one that had it, in the same
-// transaction (FR-020).
 func TestActivityCategory_OneDefault_FR020(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
@@ -186,8 +177,6 @@ func TestActivityCategory_OneDefault_FR020(t *testing.T) {
 	}
 }
 
-// Deleting an activity category moves it to the recycle bin and releases its activity types; Undo brings it
-// back with the same types (FR-021).
 func TestDeleteActivityCategory_UndoRestoresTypes_FR021(t *testing.T) {
 	t.Parallel()
 	f := newTestService(t)
