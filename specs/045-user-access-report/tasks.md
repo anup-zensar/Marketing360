@@ -51,11 +51,11 @@ each story.
 - [X] T012 [US1] `frontend/src/features/measure/shared/ReportFrame.tsx`: the optional prop lane A agreed to — hides
   the filter panel, In view, chips and Currency, keeps the header, saved views and export — with its test in
   `ReportFrame.test.tsx` (git checked for lane A's latest first; lane A pinged)
-- [ ] T013 [US1] `frontend/src/features/measure/user-access/`: `api.ts`, `access-address.ts` (q, team, status, sort,
+- [X] T013 [US1] `frontend/src/features/measure/user-access/`: `api.ts`, `access-address.ts` (q, team, status, sort,
   page, page size in the address), `UserAccessReport.tsx` (replaces 039's stub), `AccessControls.tsx`,
   `SignInBands.tsx` (the Last sign-in widget with its table view), `AccessTable.tsx` (sortable, paged, a row opens
   Settings › People), `access-text.ts`
-- [ ] T014 [US1] Web tests with vitest-axe: `UserAccessReport.test.tsx` (the states of FR-012, the address),
+- [X] T014 [US1] Web tests with vitest-axe: `UserAccessReport.test.tsx` (the states of FR-012, the address),
   `AccessTable.test.tsx`
 - [ ] T015 [US1] `frontend/e2e/measure-user-access.spec.ts`: two people sign in, the administrator sees both times;
   axe
