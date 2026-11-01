@@ -37,6 +37,9 @@ func (w *wiring) areas() error {
 	w.views()
 	w.spaArea()
 	w.dashboards()
+	if err := w.measureArea(); err != nil {
+		return err
+	}
 	w.usesOfPeople()
 	w.usesInSettings()
 	return nil

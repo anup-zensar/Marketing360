@@ -921,6 +921,22 @@ type RecycleBin struct {
 	ResolutionAt     *time.Time
 }
 
+type ReportView struct {
+	ID            string
+	PersonID      string
+	Report        string
+	Name          string
+	IsDefault     bool
+	Query         string
+	Version       int
+	CreatedAt     time.Time
+	CreatedByID   string
+	CreatedByName string
+	UpdatedAt     time.Time
+	UpdatedByID   string
+	UpdatedByName string
+}
+
 type Role struct {
 	ID            string
 	Name          string

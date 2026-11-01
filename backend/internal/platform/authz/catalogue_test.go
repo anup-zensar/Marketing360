@@ -1,6 +1,7 @@
 package authz_test
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -37,8 +38,24 @@ func TestCatalogue(t *testing.T) {
 			t.Errorf("groups (-want +got):\n%s", diff)
 		}
 		all := authz.All()
-		if all[13] != authz.FinanceImport || all[16] != authz.PurchaseRequestsEdit {
-			t.Errorf("the purchase-request permissions follow the financial ones, 046's included: %v", all[12:18])
+		if all[14] != authz.FinanceImport || all[17] != authz.PurchaseRequestsEdit {
+			t.Errorf("the purchase-request permissions follow the financial ones, 046's included: %v", all[13:19])
+		}
+	})
+	t.Run("039 FR-002 reports.view is scoped, in group Plans and planning, right after data.export", func(t *testing.T) {
+		t.Parallel()
+		info, found := authz.Lookup(string(authz.ReportsView))
+		want := authz.PermissionInfo{Key: authz.ReportsView, Group: authz.GroupPlanning, Label: "See reports",
+			Noun: "Seeing reports", Scoped: true}
+		if !found {
+			t.Fatal("reports.view is not in the catalogue")
+		}
+		if diff := cmp.Diff(want, info); diff != "" {
+			t.Errorf("reports.view (-want +got):\n%s", diff)
+		}
+		all := authz.All()
+		if i := slices.Index(all, authz.ReportsView); i < 1 || all[i-1] != authz.DataExport {
+			t.Errorf("reports.view follows data.export: %v", all)
 		}
 	})
 }

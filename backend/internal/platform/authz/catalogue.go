@@ -18,6 +18,7 @@ const (
 	ActivitiesDelete        Permission = "activities.delete"
 	ActivitiesSubmit        Permission = "activities.submit"
 	DataExport              Permission = "data.export"
+	ReportsView             Permission = "reports.view"
 	FinanceView             Permission = "finance.view"
 	FinanceLink             Permission = "finance.link"
 	FinanceImport           Permission = "finance.import"
@@ -74,6 +75,7 @@ var catalogue = []PermissionInfo{
 	{ActivitiesDelete, GroupPlanning, "Delete activities and line items", "Deleting activities and line items", true},
 	{ActivitiesSubmit, GroupPlanning, "Submit activities for approval and recall them", "Submitting activities", true},
 	{DataExport, GroupPlanning, "Export from All work", "Exporting", true},
+	{ReportsView, GroupPlanning, "See reports", "Seeing reports", true},
 	{FinanceView, GroupFinance, "See financial data", "Seeing financial data", true},
 	{FinanceLink, GroupFinance, "Link financial transactions to line items", "Linking financial transactions", true},
 	{FinanceImport, GroupFinance, "Import GSAP extracts", "Importing GSAP extracts", false},

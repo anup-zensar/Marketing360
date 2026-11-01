@@ -69,6 +69,8 @@ const (
 	PrefixMediaCode            = "MC"
 	PrefixExternalNameAlias    = "XN"
 	PrefixIntegrationID        = "IID"
+
+	PrefixReportView = "RV"
 )
 
 var Prefixes = []string{
@@ -87,6 +89,7 @@ var Prefixes = []string{
 	PrefixBulkAction, PrefixPlanImport,
 	PrefixPerformanceSource, PrefixPerformanceMapping, PrefixPerformanceImport, PrefixPerformanceFact,
 	PrefixPerformanceReviewRow, PrefixMediaCode, PrefixExternalNameAlias, PrefixIntegrationID,
+	PrefixReportView,
 }
 
 const firstNumber = 1001
