@@ -93,6 +93,12 @@ objects. SP&A One's approval engine approves three record types only (031), so t
   show? → A: **The distinct PO numbers of the request's lines, joined with commas, in line order; "—" when GSAP
   has made none yet.** Applied to US2 scenario 1 and `contracts/api.md`. (T004.)
 
+- **041-C12** — Q: The status and average widgets show no amounts; do they still carry the "You can't see
+  financial data" and "Covers N of M plans" states? → A: **No: the grid carries them.** Only the grid shows
+  amounts, so only it says which plans' amounts are left out ("Amounts cover N of M plans", or that financial
+  data is out of reach when none is); the widgets show counts, dates and days, which need no financial access.
+  Applied to FR-018, FR-020 and the report states. (T045.)
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See approval workload and cycle time (Priority: P1)

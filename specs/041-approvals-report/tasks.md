@@ -119,7 +119,7 @@ same plans.
   inside `ReportWidget`
 - [X] T025 [US1] `ApprovalsReport.tsx`: replace the stub with `ReportFrame` and the widgets; Period and Show are
   not offered (spec FR-005); the grid slot stays empty until US2
-- [ ] T026 [US1] `frontend/e2e/measure-approvals.spec.ts` US1 with axe: Alex opens Reports › Approvals, the
+- [X] T026 [US1] (written; CI runs it, not yet run locally) `frontend/e2e/measure-approvals.spec.ts` US1 with axe: Alex opens Reports › Approvals, the
   figures equal Approvals › Monitoring, switching the record type changes the mix, a filter narrows both widgets,
   Sara (Viewer) sees the report without export, a person without `reports.view` gets the no-access page
 - [ ] T027 [US1] Checkpoint: the checks of `docs/sdd/quality-gates.md` on the changed files, comment budget and
@@ -163,7 +163,7 @@ the file holds every matching row and no row of a plan outside Alex's scope.
 - [X] T036 [P] [US2] `frontend/src/features/measure/approvals/ApprovalsGrid.tsx` (+ `GridFilters.tsx`,
   `CommentDialog.tsx` on Radix Dialog): the grid in `ReportWidget`, address-backed parameters, export through the
   frame's menu
-- [ ] T037 [US2] `ApprovalsReport.tsx`: place the grid below the widgets; extend `frontend/e2e/measure-approvals.spec.ts`
+- [X] T037 [US2] `ApprovalsReport.tsx`: place the grid below the widgets; extend `frontend/e2e/measure-approvals.spec.ts`
   with the export scenario (P2, one short test)
 - [ ] T038 [US2] Checkpoint: the quality-gates checks on the changed files, comment budget and file length;
   commit `feat(041): approvals grid and export (US2)`; stop
@@ -231,4 +231,4 @@ the export. One story per implementation prompt; commit at each checkpoint; stop
 ## Phase 6: Convergence
 
 - [ ] T044 Confirm with the purchase request (032) owners when a person may open a purchase request, and make `canOpen` follow it per request: today the adapter sets it for every request from the purchase-requests list permission alone, in `backend/internal/app/measure_approvals.go`, per FR-017 and 041-C5 (partial)
-- [ ] T045 Decide whether the status and average widgets need the "You can't see financial data" and "Covers N of M plans" states T016 listed, or record in the spec that the grid carries them because the widgets show no amounts, per FR-018 and FR-020 (partial)
+- [X] T045 Decide whether the status and average widgets need the "You can't see financial data" and "Covers N of M plans" states T016 listed, or record in the spec that the grid carries them because the widgets show no amounts, per FR-018 and FR-020 (partial)
