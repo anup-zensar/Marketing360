@@ -238,7 +238,7 @@ a widget to its table, export it, export the report, compare every value with th
 
 - [ ] T051 `BenchmarkReportsFrame` in `backend/internal/platform/apibench/reports_test.go` (demo data and the 028
   volume); record the results in `plan.md` (SC-003, research R9)
-- [ ] T052 Comment budget and file length of **every file this feature touched**, including the hub and Plan
+- [X] T052 Comment budget and file length of **every file this feature touched**, including the hub and Plan
   files (`routes.go`, `catalogue.go`, `ids.go`, `seed/access.go`, `navigation.ts`, `pages.tsx`, `router.tsx`,
   `contract_routes_test.go`): whole-file 5% budget (CLAUDE.md 3), at most 300 non-blank lines
 - [ ] T053 Run `specs/039-measure-foundation/quickstart.md` by hand on the demo data; fix what differs
