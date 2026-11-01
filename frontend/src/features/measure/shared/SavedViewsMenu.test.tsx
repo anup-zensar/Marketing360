@@ -79,7 +79,7 @@ describe('SavedViewsMenu (039 US2, FR-024 – FR-029)', () => {
     await user.click(await screen.findByRole('menuitemcheckbox', { name: 'Asia' }));
 
     await waitFor(() => expect(search(router)).toBe('?owner=U-1002'));
-    expect(screen.getByRole('button', { name: 'View: Asia' })).toHaveFocus();
+    expect(await screen.findByRole('button', { name: 'View: Asia' })).toHaveFocus();
   });
 
   it('opens on the default view when the address is empty (FR-027)', async () => {
