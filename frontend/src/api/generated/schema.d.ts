@@ -4343,6 +4343,43 @@ export interface paths {
         patch: operations["updateReportView"];
         trace?: never;
     };
+    "/api/v1/reports/plan-budget": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Budget, planned cost, committed and actual of the records in view, as cards and by period (feature 040)
+         * @description Records match as the report frame matches them, in the person's reports.view scope (039). Budget counts once per branch (040-C2). Committed and actual cover only plans whose financial data the person may see; actual stops at today's period. Exported through exportReport with the widget keys cards, periods and ranked.
+         */
+        get: operations["getPlanBudgetReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/plan-budget/ranked": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The records of the Show level ranked by a figure, each with its children, grouped and paged (feature 040) */
+        get: operations["getPlanBudgetRanked"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reports/plan-details": {
         parameters: {
             query?: never;
@@ -4543,6 +4580,85 @@ export interface components {
             name?: string;
             query?: string;
             isDefault?: boolean;
+        };
+        PlanBudgetFigures: {
+            budget: components["schemas"]["Money"] | null;
+            planned: components["schemas"]["Money"] | null;
+            committed: components["schemas"]["Money"] | null;
+            actual: components["schemas"]["Money"] | null;
+            leftToPlan: components["schemas"]["Money"] | null;
+            unspent: components["schemas"]["Money"] | null;
+            overAllocated: boolean;
+        };
+        PlanBudgetCards: {
+            budget: components["schemas"]["Money"] | null;
+            planned: components["schemas"]["Money"] | null;
+            committed: components["schemas"]["Money"] | null;
+            actual: components["schemas"]["Money"] | null;
+            leftToPlan: components["schemas"]["Money"] | null;
+            unspent: components["schemas"]["Money"] | null;
+            overAllocated: boolean;
+            budgetUsed: number | null;
+            budgetSpent: number | null;
+            committedShare: number | null;
+            notYetCommitted: components["schemas"]["Money"] | null;
+        };
+        PlanBudgetPeriod: {
+            /** @example 2026-03 */
+            key: string;
+            /** @enum {string} */
+            state: "actual" | "inProgress" | "planned";
+            budget: components["schemas"]["Money"];
+            planned: components["schemas"]["Money"];
+            actual: components["schemas"]["Money"] | null;
+            budgetToDate: components["schemas"]["Money"];
+            plannedToDate: components["schemas"]["Money"];
+            actualToDate: components["schemas"]["Money"] | null;
+        };
+        PlanBudgetReport: {
+            cards: components["schemas"]["PlanBudgetCards"];
+            /** @enum {string} */
+            period: "month" | "quarter";
+            periods: components["schemas"]["PlanBudgetPeriod"][];
+            notes: {
+                notPhased: components["schemas"]["Money"] | null;
+                noDates: components["schemas"]["Money"] | null;
+                otherYears: components["schemas"]["Money"] | null;
+                actualOtherYears: components["schemas"]["Money"] | null;
+            };
+        };
+        RankedEntry: {
+            id: string;
+            /** @enum {string} */
+            level: "plan" | "campaign" | "initiative" | "activity" | "lineItem";
+            name: string;
+            planId: string;
+            figures: components["schemas"]["PlanBudgetFigures"];
+            children?: components["schemas"]["RankedEntry"][];
+        };
+        PlanBudgetRanked: {
+            /** @enum {string} */
+            level: "plan" | "campaign" | "initiative" | "activity";
+            /** @enum {string} */
+            sort: "budget" | "planned" | "committed" | "actual" | "leftToPlan" | "unspent";
+            /** @enum {string} */
+            order: "desc" | "asc";
+            group: string;
+            page: number;
+            size: number;
+            total: number;
+            trail: {
+                id: string;
+                level: string;
+                name: string;
+            }[];
+            groups: {
+                key: string;
+                label: string;
+                totals: components["schemas"]["PlanBudgetFigures"];
+                entries: components["schemas"]["RankedEntry"][];
+            }[];
+            drillLost: boolean;
         };
         /** @enum {string} */
         PlanDetailsLevel: "plan" | "campaign" | "initiative" | "activity";
@@ -19291,6 +19407,121 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getPlanBudgetReport: {
+        parameters: {
+            query?: {
+                /** @description The plans' year. Default - the current year. */
+                year?: components["parameters"]["AllWorkYear"];
+                /** @description Plan IDs (repeat the parameter for several). */
+                plan?: components["parameters"]["AllWorkPlan"];
+                /** @description Plans of these types (tested on plans). */
+                planType?: components["parameters"]["AllWorkPlanType"];
+                /** @description Team IDs; tested on the plan's teams. */
+                team?: components["parameters"]["AllWorkTeam"];
+                /** @description Person IDs; tested on plans, campaigns, initiatives and activities. */
+                owner?: components["parameters"]["AllWorkOwner"];
+                activityType?: components["parameters"]["AllWorkActivityType"];
+                activityStatus?: components["parameters"]["AllWorkActivityStatus"];
+                /**
+                 * @description A Shell-attribute filter, repeatable: <attributeId>:<value>,<value>… where a value is an option id,
+                 *     yes, no, or none (Not filled in). Tested on the attribute's level (016 FR-039).
+                 * @example [
+                 *       "SA-1022:SO-1301,none"
+                 *     ]
+                 */
+                attr?: components["parameters"]["AllWorkAttr"];
+                /** @description Time widgets by month (default) or quarter of the plan year. */
+                period?: components["parameters"]["ReportPeriod"];
+                /** @description The level a report that ranks records shows. */
+                show?: components["parameters"]["ReportShow"];
+                /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+                currency?: components["parameters"]["ReportCurrency"];
+                /** @description Keys of the widgets shown as a table instead of a chart. */
+                table?: components["parameters"]["ReportTable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The cards, the periods of the year and the notes on what the periods leave out. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanBudgetReport"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getPlanBudgetRanked: {
+        parameters: {
+            query?: {
+                /** @description The plans' year. Default - the current year. */
+                year?: components["parameters"]["AllWorkYear"];
+                /** @description Plan IDs (repeat the parameter for several). */
+                plan?: components["parameters"]["AllWorkPlan"];
+                /** @description Plans of these types (tested on plans). */
+                planType?: components["parameters"]["AllWorkPlanType"];
+                /** @description Team IDs; tested on the plan's teams. */
+                team?: components["parameters"]["AllWorkTeam"];
+                /** @description Person IDs; tested on plans, campaigns, initiatives and activities. */
+                owner?: components["parameters"]["AllWorkOwner"];
+                activityType?: components["parameters"]["AllWorkActivityType"];
+                activityStatus?: components["parameters"]["AllWorkActivityStatus"];
+                /**
+                 * @description A Shell-attribute filter, repeatable: <attributeId>:<value>,<value>… where a value is an option id,
+                 *     yes, no, or none (Not filled in). Tested on the attribute's level (016 FR-039).
+                 * @example [
+                 *       "SA-1022:SO-1301,none"
+                 *     ]
+                 */
+                attr?: components["parameters"]["AllWorkAttr"];
+                /** @description Time widgets by month (default) or quarter of the plan year. */
+                period?: components["parameters"]["ReportPeriod"];
+                /** @description The level a report that ranks records shows. */
+                show?: components["parameters"]["ReportShow"];
+                /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+                currency?: components["parameters"]["ReportCurrency"];
+                /** @description Keys of the widgets shown as a table instead of a chart. */
+                table?: components["parameters"]["ReportTable"];
+                sort?: "budget" | "planned" | "committed" | "actual" | "leftToPlan" | "unspent";
+                order?: "desc" | "asc";
+                /** @description none, plan, owner or attr:<attribute ID>. */
+                group?: string;
+                size?: 10 | 25 | 50;
+                page?: number;
+                q?: string;
+                /** @description The record whose children the list shows under it. */
+                drill?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of top entries with their children, in groups. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanBudgetRanked"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
             default: components["responses"]["Error"];
         };
     };

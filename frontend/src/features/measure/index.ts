@@ -14,7 +14,8 @@ import type { ReportKey } from './reports';
 export { ReportsPage } from './ReportsPage';
 export { REPORT_ROUTES } from './reports';
 export type { ReportKey } from './reports';
-export { ReportTable, ReportWidget } from './shared';
+export { RankedList, ReportTable, ReportWidget } from './shared';
+export type { RankedColumn, RankedData } from './shared';
 export type { ReportTableData } from './shared';
 
 export const REPORT_PAGES: Record<ReportKey, ComponentType> = {

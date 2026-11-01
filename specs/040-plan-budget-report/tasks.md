@@ -17,7 +17,7 @@ runs its own unit tests, lint and type-check.
 - [X] T003 [US1] `model.go`, `ports.go`, `figures.go`, `cards.go`, `periods.go`, `service.go` (`Report`)
 - [X] T004 [US1] `handler.go` (`GET /reports/plan-budget`), `app/measure_planbudget.go` wiring, contract test
   `TestPlanBudgetContract`
-- [ ] T005 [US1] Web: `features/measure/plan-budget/api.ts`, `BudgetCards.tsx`, `PacingChart.tsx`,
+- [X] T005 [US1] Web: `features/measure/plan-budget/api.ts`, `BudgetCards.tsx`, `PacingChart.tsx`,
   `PlanBudgetReport.tsx` with tests (cards, "—", Over-allocated, chart and table, notes, loading, error)
 
 ## Phase 3: User Story 2 — ranked list and drill (P1)
@@ -26,13 +26,13 @@ runs its own unit tests, lint and type-check.
   `TestRanked_TotalsEqualCards_FR015`, `TestParseRanked_FR014`
 - [X] T007 [US2] `ranked.go`, `ranked_query.go`, service `Ranked`, handler `GET /reports/plan-budget/ranked`;
   the report implements `measure.Parameterised`
-- [ ] T008 [US2] Web: `shared/RankedList.tsx` (exported from `features/measure` for 049) with drill, trail, Back,
+- [X] T008 [US2] Web: `shared/RankedList.tsx` (exported from `features/measure` for 049) with drill, trail, Back,
   record links; tests
 
 ## Phase 4: User Story 3 — group, sort, page (P2)
 
 - [X] T009 [US3] Tests first: `TestRanked_Groups_FR013`, `TestRanked_PagesAndSearch_FR014`
-- [ ] T010 [US3] `ranked_groups.go`, paging and search; web controls (Sort by, Order, Group by, page size, search)
+- [X] T010 [US3] `ranked_groups.go`, paging and search; web controls (Sort by, Order, Group by, page size, search)
 
 ## Phase 5: User Story 4 — export (P2)
 
