@@ -60,6 +60,10 @@ each stands until the developer or the integrator overrides it.
   beyond 48 (client default). Waiting for GSAP: working days (Monday to Friday) since routing, flagged **Over 2
   working days** beyond 2. Fixed in wave A, not a setting. *Why*: the GSAP workshop defaults (019 Assumptions);
   a setting would change Settings, which is not lane D's, and no holiday calendar exists in MAPP.
+- **044-C6** Q: An activity can be Approved with no approval round (records loaded as approved). Since when does
+  its line item wait? → A: Since the activity was last changed, which is no earlier than its approval. *Why*:
+  every approval in MAPP ends a round (013, 017); only loaded records lack one, and the row must still be listed
+  for SC-002, with a waiting time that never overstates.
 
 ## User Scenarios & Testing *(mandatory)*
 

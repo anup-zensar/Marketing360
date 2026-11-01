@@ -15,44 +15,44 @@ Write each test first and see it fail.
 
 ## Phase 1: Setup
 
-- [ ] T001 Branch `feature/044-gsap-link-reports` has `measure-module` with 039's hub, frame, export and `Scope` and
+- [X] T001 Branch `feature/044-gsap-link-reports` has `measure-module` with 039's hub, frame, export and `Scope` and
   the wave A contract merged; the backend builds
 
 ## Phase 2: Foundational
 
-- [ ] T002 [P] `backend/internal/measure/gsaplink/model.go`: the API types exactly as `openapi.yaml`'s
+- [X] T002 [P] `backend/internal/measure/gsaplink/model.go`: the API types exactly as `openapi.yaml`'s
   `GsapLinkReport`, `GsapPath`, `GsapSwbsTab`, `GsapSwbsRow`, `GsapBand`, `GsapWaitingTab`, `GsapWaitingRow`,
   `GsapOrdersTab`, `GsapOrderRow`, `GsapOrderTotals`; tab and sort keys as constants
-- [ ] T003 [P] `backend/internal/measure/gsaplink/ports.go`: `Transactor`; `Scoped` (`Scope(ctx, a, f, columns)`
+- [X] T003 [P] `backend/internal/measure/gsaplink/ports.go`: `Transactor`; `Scoped` (`Scope(ctx, a, f, columns)`
   returning 039's `measure.Scope`); `Store` with `ActivitiesApprovedAt(ctx, activityIDs)`,
   `WaitingForGsap(ctx, lineItemIDs)`, `PurchaseOrderTransactions(ctx, lineItemIDs)` and their row types
-- [ ] T004 `backend/internal/platform/database/queries/measure_gsaplink.sql` (research R2): `ListActivitiesApprovedAt`
+- [X] T004 `backend/internal/platform/database/queries/measure_gsaplink.sql` (research R2): `ListActivitiesApprovedAt`
   (latest `approval_rounds.ended_at` with `subject_kind = 'activity'` and `outcome = 'approved'` per activity),
   `ListPurchaseRequestsWaitingForGsap` (032 FR-032's predicate: status `approved`, a routing, a line without a PO
   line or with a PO value or currency different from the line; the time and type of the latest `original` or
   `modification` routing; lines on the given line items), `ListPurchaseOrderTransactions` (`purchaseOrder`,
   `invoice`, `payment` transactions linked to the given line items, with the purchase request line of the same PO
   number and line item); `go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1 generate`
-- [ ] T005 `backend/internal/measure/gsaplink/store_postgres.go`: the three reads through sqlc; and
+- [X] T005 `backend/internal/measure/gsaplink/store_postgres.go`: the three reads through sqlc; and
   `store_postgres_test.go` on the seeded demo data (`dbtest`): `TestStore_ScopeIsolation` (only the IDs asked for
   come back), `TestWaiting_EqualsPurchaseRequestsView_SC002` (the same requests as `purchaserequest`'s Waiting for
   GSAP list), `TestStore_LatestApprovalAndRouting`
-- [ ] T006 `backend/internal/measure/gsaplink/year_test.go`: an in-memory scope (nodes with line items and SWBS
+- [X] T006 `backend/internal/measure/gsaplink/year_test.go`: an in-memory scope (nodes with line items and SWBS
   status, choices with finance plans) and fakes of `Scoped` and `Store` for the rule tests
 
 ## Phase 3: User Story 1 — SWBS not received (P1) 🎯 MVP
 
-- [ ] T007 [P] [US1] `waiting_test.go`: `TestWaitingHours_FR006` (hours since approval, never negative, over 48),
+- [X] T007 [P] [US1] `waiting_test.go`: `TestWaitingHours_FR006` (hours since approval, never negative, over 48),
   `TestWorkingDays_FR009` (Monday to Friday, Friday to Monday is 1, same day 0)
-- [ ] T008 [P] [US1] `swbs_test.go`: `TestSwbs_ReadyToSendOnly_FR005` (received, not requested and waiting for
+- [X] T008 [P] [US1] `swbs_test.go`: `TestSwbs_ReadyToSendOnly_FR005` (received, not requested and waiting for
   approval left out; an activity In progress still in), `TestSwbs_Row_FR005` (path, owner, company code, approved
   on), `TestSwbsBands_FR007` (bands add up to Waiting; Over 48 hours card), `TestSwbs_EqualsAllWork_SC002`
-- [ ] T009 [P] [US1] `table_test.go`: `TestTable_SortAndPage_FR015` (every sort key both ways, ties by ID, default
+- [X] T009 [P] [US1] `table_test.go`: `TestTable_SortAndPage_FR015` (every sort key both ways, ties by ID, default
   longest waiting first, page and page size, total over all pages)
-- [ ] T010 [US1] `waiting.go`, `swbs.go`, `table.go`: the rules of T007 – T009
-- [ ] T011 [US1] `service.go`: `Report(ctx, a, f, Table)` in one `Read` — `Scoped.Scope`, the tab, sort and page;
+- [X] T010 [US1] `waiting.go`, `swbs.go`, `table.go`: the rules of T007 – T009
+- [X] T011 [US1] `service.go`: `Report(ctx, a, f, Table)` in one `Read` — `Scoped.Scope`, the tab, sort and page;
   `TestReport_Swbs_FR001_FR005`
-- [ ] T012 [US1] `handler.go`: `GET /api/v1/reports/gsap-link` with 039's filter and `tab`, `sort`, `page`,
+- [X] T012 [US1] `handler.go`: `GET /api/v1/reports/gsap-link` with 039's filter and `tab`, `sort`, `page`,
   `pageSize` (allowlisted, 400 otherwise); `routes_test.go` on the handler, with `TestRoutes_ReadOnly_FR002` (only
   GET is mounted)
 - [ ] T013 [US1] `backend/internal/app/measure_gsaplink.go`: `registerGsapLink` registers the report and mounts the
