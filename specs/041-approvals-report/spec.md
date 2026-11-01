@@ -61,7 +61,20 @@ objects. SP&A One's approval engine approves three record types only (031), so t
 - **041-C5** — Q: Where does a row's record name link when the person may see the approval row but cannot open
   the record's page? → A: **Nowhere: the name is plain text, with no link, whenever the person may not open the
   record.** Reason: the report never offers a link that ends in "not found", and a record outside the person's
-  scope still answers as missing. Applied to FR-017 and US2 scenario 6. (never in the decision log).
+  scope still answers as missing. Applied to FR-017 and US2 scenario 6.
+
+- **041-C6** — Q: How do the engine's outcomes `restarted` and `cancelled`, which 041-C1 has no word for, appear?
+  → A: **`restarted` shows as Replaced by a new submission and `cancelled` as Recalled**, so the status mix always
+  adds up to the total. Reason: a restart ends a round the same way a re-submission does (031), and a cancelled
+  round was withdrawn before a decision, as a recall is. Applied to FR-006 and the assumptions. (Planning, from
+  reading the engine's `Outcome` values; research R3.)
+- **041-C7** — Q: Is the average days worked out per round or per approver step? → A: **The overall average is
+  017's, per round**: the mean elapsed time from submission to the end of every round approved or declined by a
+  person, to one decimal (`approval.AverageDecisionDays`), the same as Approvals › Monitoring and 036's panel, so
+  the three agree (SC-002). **The per-approver list** gives each person the mean elapsed time from a round's
+  submission to that person's own decision, over the decisions they made. Reason: 017's rule is per round; client
+  018 FR-019 wants a per-approver list too, so both are shown with their own count. Applied to FR-009, FR-010,
+  US1 scenario 3, the edge cases, the key entities and the assumptions. (Planning; research R1.)
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -89,8 +102,8 @@ Approvals panel.
 2. **Given** the status widget, **When** the person chooses **Purchase request** or **Modified purchase
    request**, **Then** only that type's rounds are counted, with the same outcome words for every type (041-C1).
 3. **Given** completed decisions (approved or declined steps), **When** the report opens, **Then** the average
-   widget shows the mean calendar days from submission to decision to one decimal with the number of decisions,
-   and a list of approvers each with their own average and decisions, slowest first; pending, recalled,
+   widget shows the mean days from submission to the end of the round to one decimal with the number of
+   decisions (041-C7), and a list of approvers each with their own average and decisions, slowest first; pending, recalled,
    replaced and automatically approved steps are not counted (017), and skipped levels are not rows (041-C3).
 4. **Given** the same plans, **Then** the average equals the one on Approvals › Monitoring and on 036's
    Approvals panel, because all three use 017's rule.
@@ -176,8 +189,8 @@ These scenarios cover each state a widget or the grid can render; each has its o
 - A decision made by a backup approver, a delegate or "on behalf" (017): the row names who decided, and the
   average counts it for that person.
 - A plan with two teams (D-237): its rounds count once in totals and in each team's view, as 036 does.
-- Dates are calendar dates (`YYYY-MM-DD`); two decisions on the day of submission count as 0.0 days, a decision
-  the next day as 1.0.
+- Dates on screen are calendar dates (`YYYY-MM-DD`); averages are elapsed days to one decimal (041-C7), so a
+  round decided within the hour of its submission counts as 0.0 days.
 - The grid holds many thousands of rows: paging, sorting and search stay quick and the export still holds every
   matching row.
 - Filters in the address that name a record type, status or approver that does not exist: the report shows the
@@ -208,7 +221,7 @@ These scenarios cover each state a widget or the grid can render; each has its o
 
 - **FR-006**: The **Current approval status** widget MUST show, for the chosen record type, the count of rounds
   in each current outcome — Waiting, Approved, Declined, Recalled, Replaced by a new submission, Approved
-  automatically (041-C1) — and each one's share as a whole per cent, plus the total, with a table view (client
+  automatically (041-C1, 041-C6) — and each one's share as a whole per cent, plus the total, with a table view (client
   018 FR-012, FR-018; FA §E3.6.1).
 - **FR-007**: The widget MUST have its own **Record type** selector offering **Activity** (default), **Purchase
   request** and **Modified purchase request**, listing only types that have approval rounds in the plans in
@@ -220,12 +233,12 @@ These scenarios cover each state a widget or the grid can render; each has its o
 
 **Average widget** *(US1)*
 
-- **FR-009**: The **Average days to a decision** widget MUST show the mean calendar days from submission to
-  decision over completed steps (approved or declined), to one decimal, with the number of decisions, using
-  017's rule exactly as the Approvals monitoring and 036's Approvals panel work it out (client 018 FR-019;
+- **FR-009**: The **Average days to a decision** widget MUST show the mean days from submission to
+  the end of each round approved or declined by a person, to one decimal, with the number of decisions (041-C7),
+  using 017's rule exactly as the Approvals monitoring and 036's Approvals panel work it out (client 018 FR-019;
   measure-metrics §1).
-- **FR-010**: The widget MUST list each approver with their own average and number of decisions, slowest first,
-  crediting the person who actually decided (041-C2); waiting, recalled, replaced, not-needed and automatically
+- **FR-010**: The widget MUST list each approver with their own average — from each round's submission to that
+  person's own decision — and number of decisions, slowest first (041-C7), crediting the person who actually decided (041-C2); waiting, recalled, replaced, not-needed and automatically
   approved steps MUST NOT be counted, and skipped levels are not rows at all (041-C3).
 - **FR-011**: With no decision in scope the average MUST show "—" and say why, never zero (client 018 FR-006,
   FR-007).
@@ -275,7 +288,8 @@ These scenarios cover each state a widget or the grid can render; each has its o
   of 041-C1 or Not needed) and comments; the grid's row (041-C2).
 - **Record type**: Activity, Purchase request or Modified purchase request (031).
 - **Status mix**: the count and share of rounds per current outcome (041-C1) for one record type.
-- **Average days to a decision**: the mean of decision date minus submitted date over completed steps (017).
+- **Average days to a decision**: the mean elapsed time from submission to the end of the round over rounds
+  approved or declined by a person (017); per approver, from submission to that person's own decision (041-C7).
 - **Report widget**: a block of the report frame with a chart or card, a table view and an export (039).
 
 ## Success Criteria *(mandatory)*
@@ -301,9 +315,10 @@ These scenarios cover each state a widget or the grid can render; each has its o
   into them and never redefines them. Lane A's 039 spec was not yet pushed when this spec was written, so any
   detail of the frame named here follows the build guide and is checked against 039's contracts at planning.
 - The three record types are those of 031; the outcome words are those the approval engine records (008, 017,
-  031), shown identically for every type (041-C1).
-- "Decision" means an approved or declined step; calendar days between submission and decision, as 017's
-  Monitoring average works it out. Working days are not used.
+  031), shown identically for every type (041-C1); `restarted` and `cancelled` rounds show as Replaced by a new
+  submission and Recalled (041-C6).
+- "Decision" means a round approved or declined by a person (017); days are elapsed days to one decimal, as
+  017's Monitoring average works them out (041-C7). Working days are not used.
 - The amount of an activity round is the activity's planned cost as it is now; of a purchase-request round,
   032's amount (041-C4).
 - Hive9's accrual, plan, campaign, initiative, line-item and custom-object approvals are not built: SP&A One does
