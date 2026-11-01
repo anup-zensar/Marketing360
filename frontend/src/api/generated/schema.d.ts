@@ -19474,6 +19474,14 @@ export interface operations {
                 q?: components["parameters"]["RankedSearch"];
                 /** @description The record whose children the list shows under it. */
                 drill?: components["parameters"]["RankedDrill"];
+                /** @description The record type of the status widget. A value that matches nothing answers with empty figures. */
+                statusType?: components["parameters"]["ApprovalsStatusType"];
+                /** @description Grid filter by record type; repeat for several. A value that matches nothing gives an empty grid. */
+                recordType?: components["parameters"]["ApprovalsRecordType"];
+                /** @description Grid filter by approver ID; repeat for several. The widgets are not narrowed by it. */
+                approver?: components["parameters"]["ApprovalsApprover"];
+                /** @description Grid filter by status; repeat for several. */
+                outcome?: components["parameters"]["ApprovalsOutcome"];
             };
             header?: never;
             path: {

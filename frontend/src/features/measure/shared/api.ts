@@ -54,19 +54,22 @@ export function useReportFrame(report: ReportKey, address: ReportAddress) {
 
 type ExportQuery = NonNullable<operations['exportReport']['parameters']['query']>;
 
-/** The report's own parameters on screen (a sort, a tab, a ranked list's group, search and drill): the file matches it. */
+const OWN_VALUES = ['sort', 'tab', 'group', 'q', 'drill', 'statusType'] as const;
+const OWN_LISTS = ['recordType', 'approver', 'outcome'] as const;
+
+/** The report's own parameters on screen (sort, tab, search, a ranked list's group and drill, a grid's filters). */
 function ownQuery(params?: URLSearchParams): Partial<ExportQuery> {
-  const [sort, tab, group, q, drill] = ['sort', 'tab', 'group', 'q', 'drill'].map(
-    (name) => params?.get(name) ?? '',
-  );
-  return {
-    ...(sort && { sort }),
-    ...(tab && { tab }),
-    ...(params?.get('order') === 'asc' && { order: 'asc' as const }),
-    ...(group && { group }),
-    ...(q && { q }),
-    ...(drill && { drill }),
-  };
+  const query: Partial<ExportQuery> = {};
+  for (const name of OWN_VALUES) {
+    const value = params?.get(name);
+    if (value) query[name] = value;
+  }
+  for (const name of OWN_LISTS) {
+    const values = params?.getAll(name) ?? [];
+    if (values.length > 0) query[name] = values;
+  }
+  if (params?.get('order') === 'asc') query.order = 'asc';
+  return query;
 }
 
 /** The report, or one widget of it, as a file through 039's one export (FR-022). */

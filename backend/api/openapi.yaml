@@ -7887,6 +7887,10 @@ paths:
         - $ref: "#/components/parameters/RankedGroup"
         - $ref: "#/components/parameters/RankedSearch"
         - $ref: "#/components/parameters/RankedDrill"
+        - $ref: "#/components/parameters/ApprovalsStatusType"
+        - $ref: "#/components/parameters/ApprovalsRecordType"
+        - $ref: "#/components/parameters/ApprovalsApprover"
+        - $ref: "#/components/parameters/ApprovalsOutcome"
       responses:
         "200":
           description: The file, named "SP&A One – <report> [– <widget>] – <year> – <date>".
