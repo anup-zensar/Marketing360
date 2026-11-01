@@ -50,6 +50,11 @@ trip; Playwright + axe for US1–US3 (`e2e/measure.spec.ts`)
 (`internal/platform/apibench`); statements per frame fixed: year, plans in scope, choices, attributes, currency
 (R9)
 
+**Measured** (2026-11-02, `BenchmarkReportsFrame`, 028 volume, 3 runs each, with `fix/039-custom-plans`): frame for
+every plan 1.08 s, one market 1.54 s, filtered 1.29 s (SC-003 met); catalogue 12 ms; saved views 14 ms; Excel export
+2.66 s. Without that fix PostgreSQL switched `ListLineItems` to a generic plan after five runs per connection and the
+same frames took 2.1 s, 4.4 s and 9.3 s, the export 18.2 s. Statements per frame: 39 (one market 40), export 64.
+
 **Constraints**: constitution VII scope isolation; IV the server works out every figure; F3 state in the
 address; F6 every chart has a table; X palette (chart tokens, never yellow or red for a series); V file and
 function metrics; VIII comment budget; build guide §4 ownership (no lane edits the hub after 039)

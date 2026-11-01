@@ -236,7 +236,7 @@ a widget to its table, export it, export the report, compare every value with th
 
 ## Phase 7: Polish and cross-cutting
 
-- [ ] T051 `BenchmarkReportsFrame` in `backend/internal/platform/apibench/reports_test.go` (demo data and the 028
+- [X] T051 `BenchmarkReportsFrame` in `backend/internal/platform/apibench/reports_test.go` (demo data and the 028
   volume); record the results in `plan.md` (SC-003, research R9)
 - [X] T052 Comment budget and file length of **every file this feature touched**, including the hub and Plan
   files (`routes.go`, `catalogue.go`, `ids.go`, `seed/access.go`, `navigation.ts`, `pages.tsx`, `router.tsx`,
