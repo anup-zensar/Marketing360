@@ -1,11 +1,7 @@
 package app
 
 import (
-	"context"
-
 	"mapp/internal/allwork"
-	"mapp/internal/platform/actor"
-	"mapp/internal/platform/errs"
 	"mapp/internal/widgetdata"
 )
 
@@ -25,7 +21,7 @@ func (w *wiring) widgetData() {
 	for _, r := range levelReaders(planning) {
 		readers[r.source] = r
 	}
-	service := widgetdata.NewService(s.Tx, widgetdata.Deps{Sources: readers, Datasets: noDatasets{}, Rates: w.settings})
+	service := widgetdata.NewService(s.Tx, widgetdata.Deps{Sources: readers, Datasets: w.datasets, Rates: w.settings})
 	mount(w.signedIn, widgetdata.NewHandler(service))
 }
 
@@ -37,15 +33,4 @@ func levelReaders(planning widgetPlanning) []levelReader {
 		{planning: planning, source: sourceActivities, level: allwork.LevelActivity, dated: true, row: activityRow},
 		{planning: planning, source: "lineItems", level: allwork.LevelLineItem, row: lineItemRow},
 	}
-}
-
-// noDatasets stands in for the datasets until they are wired: none is visible, so each is not found.
-type noDatasets struct{}
-
-func (noDatasets) Visible(context.Context, actor.Actor) ([]widgetdata.DatasetInfo, error) {
-	return []widgetdata.DatasetInfo{}, nil
-}
-
-func (noDatasets) Table(context.Context, actor.Actor, string) (widgetdata.Table, error) {
-	return widgetdata.Table{}, errs.NotFound("This dataset doesn't exist.")
 }
