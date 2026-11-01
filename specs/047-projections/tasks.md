@@ -84,8 +84,9 @@ marks tasks that can run in parallel. The migrations are the truth the documents
 - [X] T053 Run `/speckit-converge`; record remaining or "clean". Done 2026-11-02: eight findings appended
   as Phase 6. The one CRITICAL is this feature's own — no end-to-end test exists for US1 and US2, which
   Constitution VI requires of every P1 story
-- [ ] T054 Open the PR into `measure-module` (note: branch stacked on 046's; retarget/rebase once PR #62
-  merges), with the feature-map status change and the FR-005 ask
+- [X] T054 Open the PR into `measure-module` (note: branch stacked on 046's; retarget/rebase once PR #62
+  merges), with the feature-map status change and the FR-005 ask. Done 2026-11-02, raised against
+  `feature/046-performance-data` so the diff shows 047 alone: https://github.com/anup-zensar/MAPP/pull/75
 
 ## Phase 6: Convergence
 
