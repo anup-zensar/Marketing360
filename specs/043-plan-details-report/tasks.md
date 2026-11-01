@@ -139,8 +139,9 @@ All work's Breakdown by Cluster.
   written in plan.md
 - [X] T029 Comment budget and file length of every file of this feature (constitution V, VIII);
   `scripts/check-changed.ps1` green
-- [ ] T030 quickstart.md by hand on the demo data; `/speckit-converge`; spec status Built; pull request into
-  `measure-module` with the feature-map status change
+- [X] T030 quickstart.md on the demo data (its steps run by `measure-plan-details.spec.ts` in CI, green on PR #61;
+  no local PostgreSQL to run them by hand); `/speckit-converge`; spec status Built; pull request #61 into
+  `measure-module` with the feature-map status change in its description
 
 ## Dependencies
 
