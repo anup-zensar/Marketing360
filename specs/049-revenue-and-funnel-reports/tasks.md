@@ -72,7 +72,8 @@ marks tasks that can run in parallel.
 
 ## Phase 5 — Cross-cutting and close-out
 
-- [ ] T050 [P] SC-003: a test pinning the statement count constant whatever the number of activities in view
+- [X] T050 [P] SC-003: a test pinning the statement count constant whatever the number of activities in view
+  — `ReportTotals` called exactly once for 5 activities and for 500
 - [ ] T051 [P] Cross-folder asks recorded for feature 039's lane: the export helper's hardcoded sort keys
   (049-C19), Expand all/Collapse all (FR-068, 049-C19), Compare (FR-067, 049-C7)
 - [ ] T052 [P] `frontend/e2e/measure-revenue.spec.ts`: US1 and US2 against a seeded database, axe included
