@@ -104,14 +104,43 @@ func (q *Queries) ListPurchaseOrderTransactions(ctx context.Context, lineItemIds
 	return items, nil
 }
 
+const listPurchaseRequestRoutingsOf = `-- name: ListPurchaseRequestRoutingsOf :many
+SELECT purchase_request_id, type, routed_at FROM purchase_request_routings
+WHERE purchase_request_id = ANY ($1::text[])
+ORDER BY purchase_request_id, routed_at, length(id), id COLLATE "C"
+`
+
+type ListPurchaseRequestRoutingsOfRow struct {
+	PurchaseRequestID string
+	Type              string
+	RoutedAt          time.Time
+}
+
+func (q *Queries) ListPurchaseRequestRoutingsOf(ctx context.Context, purchaseRequestIds []string) ([]ListPurchaseRequestRoutingsOfRow, error) {
+	rows, err := q.db.Query(ctx, listPurchaseRequestRoutingsOf, purchaseRequestIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListPurchaseRequestRoutingsOfRow{}
+	for rows.Next() {
+		var i ListPurchaseRequestRoutingsOfRow
+		if err := rows.Scan(&i.PurchaseRequestID, &i.Type, &i.RoutedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listPurchaseRequestsWaitingForGsap = `-- name: ListPurchaseRequestsWaitingForGsap :many
-SELECT p.id, p.name, p.vendor, p.plan_id, p.gsap_pr_number, o.name AS owner_name, r.type AS routing, r.routed_at,
-    l.line_item_id, l.amount_minor, l.currency
+SELECT p.id, p.name, p.vendor, p.plan_id, p.gsap_pr_number, o.name AS owner_name, l.line_item_id, l.amount_minor,
+    l.currency
 FROM purchase_requests p
 JOIN people o ON o.id = p.owner_id
-JOIN LATERAL (SELECT g.type, g.routed_at FROM purchase_request_routings g
-    WHERE g.purchase_request_id = p.id AND g.type IN ('original', 'modification')
-    ORDER BY g.routed_at DESC, length(g.id) DESC, g.id COLLATE "C" DESC LIMIT 1) r ON true
 JOIN purchase_request_lines l ON l.purchase_request_id = p.id
 WHERE p.status = 'approved'
     AND EXISTS (SELECT 1 FROM purchase_request_routings g WHERE g.purchase_request_id = p.id)
@@ -129,8 +158,6 @@ type ListPurchaseRequestsWaitingForGsapRow struct {
 	PlanID       string
 	GsapPrNumber string
 	OwnerName    string
-	Routing      string
-	RoutedAt     time.Time
 	LineItemID   string
 	AmountMinor  int64
 	Currency     string
@@ -152,8 +179,6 @@ func (q *Queries) ListPurchaseRequestsWaitingForGsap(ctx context.Context, lineIt
 			&i.PlanID,
 			&i.GsapPrNumber,
 			&i.OwnerName,
-			&i.Routing,
-			&i.RoutedAt,
 			&i.LineItemID,
 			&i.AmountMinor,
 			&i.Currency,

@@ -34,7 +34,7 @@ export function WaitingTab({ tab, finance, total, table, onChange }: WaitingTabP
     },
     { key: 'vendor', label: 'Vendor', cell: (r) => r.vendor || '—' },
     { key: 'owner', label: 'Owner', cell: (r) => r.owner },
-    { key: 'path', label: 'Plan › Activity', sortable: false, cell: (r) => pathText(r.path) },
+    { key: 'plan', label: 'Plan › Activity', cell: (r) => pathText(r.path) },
     {
       key: 'routedAt',
       label: 'Routed on',
@@ -46,7 +46,7 @@ export function WaitingTab({ tab, finance, total, table, onChange }: WaitingTabP
         </>
       ),
     },
-    { key: 'gsapPr', label: 'GSAP PR number', sortable: false, cell: (r) => r.gsapPrNumber || '—' },
+    { key: 'gsapPrNumber', label: 'GSAP PR number', cell: (r) => r.gsapPrNumber || '—' },
     {
       key: 'amount',
       label: 'Amount',

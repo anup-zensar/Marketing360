@@ -55,12 +55,15 @@ describe('WaitingTab (044 US2, FR-004, FR-008 – FR-010, FR-016)', () => {
     expect(within(summary).getByText('Over 2 working days')).toBeInTheDocument();
   });
 
-  it('sorts by the contract columns only', async () => {
+  it('sorts by any column, the path and the GSAP PR number included (FR-015)', async () => {
     const { user, onChange } = renderTab();
 
     await user.click(screen.getByRole('button', { name: 'Vendor' }));
     expect(onChange).toHaveBeenLastCalledWith({ sort: 'vendor' });
-    expect(screen.queryByRole('button', { name: 'GSAP PR number' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'GSAP PR number' }));
+    expect(onChange).toHaveBeenLastCalledWith({ sort: 'gsapPrNumber' });
+    await user.click(screen.getByRole('button', { name: 'Plan › Activity' }));
+    expect(onChange).toHaveBeenLastCalledWith({ sort: 'plan' });
   });
 
   it('says when no request waits', () => {

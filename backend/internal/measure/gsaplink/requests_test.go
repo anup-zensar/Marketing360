@@ -34,14 +34,16 @@ func amountIn(tb testing.TB, amount, code string) money.Money {
 func withRequests(w *world) *world {
 	w.requests = []Request{
 		{ID: "PR-1001", Name: "PR for Stand build", Vendor: "Brightside Media BV", Owner: "Priya Raman", PlanID: ukPlan,
-			Routing: RoutingOriginal, RoutedAt: friday, Lines: []RequestLine{
+			Routings: []Routing{{Type: RoutingOriginal, At: friday}, {Type: "resend", At: now.Add(-time.Hour)}},
+			Lines: []RequestLine{
 				{LineItemID: "L-1", Amount: amountIn(w.tb, "100.00", "EUR")},
 				{LineItemID: "L-2", Amount: amountIn(w.tb, "50.00", "USD")},
 			}},
 		{ID: "PR-1002", Name: "Top-up for Booth", Vendor: "Northlight Events GmbH", Owner: "Mei Lin", PlanID: dePlan,
-			GsapPrNumber: "1000123", Routing: RoutingModification, RoutedAt: now.Add(-2 * time.Hour),
+			GsapPrNumber: "1000123", Routings: []Routing{{Type: RoutingOriginal, At: friday},
+				{Type: RoutingModification, At: now.Add(-2 * time.Hour)}},
 			Lines: []RequestLine{{LineItemID: "L-3", Amount: amountIn(w.tb, "10.00", "USD")}}},
-		{ID: "PR-1003", Name: "Elsewhere", PlanID: ukPlan, Routing: RoutingOriginal, RoutedAt: friday,
+		{ID: "PR-1003", Name: "Elsewhere", PlanID: ukPlan, Routings: []Routing{{Type: RoutingOriginal, At: friday}},
 			Lines: []RequestLine{{LineItemID: "L-9", Amount: amountIn(w.tb, "1.00", "USD")}}},
 	}
 	return w
@@ -103,5 +105,28 @@ func TestWaiting_AmountOnlyWithFinanceView_FR004(t *testing.T) {
 	w.choices.SeesFinance = false
 	if r = w.report(Table{Tab: TabWaiting}); r.Waiting.Amount != nil || r.Waiting.Rows[0].Amount != nil {
 		t.Errorf("without finance.view: amount %v, row %v; want none", r.Waiting.Amount, r.Waiting.Rows[0].Amount)
+	}
+}
+
+func TestWaiting_ResendDoesNotRestart_FR009(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name     string
+		routings []Routing
+		want     Routing
+		found    bool
+	}{
+		{name: "Resend PR form and Close after the original", found: true, want: Routing{Type: RoutingOriginal, At: friday},
+			routings: []Routing{{Type: RoutingOriginal, At: friday}, {Type: "resend", At: now}, {Type: "close", At: now}}},
+		{name: "an approved top-up waits from its modification (FR-008)", found: true,
+			want:     Routing{Type: RoutingModification, At: now},
+			routings: []Routing{{Type: RoutingOriginal, At: friday}, {Type: "resend", At: friday}, {Type: RoutingModification, At: now}}},
+		{name: "never routed", routings: []Routing{{Type: "resend", At: now}}},
+	}
+	for _, tt := range tests {
+		got, found := unansweredRouting(tt.routings)
+		if got != tt.want || found != tt.found {
+			t.Errorf("%s: %+v %v, want %+v %v", tt.name, got, found, tt.want, tt.found)
+		}
 	}
 }

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { formatWhole } from '@/format/decimal';
 import { Button } from '@/ui/Button/Button';
+import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { cx } from '@/ui/cx';
 import { useReportAddress } from '../shared';
 import { downloadReport } from '../shared/api';
@@ -67,7 +68,7 @@ export function PagedTable<R>(props: PagedTableProps<R>) {
 function Rows<R>(props: PagedTableProps<R>) {
   const { title, columns, rows, rowKey, table, total, empty, totals, onChange } = props;
   if (total === 0) {
-    return <p className={styles.empty}>{empty}</p>;
+    return <EmptyState title="No data yet" text={empty} />;
   }
   return (
     <>

@@ -53,4 +53,5 @@ type Finance struct {
 	SwbsRuns   SwbsStore
 
 	PurchaseRequests PurchaseRequestStore
+	GsapLink         GsapLinkStore
 }

@@ -2,6 +2,7 @@ package gsaplink
 
 import (
 	"context"
+	"slices"
 	"time"
 
 	"mapp/internal/platform/database"
@@ -29,21 +30,30 @@ func (s *PostgresStore) ActivitiesApprovedAt(ctx context.Context, activityIDs []
 	return approved, nil
 }
 
-// WaitingForGsap returns one Request per purchase request, its lines in their order.
+// WaitingForGsap returns one Request per purchase request, its lines in their order and its routings by time.
 func (s *PostgresStore) WaitingForGsap(ctx context.Context, lineItemIDs []string) ([]Request, error) {
 	rows, err := s.db.Queries(ctx).ListPurchaseRequestsWaitingForGsap(ctx, lineItemIDs)
 	if err != nil {
 		return nil, err
 	}
-	requests := []Request{}
+	requests, ids := []Request{}, []string{}
 	for _, r := range rows {
 		if len(requests) == 0 || requests[len(requests)-1].ID != r.ID {
 			requests = append(requests, Request{ID: r.ID, Name: r.Name, Vendor: r.Vendor, Owner: r.OwnerName,
-				PlanID: r.PlanID, GsapPrNumber: r.GsapPrNumber, Routing: r.Routing, RoutedAt: r.RoutedAt})
+				PlanID: r.PlanID, GsapPrNumber: r.GsapPrNumber})
+			ids = append(ids, r.ID)
 		}
 		last := &requests[len(requests)-1]
 		last.Lines = append(last.Lines, RequestLine{LineItemID: r.LineItemID,
 			Amount: money.Money{Amount: money.FromCents(r.AmountMinor), Currency: r.Currency}})
+	}
+	routings, err := s.db.Queries(ctx).ListPurchaseRequestRoutingsOf(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+	for _, g := range routings {
+		i := slices.IndexFunc(requests, func(r Request) bool { return r.ID == g.PurchaseRequestID })
+		requests[i].Routings = append(requests[i].Routings, Routing{Type: g.Type, At: g.RoutedAt})
 	}
 	return requests, nil
 }

@@ -11,11 +11,21 @@ const DEFAULT_PAGE_SIZE = 20;
 /** The columns each tab sorts by: the contract's GsapLinkSort. */
 const SORT_KEYS: Record<GsapTab, string[]> = {
   swbs: ['lineItem', 'plan', 'owner', 'companyCode', 'approvedAt', 'waiting'],
-  waiting: ['purchaseRequest', 'vendor', 'owner', 'routedAt', 'amount', 'waiting'],
+  waiting: [
+    'purchaseRequest',
+    'vendor',
+    'owner',
+    'plan',
+    'routedAt',
+    'gsapPrNumber',
+    'amount',
+    'waiting',
+  ],
   orders: [
     'lineItem',
     'plan',
     'purchaseRequest',
+    'gsapPrNumber',
     'poNumber',
     'poDate',
     'vendor',

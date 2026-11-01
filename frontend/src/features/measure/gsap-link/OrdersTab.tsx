@@ -55,7 +55,7 @@ export function OrdersTab({ tab, finance, total, table, onChange }: OrdersTabPro
           '—'
         ),
     },
-    { key: 'gsapPr', label: 'GSAP PR number', sortable: false, cell: (r) => r.gsapPrNumber || '—' },
+    { key: 'gsapPrNumber', label: 'GSAP PR number', cell: (r) => r.gsapPrNumber || '—' },
     {
       key: 'poNumber',
       label: 'PO number',

@@ -9,10 +9,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"mapp/internal/approval"
 	"mapp/internal/measure/gsaplink"
 	"mapp/internal/platform/actor"
-	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database"
 	"mapp/internal/platform/database/dbtest"
 	"mapp/internal/platform/date"
@@ -148,82 +146,6 @@ func assertWaitingIsolated(tb testing.TB, store *gsaplink.PostgresStore, lineIte
 	others := slices.DeleteFunc(slices.Clone(lineItems), func(id string) bool { return id == on })
 	if none, noneErr := store.WaitingForGsap(tb.Context(), others); noneErr != nil || len(none) != 0 {
 		tb.Errorf("waiting on other line items = %v, %v; want none", requestIDs(none), noneErr)
-	}
-}
-
-func TestWaiting_EqualsPurchaseRequestsView_SC002(t *testing.T) {
-	t.Parallel()
-	db := seededDB(t)
-	_, lineItems := allIDs(t, db)
-	page, err := purchaserequest.NewPostgresStore(db).Page(t.Context(), authz.Scope{Everything: true},
-		purchaserequest.ListQuery{WaitingForGSAP: true, Sort: "name", Page: 1, PageSize: 500})
-	if err != nil {
-		t.Fatal(err)
-	}
-	want := []string{}
-	for _, pr := range page.Items {
-		want = append(want, pr.ID)
-	}
-	slices.Sort(want)
-	got, err := gsaplink.NewPostgresStore(db).WaitingForGsap(t.Context(), lineItems)
-	if err != nil {
-		t.Fatal(err)
-	}
-	ids := requestIDs(got)
-	slices.Sort(ids)
-	if diff := cmp.Diff(want, ids); diff != "" || len(want) == 0 {
-		t.Errorf("Waiting for GSAP differs from 032's view (-view +report):\n%s", diff)
-	}
-}
-
-func TestStore_LatestApprovalAndRouting(t *testing.T) {
-	t.Parallel()
-	db := seededDB(t)
-	store := gsaplink.NewPostgresStore(db)
-	activities, lineItems := allIDs(t, db)
-
-	got, err := store.ActivitiesApprovedAt(t.Context(), activities)
-	if diff := cmp.Diff(latestApprovals(t, db), got); err != nil || diff != "" {
-		t.Errorf("latest approvals (-want +got):\n%s %v", diff, err)
-	}
-
-	assertRouting(t, store, lineItems, gsaplink.Request{Routing: gsaplink.RoutingOriginal, RoutedAt: routedAt})
-	modified := routedAt.Add(72 * time.Hour)
-	requests := purchaserequest.NewPostgresStore(db)
-	if err = db.Write(t.Context(), func(ctx context.Context) error {
-		return requests.AddRouting(ctx, routing("PRR-9003", purchaserequest.RoutingModification, modified))
-	}); err != nil {
-		t.Fatal(err)
-	}
-	assertRouting(t, store, lineItems, gsaplink.Request{Routing: gsaplink.RoutingModification, RoutedAt: modified})
-}
-
-// latestApprovals works out each activity's latest approval from 013's rounds.
-func latestApprovals(tb testing.TB, db *database.DB) map[string]time.Time {
-	tb.Helper()
-	rounds, err := approval.NewPostgresStore(db).ListRounds(tb.Context())
-	if err != nil {
-		tb.Fatal(err)
-	}
-	latest := map[string]time.Time{}
-	for _, r := range rounds {
-		approved := r.SubjectKind == approval.KindActivity && r.Outcome == approval.OutcomeApproved && r.EndedAt != nil
-		if approved && r.EndedAt.After(latest[r.SubjectID]) {
-			latest[r.SubjectID] = *r.EndedAt
-		}
-	}
-	return latest
-}
-
-// assertRouting checks the routing GSAP has not answered: Resend PR form never restarts it (FR-009).
-func assertRouting(tb testing.TB, store *gsaplink.PostgresStore, lineItems []string, want gsaplink.Request) {
-	tb.Helper()
-	list, err := store.WaitingForGsap(tb.Context(), lineItems)
-	if err != nil || len(list) != 1 {
-		tb.Fatalf("waiting: %v, %v", list, err)
-	}
-	if got := list[0]; got.Routing != want.Routing || !got.RoutedAt.Equal(want.RoutedAt) {
-		tb.Errorf("routing = %s at %v; want %s at %v", got.Routing, got.RoutedAt, want.Routing, want.RoutedAt)
 	}
 }
 

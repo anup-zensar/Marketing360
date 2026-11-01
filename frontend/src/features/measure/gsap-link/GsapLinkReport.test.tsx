@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { reportFrame } from '@/testing/fixtures/reports';
@@ -50,6 +50,21 @@ describe('GsapLinkReport (044 US1, FR-001, FR-015 – FR-018)', () => {
     expect(lastSearch(api)).toContain('tab=swbs');
     expect(lastSearch(api)).toContain('sort=-waiting');
     await expectNoAxeViolations();
+  });
+
+  it('goes back to page 1 when a filter changes', async () => {
+    const { router } = renderReport(
+      { body: swbsReport() },
+      reportFrame({ report: 'gsapLink' }),
+      '/reports/gsap-link?sort=lineItem&page=3',
+    );
+    await screen.findByRole('link', { name: 'Stand build' });
+
+    await router.navigate('/reports/gsap-link?sort=lineItem&page=3&planType=strategic');
+
+    await waitFor(() => expect(router.state.location.search).not.toContain('page=3'));
+    expect(router.state.location.search).toContain('planType=strategic');
+    expect(router.state.location.search).toContain('sort=lineItem');
   });
 
   it('keeps the tab in the address and starts it on its own sort (FR-001)', async () => {

@@ -1,7 +1,8 @@
+import { useEffect, useRef } from 'react';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
 import { Tabs } from '@/ui/Tabs/Tabs';
-import { ReportFrame } from '../shared';
+import { ReportFrame, writeAddress } from '../shared';
 import type { ReportAddress } from '../shared';
 import { useGsapLink } from './api';
 import type { GsapLinkReport as Report } from './api';
@@ -24,6 +25,18 @@ export function GsapLinkReport() {
 function GsapLinkBody({ address }: { address: ReportAddress }) {
   const { table, change } = useGsapTable();
   const report = useGsapLink(address, table);
+  const filters = writeAddress(address).toString();
+  const shown = useRef(filters);
+  const { page } = table;
+  useEffect(() => {
+    if (shown.current === filters) {
+      return;
+    }
+    shown.current = filters; // a filter changed: its rows start on page 1
+    if (page > 1) {
+      change({ page: 1 });
+    }
+  }, [filters, page, change]);
   return (
     <Tabs
       label="GSAP link"

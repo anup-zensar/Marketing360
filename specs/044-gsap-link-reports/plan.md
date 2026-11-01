@@ -96,7 +96,7 @@ backend/internal/platform/database/queries/measure_gsaplink.sql   # 3 reads (R2)
 backend/internal/measure/gsaplink/        # NEW, read-only
 ├── model.go          # GsapLinkReport, tabs, rows (API types)
 ├── ports.go          # Transactor, Scoped, Store
-├── store_postgres.go # the three reads through sqlc
+├── store_postgres.go # the reads through sqlc; gsaplinktest/: the in-memory fake, in stores.Set and storestest
 ├── service.go        # Report(ctx, actor, measure.Filter, Table): one Read, one tab
 ├── swbs.go           # Ready-to-send line items, approval time, bands (FR-005–FR-007)
 ├── waiting.go        # waiting hours and working days, flags (R5; FR-006, FR-009)
@@ -126,7 +126,7 @@ lay them out, wired through 039's stubs.
 | Records from the frame's match in the `reports.view` scope (FR-003) | service, `Scoped` | `TestReport_OnlyPlansInScope_FR003` (contract, persona with one of two plans) |
 | SWBS rows = matched line items Ready to send; received, off, not approved left out (FR-005) | `swbs.go` | `TestSwbs_ReadyToSendOnly_FR005`, `TestSwbs_EqualsAllWork_SC002` |
 | Waiting from the latest approval, hours, never negative, flag > 48 h, bands add up (FR-006, FR-007) | `waiting.go`, `swbs.go` | `TestWaitingHours_FR006`, `TestSwbsBands_FR007` |
-| Waiting for GSAP = 032 FR-032, the unanswered routing, resend ignored (FR-008, FR-009) | `requests.go`, store | `TestWaiting_EqualsPurchaseRequestsView_SC002` (PostgreSQL), `TestWaiting_ResendDoesNotRestart_FR009`, `TestWaiting_Modification_FR008` |
+| Waiting for GSAP = 032 FR-032, the unanswered routing, resend ignored (FR-008, FR-009) | `requests.go` (the unanswered routing), store (the predicate) | `TestWaiting_ResendDoesNotRestart_FR009` (Resend, Close, a modification), `TestWaiting_Row_FR008` |
 | Working days Monday to Friday, flag > 2 (FR-009) | `waiting.go` | `TestWorkingDays_FR009` (weekend, same day, Friday to Monday) |
 | Cards and amount only for `finance.view` plans, "Covers N of M" (FR-004, FR-010) | `requests.go` | `TestWaiting_AmountOnlyWithFinanceView_FR004` |
 | Orders: rows per line item and PO; PO amount, invoiced (credit notes negative), paid; unlinked ignored; totals over all rows (FR-011–FR-013) | `orders.go` | `TestOrders_SumsPerLineItemAndPO_FR012`, `TestOrders_PoOnTwoLineItems_FR011`, `TestOrders_TotalsAllPages_FR013`, `TestOrders_EqualsFinancials_SC003` |
@@ -148,8 +148,8 @@ first page; all under the 300 ms the tab may add to the year read (R6).
 
 - **039 (lane A)** — used as merged in `measure-module`: `measure.Service.Scope` (the shared step), `measure.Report` with
   `measure.Parameterised` (`tab` and `sort` kept by saved views, given to `Sheets` in `Filter.Own`), the export,
-  `ReportFrame`, `ReportWidget`. Still asked of lane A (tasks T029, T031): `plan` and `gsapPrNumber` in
-  `GsapLinkSort`; `tab` and 044's `sort` values on `exportReport`.
+  `ReportFrame`, `ReportWidget`. Still asked of lane A (task T031): `tab` and 044's `sort` values on `exportReport`.
+  `GsapLinkSort` gained `plan` and `gsapPrNumber` in #64, as lane A agreed (T029).
 - **Integrator** — record 044-C1–C6 in the decision log; 044-C1 goes to the product owner. Issue #37's client citation
   is corrected (FR-044, FR-045, FR-039).
 - **#DEMO (lane D)** — demo data with line items Ready to send approved 1, 4 and 12 days before the demo date, a
@@ -160,5 +160,4 @@ first page; all under the 300 ms the tab may add to the year read (R6).
 
 | Violation | Why needed | Simpler alternative rejected because |
 |---|---|---|
-| 032's "waiting for GSAP" predicate copied into `measure_gsaplink.sql` (four lines) | `purchaserequest`'s list is scoped by `purchaseRequests.list` and is outside lane D's paths | Changing it needs lane C's agreement; the copy is pinned to it by `TestWaiting_EqualsPurchaseRequestsView_SC002` on PostgreSQL |
-| The three reads answered twice: `measure_gsaplink.sql` on PostgreSQL, `gsapRecords` (`app/measure_gsaplink.go`) over the other areas' stores in memory | The API tests and a database-free run use the in-memory store set, which has no 044 store | Adding a 044 store to `stores.Set` edits shared files outside issue #37's paths that other lanes change too; the two are pinned equal by `TestGsapRecords_EqualPostgresStore` on PostgreSQL |
+| 032's "waiting for GSAP" predicate copied into `measure_gsaplink.sql` (four lines) | `purchaserequest`'s list is scoped by `purchaseRequests.list` and is outside lane D's paths | Changing it needs lane C's agreement; the in-memory fake `gsaplinktest` mirrors it for the API tests (constitution VI allows only scope-isolation tests on PostgreSQL) |

@@ -7,13 +7,10 @@ GROUP BY subject_id
 ORDER BY subject_id;
 
 -- name: ListPurchaseRequestsWaitingForGsap :many
-SELECT p.id, p.name, p.vendor, p.plan_id, p.gsap_pr_number, o.name AS owner_name, r.type AS routing, r.routed_at,
-    l.line_item_id, l.amount_minor, l.currency
+SELECT p.id, p.name, p.vendor, p.plan_id, p.gsap_pr_number, o.name AS owner_name, l.line_item_id, l.amount_minor,
+    l.currency
 FROM purchase_requests p
 JOIN people o ON o.id = p.owner_id
-JOIN LATERAL (SELECT g.type, g.routed_at FROM purchase_request_routings g
-    WHERE g.purchase_request_id = p.id AND g.type IN ('original', 'modification')
-    ORDER BY g.routed_at DESC, length(g.id) DESC, g.id COLLATE "C" DESC LIMIT 1) r ON true
 JOIN purchase_request_lines l ON l.purchase_request_id = p.id
 WHERE p.status = 'approved'
     AND EXISTS (SELECT 1 FROM purchase_request_routings g WHERE g.purchase_request_id = p.id)
@@ -35,3 +32,8 @@ LEFT JOIN LATERAL (SELECT p.id, p.gsap_pr_number FROM purchase_request_lines l
 WHERE t.type IN ('purchaseOrder', 'invoice', 'payment') AND t.po_number <> ''
     AND t.line_item_id = ANY (sqlc.arg(line_item_ids)::text[])
 ORDER BY length(t.id), t.id COLLATE "C";
+
+-- name: ListPurchaseRequestRoutingsOf :many
+SELECT purchase_request_id, type, routed_at FROM purchase_request_routings
+WHERE purchase_request_id = ANY (sqlc.arg(purchase_request_ids)::text[])
+ORDER BY purchase_request_id, routed_at, length(id), id COLLATE "C";

@@ -11028,7 +11028,7 @@ export interface components {
         /** @description Rows per page of the report's table. */
         ReportPageSize: number;
         GsapLinkTab: "swbs" | "waiting" | "orders";
-        /** @description A column of the tab, "-" for descending; default -waiting (swbs, waiting) and lineItem (orders). swbs: lineItem, plan, owner, companyCode, approvedAt, waiting; waiting: purchaseRequest, vendor, owner, routedAt, amount, waiting; orders: lineItem, plan, purchaseRequest, poNumber, poDate, vendor, poAmount, invoiced, paid. Ties break by ID. */
+        /** @description A column of the tab, "-" for descending; default -waiting (swbs, waiting) and lineItem (orders). swbs: lineItem, plan, owner, companyCode, approvedAt, waiting; waiting: purchaseRequest, vendor, owner, plan, routedAt, gsapPrNumber, amount, waiting; orders: lineItem, plan, purchaseRequest, gsapPrNumber, poNumber, poDate, vendor, poAmount, invoiced, paid. Ties break by ID. */
         GsapLinkSort: string;
         /** @description Name, e-mail, job title, role or team, ignoring case. */
         UserAccessSearch: string;
@@ -19708,7 +19708,7 @@ export interface operations {
                 /** @description Keys of the widgets shown as a table instead of a chart. */
                 table?: components["parameters"]["ReportTable"];
                 tab?: components["parameters"]["GsapLinkTab"];
-                /** @description A column of the tab, "-" for descending; default -waiting (swbs, waiting) and lineItem (orders). swbs: lineItem, plan, owner, companyCode, approvedAt, waiting; waiting: purchaseRequest, vendor, owner, routedAt, amount, waiting; orders: lineItem, plan, purchaseRequest, poNumber, poDate, vendor, poAmount, invoiced, paid. Ties break by ID. */
+                /** @description A column of the tab, "-" for descending; default -waiting (swbs, waiting) and lineItem (orders). swbs: lineItem, plan, owner, companyCode, approvedAt, waiting; waiting: purchaseRequest, vendor, owner, plan, routedAt, gsapPrNumber, amount, waiting; orders: lineItem, plan, purchaseRequest, gsapPrNumber, poNumber, poDate, vendor, poAmount, invoiced, paid. Ties break by ID. */
                 sort?: components["parameters"]["GsapLinkSort"];
                 /** @description The page of the report's table, from 1. */
                 page?: components["parameters"]["ReportPage"];

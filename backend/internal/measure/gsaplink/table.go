@@ -33,6 +33,7 @@ const (
 	sortPoAmount        = "poAmount"
 	sortInvoiced        = "invoiced"
 	sortPaid            = "paid"
+	sortGsapPrNumber    = "gsapPrNumber"
 )
 
 type compare[R any] func(a, b R) int
@@ -73,7 +74,7 @@ func SortKeys(tab string) []string {
 func swbsColumns() map[string]compare[SwbsRow] {
 	return map[string]compare[SwbsRow]{
 		sortLineItem:    func(a, b SwbsRow) int { return compareText(a.LineItem, b.LineItem) },
-		sortPlan:        func(a, b SwbsRow) int { return compareText(a.Path.Plan, b.Path.Plan) },
+		sortPlan:        func(a, b SwbsRow) int { return compareText(pathKey(a.Path), pathKey(b.Path)) },
 		sortOwner:       func(a, b SwbsRow) int { return compareText(a.Owner, b.Owner) },
 		sortCompanyCode: func(a, b SwbsRow) int { return compareText(a.CompanyCode, b.CompanyCode) },
 		sortApprovedAt:  func(a, b SwbsRow) int { return a.ApprovedAt.Compare(b.ApprovedAt) },
@@ -86,6 +87,8 @@ func waitingColumns() map[string]compare[WaitingRow] {
 		sortPurchaseRequest: func(a, b WaitingRow) int { return compareText(a.Name, b.Name) },
 		sortVendor:          func(a, b WaitingRow) int { return compareText(a.Vendor, b.Vendor) },
 		sortOwner:           func(a, b WaitingRow) int { return compareText(a.Owner, b.Owner) },
+		sortPlan:            func(a, b WaitingRow) int { return compareText(pathKey(a.Path), pathKey(b.Path)) },
+		sortGsapPrNumber:    func(a, b WaitingRow) int { return compareIDs(a.GsapPrNumber, b.GsapPrNumber) },
 		sortRoutedAt:        func(a, b WaitingRow) int { return a.RoutedAt.Compare(b.RoutedAt) },
 		sortAmount:          func(a, b WaitingRow) int { return compareMoney(a.Amount, b.Amount) },
 		sortWaiting:         func(a, b WaitingRow) int { return b.RoutedAt.Compare(a.RoutedAt) },
@@ -95,8 +98,9 @@ func waitingColumns() map[string]compare[WaitingRow] {
 func orderColumns() map[string]compare[OrderRow] {
 	return map[string]compare[OrderRow]{
 		sortLineItem:        func(a, b OrderRow) int { return compareText(a.LineItem, b.LineItem) },
-		sortPlan:            func(a, b OrderRow) int { return compareText(a.Path.Plan, b.Path.Plan) },
+		sortPlan:            func(a, b OrderRow) int { return compareText(pathKey(a.Path), pathKey(b.Path)) },
 		sortPurchaseRequest: func(a, b OrderRow) int { return compareIDs(a.PurchaseRequestID, b.PurchaseRequestID) },
+		sortGsapPrNumber:    func(a, b OrderRow) int { return compareIDs(a.GsapPrNumber, b.GsapPrNumber) },
 		sortPoNumber:        func(a, b OrderRow) int { return compareIDs(a.PoNumber, b.PoNumber) },
 		sortPoDate:          func(a, b OrderRow) int { return a.PoDate.Compare(b.PoDate) },
 		sortVendor:          func(a, b OrderRow) int { return compareText(a.Vendor, b.Vendor) },
@@ -149,4 +153,9 @@ func boolInt(b bool) int {
 		return 1
 	}
 	return 0
+}
+
+// pathKey sorts by the path as the screen shows it: plan, then campaign, initiative and activity.
+func pathKey(p Path) string {
+	return strings.Join([]string{p.Plan, p.Campaign, p.Initiative, p.Activity}, "\x00")
 }

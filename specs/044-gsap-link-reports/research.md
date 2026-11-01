@@ -38,8 +38,8 @@ match, one statement each, none per row:
 
 **Rationale**: the nodes carry neither approval times, routings nor transactions. Reading by IDs keeps scope in
 one place (R1) and the statements fixed in number (028). The waiting predicate is a copy of 032's SQL (four
-lines); `TestWaiting_EqualsPurchaseRequestsView_SC002` runs both against the same PostgreSQL data so the copy
-cannot drift.
+lines). Which routing GSAP has not answered (the latest original or modification; Resend never restarts the wait)
+is decided in the service from every routing the store returns, so it is unit-tested (review of #64).
 
 **Rejected**: calling `purchaserequest`'s store (its list is scoped by `purchaseRequests.list`, not
 `reports.view`, and pages by vendor; changing it is outside lane D's paths); `financials.Store.SpendOnLineItems`

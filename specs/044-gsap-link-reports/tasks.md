@@ -35,8 +35,8 @@ Write each test first and see it fail.
   number and line item); `go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1 generate`
 - [X] T005 `backend/internal/measure/gsaplink/store_postgres.go`: the three reads through sqlc; and
   `store_postgres_test.go` on the seeded demo data (`dbtest`): `TestStore_ScopeIsolation` (only the IDs asked for
-  come back), `TestWaiting_EqualsPurchaseRequestsView_SC002` (the same requests as `purchaserequest`'s Waiting for
-  GSAP list), `TestStore_LatestApprovalAndRouting`
+  come back); the equality and routing tests on PostgreSQL were removed at review (constitution VI allows only
+  scope isolation there): the routing rule is `unansweredRouting`, unit-tested in T017
 - [X] T006 `backend/internal/measure/gsaplink/year_test.go`: an in-memory scope (nodes with line items and SWBS
   status, choices with finance plans) and fakes of `Scoped` and `Store` for the rule tests
 
@@ -105,9 +105,9 @@ T001 → T002 – T006 → US1 (T007 – T016) → US2 → US3 → US4 → Polis
 
 ## Phase 8: Convergence
 
-- [ ] T029 [FR-015] Sort Waiting for GSAP by plan and GSAP PR number, and Purchase orders by GSAP PR number: needs
-  `plan` and `gsapPrNumber` in the contract's `GsapLinkSort` (`openapi.yaml`, lane A); then add them to
-  `waitingColumns` and `orderColumns` and drop `sortable: false` on those headings. **Hand-off to lane A.**
+- [X] T029 [FR-015] Sort Waiting for GSAP by plan and GSAP PR number, and Purchase orders by GSAP PR number:
+  `plan` and `gsapPrNumber` added to `GsapLinkSort` in #64 (lane A agreed: it is 044's own schema), to
+  `waitingColumns` and `orderColumns`, and the headings sort
 - [X] T030 [plan: access rules] `TestGsapLinkExport_NeedsDataExport` in `gsaplink/handler_test.go`: a person with
   `reports.view` and no `data.export` is refused the report's export
 - [ ] T031 [FR-019, 039 hand-off] The contract's `exportReport` takes `tab` (`GsapLinkTab`) and 044's `sort` values

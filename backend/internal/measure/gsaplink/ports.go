@@ -30,6 +30,7 @@ type Store interface {
 	OrderTransactions(ctx context.Context, lineItemIDs []string) ([]Transaction, error)
 }
 
+// Request is a purchase request waiting for GSAP (032 FR-032), with every routing to the requisitioner.
 type Request struct {
 	ID           string
 	Name         string
@@ -37,9 +38,13 @@ type Request struct {
 	Owner        string
 	PlanID       string
 	GsapPrNumber string
-	Routing      string
-	RoutedAt     time.Time
+	Routings     []Routing
 	Lines        []RequestLine
+}
+
+type Routing struct {
+	Type string
+	At   time.Time
 }
 
 type RequestLine struct {

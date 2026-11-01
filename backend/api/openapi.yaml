@@ -8386,9 +8386,9 @@ components:
       in: query
       description: >-
         A column of the tab, "-" for descending; default -waiting (swbs, waiting) and lineItem (orders). swbs:
-        lineItem, plan, owner, companyCode, approvedAt, waiting; waiting: purchaseRequest, vendor, owner, routedAt,
-        amount, waiting; orders: lineItem, plan, purchaseRequest, poNumber, poDate, vendor, poAmount, invoiced,
-        paid. Ties break by ID.
+        lineItem, plan, owner, companyCode, approvedAt, waiting; waiting: purchaseRequest, vendor, owner, plan,
+        routedAt, gsapPrNumber, amount, waiting; orders: lineItem, plan, purchaseRequest, gsapPrNumber, poNumber,
+        poDate, vendor, poAmount, invoiced, paid. Ties break by ID.
       schema:
         type: string
         pattern: ^-?[a-z][A-Za-z]{0,29}$

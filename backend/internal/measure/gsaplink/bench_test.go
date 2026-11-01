@@ -13,12 +13,12 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// The volume of 028 and SC-001.
+// The volume of 028 and SC-001: 5,000 activities, 20,000 line items and requests' lines, 100,000 transactions.
 const (
 	benchPlans        = 50
-	benchActivities   = 100 // per plan: 5,000
-	benchItems        = 4   // per activity: 20,000 line items; a purchase request per activity on all of them
-	benchTransactions = 5   // per line item: 100,000
+	benchActivities   = 100
+	benchItems        = 4
+	benchTransactions = 5
 )
 
 // volume reads nothing: the year read is 028's and 036's to measure, so each tab's own work is what is timed (R6).
@@ -77,8 +77,8 @@ func (v *volume) node(level allwork.Level, id, parentID, planID string) {
 func (v *volume) activity(id, initiative, plan string, n int) {
 	v.node(allwork.LevelActivity, id, initiative, plan)
 	v.approved[id] = now.Add(-time.Duration(n) * time.Hour)
-	request := Request{ID: fmt.Sprintf("PR-%d", n), Name: id, PlanID: plan, Routing: RoutingOriginal,
-		RoutedAt: now.Add(-time.Duration(n) * time.Hour)}
+	request := Request{ID: fmt.Sprintf("PR-%d", n), Name: id, PlanID: plan,
+		Routings: []Routing{{Type: RoutingOriginal, At: now.Add(-time.Duration(n) * time.Hour)}}}
 	for l := range benchItems {
 		item := fmt.Sprintf("L-%d-%d", n, l)
 		v.node(allwork.LevelLineItem, item, id, plan)

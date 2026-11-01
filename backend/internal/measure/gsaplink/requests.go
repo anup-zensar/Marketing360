@@ -13,13 +13,14 @@ func (y year) waitingTab(requests []Request, rates money.Rates) WaitingTab {
 	tab := WaitingTab{Rows: make([]WaitingRow, 0, len(requests))}
 	var total money.Amount
 	for _, r := range requests {
-		li, found := y.lineItemOf(r)
-		if !found {
+		li, inView := y.lineItemOf(r)
+		routed, unanswered := unansweredRouting(r.Routings)
+		if !inView || !unanswered {
 			continue
 		}
-		days := workingDays(r.RoutedAt, y.now)
+		days := workingDays(routed.At, y.now)
 		row := WaitingRow{PurchaseRequestID: r.ID, Name: r.Name, Vendor: r.Vendor, Owner: r.Owner, Path: y.path(li),
-			RoutedAt: r.RoutedAt, Routing: r.Routing, GsapPrNumber: r.GsapPrNumber, WaitingWorkingDays: days,
+			RoutedAt: routed.At, Routing: routed.Type, GsapPrNumber: r.GsapPrNumber, WaitingWorkingDays: days,
 			OverTurnaround: days > gsapTurnaroundDays}
 		if y.seesFinance(r.PlanID) {
 			usd := requestUSD(r, rates)
@@ -55,4 +56,16 @@ func requestUSD(r Request, rates money.Rates) money.Amount {
 		usd = usd.Add(usdOf(l.Amount, rates))
 	}
 	return usd
+}
+
+// unansweredRouting is the latest original or modification routing; Resend PR form never restarts the wait (FR-009).
+func unansweredRouting(routings []Routing) (Routing, bool) {
+	var latest Routing
+	found := false
+	for _, g := range routings {
+		if (g.Type == RoutingOriginal || g.Type == RoutingModification) && !g.At.Before(latest.At) {
+			latest, found = g, true
+		}
+	}
+	return latest, found
 }

@@ -152,12 +152,6 @@
   line-height: var(--leading-sm);
 }
 
-.empty {
-  margin: 0;
-  padding: var(--space-4) var(--card-padding);
-  color: var(--ink-2);
-}
-
 .pager {
   display: flex;
   flex-wrap: wrap;
