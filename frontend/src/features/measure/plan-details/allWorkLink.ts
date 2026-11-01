@@ -1,7 +1,6 @@
 import { writeAddress } from '../shared/report-address';
 import type { ReportAddress } from '../shared/report-address';
 
-/** The report filter's parameters All work reads too (039 research R1). */
 const ALL_WORK_PARAMS = [
   'year',
   'plan',
@@ -15,10 +14,7 @@ const ALL_WORK_PARAMS = [
 
 export type FilterParam = 'attr' | 'activityType' | 'activityStatus';
 
-/**
- * All work with the report's filters and the one value of a widget: an attribute value ("attr=SA-12:none"), an
- * activity type or an activity status in place of that filter's own values (043 FR-014).
- */
+/** All work with the report's filters (039 R1) and one value in place of its filter's ("attr=SA-12:none", FR-014). */
 export function allWorkLink(
   address: ReportAddress,
   param: FilterParam,

@@ -138,7 +138,7 @@ lay them out, wired through 039's stubs.
 | Web: one test per widget state (from In view and the total); Show in the address; link opens All work with the filter, Does not apply not linked (FR-001, FR-014, FR-016) | `features/measure/plan-details` | `PlanDetailsReport.test.tsx`, `AttributeRow.test.tsx`, `allWorkLink.test.ts` (axe in each) |
 | US1 end to end on the demo data, axe (spec US1) | e2e | `measure-plan-details.spec.ts` |
 
-Benchmark result: _recorded here after implementation_.
+Benchmark result (2026-11-01, Intel Core Ultra 5 135U, `go test -bench BenchmarkPlanDetails_SC001 -benchtime 5x`): Activity level with 30 attributes 91–97 ms per report, Campaign and Plan levels about 2 ms — under the 300 ms the calculation may add (R5).
 
 ## Dependencies and hand-offs
 

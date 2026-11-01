@@ -5,10 +5,9 @@ import styles from './PlanDetails.module.css';
 export interface Bar {
   key: string;
   label: string;
-  /** The bar's size: a count or an amount in cents. */
+  /** A count or an amount in cents; href is absent when the value opens nothing. */
   size: number;
   text: string;
-  /** Where the value opens All work; absent when it opens nothing. */
   href?: string;
   muted?: boolean;
 }

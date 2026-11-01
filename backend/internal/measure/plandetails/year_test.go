@@ -17,7 +17,7 @@ const testYearNumber = 2026
 
 // year builds the nodes of an in-memory year for the tests; every node matches unless left out by unmatch.
 type year struct {
-	t         *testing.T
+	t         testing.TB
 	nodes     []allwork.Node
 	unmatched map[string]bool
 }
@@ -107,11 +107,11 @@ func (y *year) matching() Matching {
 	}}
 }
 
-func amount(t *testing.T, s string) *money.Amount {
-	t.Helper()
+func amount(tb testing.TB, s string) *money.Amount {
+	tb.Helper()
 	a, err := money.ParseAmount(s)
 	if err != nil {
-		t.Fatalf("ParseAmount(%q) error = %v", s, err)
+		tb.Fatalf("ParseAmount(%q) error = %v", s, err)
 	}
 	return &a
 }

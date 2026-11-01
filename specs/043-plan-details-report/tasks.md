@@ -135,9 +135,9 @@ All work's Breakdown by Cluster.
 
 ## Phase 6: Polish
 
-- [ ] T028 `BenchmarkPlanDetails_SC001` in `plandetails/bench_test.go` at the 028 volume (research R5); result
+- [X] T028 `BenchmarkPlanDetails_SC001` in `plandetails/bench_test.go` at the 028 volume (research R5); result
   written in plan.md
-- [ ] T029 Comment budget and file length of every file of this feature (constitution V, VIII);
+- [X] T029 Comment budget and file length of every file of this feature (constitution V, VIII);
   `scripts/check-changed.ps1` green
 - [ ] T030 quickstart.md by hand on the demo data; `/speckit-converge`; spec status Built; pull request into
   `measure-module` with the feature-map status change
