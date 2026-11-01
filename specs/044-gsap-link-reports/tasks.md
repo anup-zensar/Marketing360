@@ -59,13 +59,13 @@ Write each test first and see it fail.
   handler (adapters over `w.reports` and the store); remove `GET /api/v1/reports/gsap-link` from `notYetServed`;
   contract tests in `gsaplink/handler_test.go`: `TestGsapLink_Contract`, `TestGsapLink_NoReportsView_FR003`,
   `TestReport_OnlyPlansInScope_FR003`
-- [ ] T014 [US1] `frontend/src/features/measure/gsap-link/`: `api.ts` (tab, sort, page in the address),
-  `GsapLinkReport.tsx` (replaces 039's stub; inside `ReportFrame`), `GsapTabs.tsx`, `SwbsTab.tsx` (cards, the
+- [X] T014 [US1] `frontend/src/features/measure/gsap-link/`: `api.ts` (tab, sort, page in the address),
+  `GsapLinkReport.tsx` (replaces 039's stub; inside `ReportFrame`, with the tabs), `gsap-address.ts`, `SwbsTab.tsx` (cards, the
   Waiting by time widget, the paged sortable table; a row opens its line item, FR-016), `PagedTable.tsx`,
   `gsap-text.ts`
-- [ ] T015 [US1] Web tests with vitest-axe: `GsapLinkReport.test.tsx` (tab, sort and page in the address; the
+- [X] T015 [US1] Web tests with vitest-axe: `GsapLinkReport.test.tsx` (tab, sort and page in the address; the
   states of FR-018), `SwbsTab.test.tsx` (the chart's table view, SC-006; the row link)
-- [ ] T016 [US1] `frontend/e2e/measure-gsap-link.spec.ts`: US1 on the demo data with axe
+- [X] T016 [US1] `frontend/e2e/measure-gsap-link.spec.ts`: US1 on the demo data with axe
 
 ## Phase 4: User Story 2 — Waiting for GSAP (P2)
 
