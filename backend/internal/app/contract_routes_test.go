@@ -71,6 +71,11 @@ var notYetServed = []string{
 	"GET /api/v1/reports/gsap-link",
 	// 045 User access report
 	"GET /api/v1/reports/user-access",
+	// 049 Revenue and funnel-stage reports
+	"GET /api/v1/reports/revenue",
+	"GET /api/v1/reports/revenue/ranked",
+	"GET /api/v1/reports/funnel",
+	"GET /api/v1/reports/funnel/ranked",
 }
 
 func TestNotYetServedIsAccurate(t *testing.T) {

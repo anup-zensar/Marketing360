@@ -8849,6 +8849,188 @@ paths:
           $ref: "#/components/responses/Forbidden"
         default:
           $ref: "#/components/responses/Error"
+  # Feature 049 Revenue and funnel-stage reports (wave B contract)
+  /api/v1/reports/revenue:
+    get:
+      tags:
+        - Reports
+      operationId: getRevenueReport
+      summary: Revenue against goal by period, as cards and a series, for the records in view (feature 049)
+      description: >-
+        Records match as the report frame matches them, in the person's reports.view scope (039). Actual is
+        046's counted facts; projected comes from 047's engine run per activity and summed (049-C3). ROI and
+        actual cost are always null with reason "Attribution is not configured yet" until feature 050 lands
+        (049-C6). Exported through exportReport with the widget keys cards, periods and ranked.
+      parameters:
+        - $ref: "#/components/parameters/AllWorkYear"
+        - $ref: "#/components/parameters/AllWorkPlan"
+        - $ref: "#/components/parameters/AllWorkPlanType"
+        - $ref: "#/components/parameters/AllWorkTeam"
+        - $ref: "#/components/parameters/AllWorkOwner"
+        - $ref: "#/components/parameters/AllWorkActivityType"
+        - $ref: "#/components/parameters/AllWorkActivityStatus"
+        - $ref: "#/components/parameters/AllWorkAttr"
+        - $ref: "#/components/parameters/ReportPeriod"
+        - $ref: "#/components/parameters/ReportShow"
+        - $ref: "#/components/parameters/ReportCurrency"
+        - $ref: "#/components/parameters/ReportTable"
+        - $ref: "#/components/parameters/RevenueCategory"
+      responses:
+        "200":
+          description: The cards and the periods of the year.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RevenueReport"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/reports/revenue/ranked:
+    get:
+      tags:
+        - Reports
+      operationId: getRevenueRanked
+      summary: The records of the Show level ranked by revenue, each with its children, grouped and paged (feature 049)
+      parameters:
+        - $ref: "#/components/parameters/AllWorkYear"
+        - $ref: "#/components/parameters/AllWorkPlan"
+        - $ref: "#/components/parameters/AllWorkPlanType"
+        - $ref: "#/components/parameters/AllWorkTeam"
+        - $ref: "#/components/parameters/AllWorkOwner"
+        - $ref: "#/components/parameters/AllWorkActivityType"
+        - $ref: "#/components/parameters/AllWorkActivityStatus"
+        - $ref: "#/components/parameters/AllWorkAttr"
+        - $ref: "#/components/parameters/ReportPeriod"
+        - $ref: "#/components/parameters/ReportShow"
+        - $ref: "#/components/parameters/ReportCurrency"
+        - $ref: "#/components/parameters/ReportTable"
+        - $ref: "#/components/parameters/RevenueCategory"
+        - $ref: "#/components/parameters/RevenueRankedSort"
+        - $ref: "#/components/parameters/RankedOrder"
+        - $ref: "#/components/parameters/RankedGroup"
+        - name: size
+          in: query
+          schema:
+            type: integer
+            enum: [10, 25, 50]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - $ref: "#/components/parameters/RankedSearch"
+        - $ref: "#/components/parameters/RankedDrill"
+      responses:
+        "200":
+          description: One page of top entries with their children, in groups.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RevenueRanked"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/reports/funnel:
+    get:
+      tags:
+        - Reports
+      operationId: getFunnelReport
+      summary: One funnel stage against goal by period, as cards and a series, for the records in view (feature 049)
+      description: >-
+        The stage selector lists every stage the models in view allow (049-C11); a plan whose model does
+        not allow the selected stage shows null with reason and is counted in uncoveredCount. Deals is not
+        selectable (049-C12).
+      parameters:
+        - $ref: "#/components/parameters/AllWorkYear"
+        - $ref: "#/components/parameters/AllWorkPlan"
+        - $ref: "#/components/parameters/AllWorkPlanType"
+        - $ref: "#/components/parameters/AllWorkTeam"
+        - $ref: "#/components/parameters/AllWorkOwner"
+        - $ref: "#/components/parameters/AllWorkActivityType"
+        - $ref: "#/components/parameters/AllWorkActivityStatus"
+        - $ref: "#/components/parameters/AllWorkAttr"
+        - $ref: "#/components/parameters/ReportPeriod"
+        - $ref: "#/components/parameters/ReportShow"
+        - $ref: "#/components/parameters/ReportCurrency"
+        - $ref: "#/components/parameters/ReportTable"
+        - $ref: "#/components/parameters/RevenueCategory"
+        - $ref: "#/components/parameters/FunnelStage"
+      responses:
+        "200":
+          description: The cards and the periods of the year, for the selected stage.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FunnelReport"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/reports/funnel/ranked:
+    get:
+      tags:
+        - Reports
+      operationId: getFunnelRanked
+      summary: The records of the Show level ranked by the selected stage, each with its children, grouped and paged (feature 049)
+      parameters:
+        - $ref: "#/components/parameters/AllWorkYear"
+        - $ref: "#/components/parameters/AllWorkPlan"
+        - $ref: "#/components/parameters/AllWorkPlanType"
+        - $ref: "#/components/parameters/AllWorkTeam"
+        - $ref: "#/components/parameters/AllWorkOwner"
+        - $ref: "#/components/parameters/AllWorkActivityType"
+        - $ref: "#/components/parameters/AllWorkActivityStatus"
+        - $ref: "#/components/parameters/AllWorkAttr"
+        - $ref: "#/components/parameters/ReportPeriod"
+        - $ref: "#/components/parameters/ReportShow"
+        - $ref: "#/components/parameters/ReportCurrency"
+        - $ref: "#/components/parameters/ReportTable"
+        - $ref: "#/components/parameters/RevenueCategory"
+        - $ref: "#/components/parameters/FunnelStage"
+        - $ref: "#/components/parameters/FunnelRankedSort"
+        - $ref: "#/components/parameters/RankedOrder"
+        - $ref: "#/components/parameters/RankedGroup"
+        - name: size
+          in: query
+          schema:
+            type: integer
+            enum: [10, 25, 50]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - $ref: "#/components/parameters/RankedSearch"
+        - $ref: "#/components/parameters/RankedDrill"
+      responses:
+        "200":
+          description: One page of top entries with their children, in groups.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FunnelRanked"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
   # Feature 043 Plan details report (wave A contract)
   /api/v1/reports/plan-details:
     get:
@@ -9224,6 +9406,36 @@ components:
       schema:
         type: string
         pattern: ^[A-Z]+-[0-9]+$
+    RevenueCategory:
+      name: category
+      in: query
+      description: >-
+        An activity category id, "uncategorised", or absent for all categories (049-C10). Narrows the
+        cards, the periods and the ranked list.
+      schema:
+        type: string
+        pattern: ^(CAT-[0-9]+|uncategorised)$
+    FunnelStage:
+      name: stage
+      in: query
+      description: >-
+        The funnel stage to show; defaults to the first stage any model in view allows (049-C11). Deals is
+        not selectable (049-C12).
+      schema:
+        type: string
+        enum: [inq, mql]
+    RevenueRankedSort:
+      name: sort
+      in: query
+      schema:
+        type: string
+        enum: [actualRevenue, projectedRevenue]
+    FunnelRankedSort:
+      name: sort
+      in: query
+      schema:
+        type: string
+        enum: [actual, projected]
     ReportViewId:
       name: viewId
       in: path
@@ -11489,6 +11701,249 @@ components:
                   $ref: "#/components/schemas/RankedEntry"
         drillLost:
           type: boolean
+    # Feature 049 Revenue and funnel-stage reports (wave B contract)
+    RevenueCardFigure:
+      type: object
+      description: A revenue card figure; null with reason when it cannot be worked out (FR-009).
+      required: [value, reason]
+      properties:
+        value:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        reason: { type: string, enum: ["", noGoal, notApproved, noSource, noData] }
+    RevenueCards:
+      type: object
+      required: [goal, actual, projected, performance]
+      properties:
+        goal: { $ref: "#/components/schemas/RevenueCardFigure" }
+        actual: { $ref: "#/components/schemas/RevenueCardFigure" }
+        projected: { $ref: "#/components/schemas/RevenueCardFigure" }
+        performance:
+          type: object
+          required: [value, reason]
+          properties:
+            value: { type: [number, "null"] }
+            reason: { type: string, enum: ["", noGoal, notApproved, noSource, noData] }
+    RevenuePeriod:
+      type: object
+      description: One period of the series, split at today (047 FR-010); the period in progress carries both.
+      required: [key, state, actual, projected, goal, inProgress]
+      properties:
+        key: { type: string, example: "2026-03" }
+        state: { type: string, enum: [actual, inProgress, planned] }
+        actual:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        projected:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        goal:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        inProgress: { type: boolean }
+    RevenueReport:
+      type: object
+      additionalProperties: false
+      required: [cards, period, periods, projection, reason]
+      properties:
+        cards: { $ref: "#/components/schemas/RevenueCards" }
+        period: { type: string, enum: [month, quarter] }
+        periods:
+          type: array
+          items: { $ref: "#/components/schemas/RevenuePeriod" }
+        projection:
+          oneOf: [{ $ref: "#/components/schemas/ProjectionStamp" }, { type: "null" }]
+        reason:
+          type: string
+          description: Why the report is empty, never an empty grid alone (049-C20).
+          enum: ["", noGoals, notApproved, noData, noModel]
+    RevenueFigures:
+      type: object
+      additionalProperties: false
+      required: [goal, actual, projected, performance, actualCost, roi, actualCostReason, roiReason]
+      properties:
+        goal:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        actual:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        projected:
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        performance: { type: [number, "null"] }
+        actualCost:
+          description: Always null until feature 050 configures attribution (049-C6).
+          oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }]
+        roi:
+          description: Always null until feature 050 configures attribution (049-C6).
+          type: [number, "null"]
+        actualCostReason: { type: string, enum: ["", attributionNotConfigured] }
+        roiReason: { type: string, enum: ["", attributionNotConfigured] }
+    RevenueEntry:
+      type: object
+      additionalProperties: false
+      required: [id, level, name, planId, figures]
+      properties:
+        id: { type: string }
+        level: { type: string, enum: [plan, campaign, initiative, activity] }
+        name: { type: string }
+        planId: { type: string }
+        figures: { $ref: "#/components/schemas/RevenueFigures" }
+        children:
+          type: array
+          items: { $ref: "#/components/schemas/RevenueEntry" }
+    RevenueRanked:
+      type: object
+      additionalProperties: false
+      required: [level, sort, order, group, page, size, total, trail, groups, drillLost]
+      properties:
+        level: { type: string, enum: [plan, campaign, initiative, activity] }
+        sort: { type: string, enum: [actualRevenue, projectedRevenue] }
+        order: { type: string, enum: [desc, asc] }
+        group: { type: string }
+        page: { type: integer }
+        size: { type: integer }
+        total: { type: integer }
+        trail:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, level, name]
+            properties:
+              id: { type: string }
+              level: { type: string }
+              name: { type: string }
+        groups:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [key, label, totals, entries]
+            properties:
+              key: { type: string }
+              label: { type: string }
+              totals: { $ref: "#/components/schemas/RevenueFigures" }
+              entries:
+                type: array
+                items: { $ref: "#/components/schemas/RevenueEntry" }
+        drillLost: { type: boolean }
+    FunnelCards:
+      type: object
+      required: [goal, actual, projected, performance, conversion]
+      properties:
+        goal: { $ref: "#/components/schemas/RevenueCardFigure" }
+        actual:
+          type: object
+          required: [value, reason]
+          properties:
+            value: { type: [integer, "null"] }
+            reason: { type: string, enum: ["", noGoal, notApproved, noSource, noData] }
+        projected:
+          type: object
+          required: [value, reason]
+          properties:
+            value: { type: [integer, "null"] }
+            reason: { type: string, enum: ["", noGoal, notApproved, noSource, noData] }
+        performance:
+          type: object
+          required: [value, reason]
+          properties:
+            value: { type: [number, "null"] }
+            reason: { type: string, enum: ["", noGoal, notApproved, noSource, noData] }
+        conversion:
+          description: The selected stage's actual over the previous stage's actual (049-C13).
+          type: object
+          required: [value, reason]
+          properties:
+            value: { type: [number, "null"] }
+            reason: { type: string, enum: ["", noPreviousStage] }
+    FunnelPeriod:
+      type: object
+      required: [key, state, actual, projected, goal, inProgress]
+      properties:
+        key: { type: string, example: "2026-03" }
+        state: { type: string, enum: [actual, inProgress, planned] }
+        actual: { type: [integer, "null"] }
+        projected: { type: [integer, "null"] }
+        goal: { type: [integer, "null"] }
+        inProgress: { type: boolean }
+    FunnelReport:
+      type: object
+      additionalProperties: false
+      required: [stage, availableStages, uncoveredCount, cards, period, periods, projection, reason]
+      properties:
+        stage: { type: string, enum: [inq, mql] }
+        availableStages:
+          type: array
+          description: Every stage any model in view allows, in funnel order (049-C11).
+          items: { type: string, enum: [inq, mql] }
+        uncoveredCount:
+          type: integer
+          description: Plans whose model does not allow the selected stage (049-C11, FR-018).
+        cards: { $ref: "#/components/schemas/FunnelCards" }
+        period: { type: string, enum: [month, quarter] }
+        periods:
+          type: array
+          items: { $ref: "#/components/schemas/FunnelPeriod" }
+        projection:
+          oneOf: [{ $ref: "#/components/schemas/ProjectionStamp" }, { type: "null" }]
+        reason:
+          type: string
+          enum: ["", noGoals, notApproved, noData, noModel]
+    FunnelFigures:
+      type: object
+      additionalProperties: false
+      required: [goal, actual, projected, performance, conversion]
+      properties:
+        goal: { type: [integer, "null"] }
+        actual: { type: [integer, "null"] }
+        projected: { type: [integer, "null"] }
+        performance: { type: [number, "null"] }
+        conversion: { type: [number, "null"] }
+    FunnelEntry:
+      type: object
+      additionalProperties: false
+      required: [id, level, name, planId, figures]
+      properties:
+        id: { type: string }
+        level: { type: string, enum: [plan, campaign, initiative, activity] }
+        name: { type: string }
+        planId: { type: string }
+        figures: { $ref: "#/components/schemas/FunnelFigures" }
+        children:
+          type: array
+          items: { $ref: "#/components/schemas/FunnelEntry" }
+    FunnelRanked:
+      type: object
+      additionalProperties: false
+      required: [level, sort, order, group, page, size, total, trail, groups, drillLost]
+      properties:
+        level: { type: string, enum: [plan, campaign, initiative, activity] }
+        sort: { type: string, enum: [actual, projected] }
+        order: { type: string, enum: [desc, asc] }
+        group: { type: string }
+        page: { type: integer }
+        size: { type: integer }
+        total: { type: integer }
+        trail:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, level, name]
+            properties:
+              id: { type: string }
+              level: { type: string }
+              name: { type: string }
+        groups:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [key, label, totals, entries]
+            properties:
+              key: { type: string }
+              label: { type: string }
+              totals: { $ref: "#/components/schemas/FunnelFigures" }
+              entries:
+                type: array
+                items: { $ref: "#/components/schemas/FunnelEntry" }
+        drillLost: { type: boolean }
     # Feature 043 Plan details report
     PlanDetailsLevel:
       type: string
