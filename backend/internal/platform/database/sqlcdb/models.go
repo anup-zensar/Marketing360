@@ -231,6 +231,18 @@ type ApprovalWorkflowLevelApprover struct {
 	PersonID    string
 }
 
+type AttributionSetting struct {
+	ID            string
+	Model         string
+	Version       int
+	CreatedAt     time.Time
+	CreatedByID   string
+	CreatedByName string
+	UpdatedAt     time.Time
+	UpdatedByID   string
+	UpdatedByName string
+}
+
 type BudgetAllocation struct {
 	ID             string
 	GlobalBudgetID string

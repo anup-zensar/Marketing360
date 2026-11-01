@@ -27,6 +27,7 @@ import { ErrorSummaryExample } from './ErrorSummaryExample';
 import { FieldExamples } from './FieldExamples';
 import { PanelField } from './PanelField';
 import { SummaryExamples } from './SummaryExamples';
+import { MeasureGallery } from './MeasureGallery';
 import { PlanModuleGallery } from './PlanModuleGallery';
 
 /** The six status families with a status of each, as a word (design system §4). */
@@ -266,6 +267,7 @@ export function ComponentGalleryPage() {
         </Card>
 
         <PlanModuleGallery />
+        <MeasureGallery />
       </div>
 
       <SidePanel
