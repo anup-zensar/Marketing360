@@ -42,6 +42,11 @@ func (s *PostgresStore) SpendOnLineItems(ctx context.Context, lineItemIDs []stri
 	return transactionsFromRows(rows, err)
 }
 
+func (s *PostgresStore) TransactionsOnLineItems(ctx context.Context, lineItemIDs []string) ([]Transaction, error) {
+	rows, err := s.db.Queries(ctx).ListTransactionsOnLineItems(ctx, lineItemIDs)
+	return transactionsFromRows(rows, err)
+}
+
 // TransactionsInScope keeps what the person may see (D-301): every linked transaction with
 // finance.view in All markets, else one whose stored line item's plan they see and hold finance.view in; a
 // not-linked one only when they may import.
