@@ -20,12 +20,14 @@ var errChanged = errors.New("customdashboardtest: the dashboard changed meanwhil
 type Store struct {
 	dashboards  *fake.Table[customdashboard.Dashboard]
 	memberships *fake.Table[people.Membership]
+	teams       *fake.Table[people.Team]
 }
 
 func NewStore(db *fake.DB) Store {
 	return Store{
 		dashboards:  fake.TableOf(db, "custom_dashboards", func(d customdashboard.Dashboard) string { return d.ID }),
 		memberships: fake.TableOf(db, "team_memberships", func(m people.Membership) string { return m.ID }),
+		teams:       fake.TableOf(db, "teams", func(t people.Team) string { return t.ID }),
 	}
 }
 
@@ -54,6 +56,11 @@ func (s Store) Get(_ context.Context, id string) (customdashboard.Dashboard, boo
 }
 
 func (s Store) Insert(ctx context.Context, d customdashboard.Dashboard) error {
+	shared, err := s.existingTeams(d.SharedWith)
+	if err != nil {
+		return err
+	}
+	d.SharedWith = shared
 	return s.dashboards.Put(ctx, d)
 }
 
@@ -78,7 +85,35 @@ func (s Store) ReplaceWidgets(ctx context.Context, id string, widgets []customda
 }
 
 func (s Store) ReplaceShares(ctx context.Context, id string, teamIDs []string) error {
-	return s.change(ctx, id, func(d *customdashboard.Dashboard) { d.SharedWith = teamIDs })
+	shared, err := s.existingTeams(teamIDs)
+	if err != nil {
+		return err
+	}
+	return s.change(ctx, id, func(d *customdashboard.Dashboard) { d.SharedWith = shared })
+}
+
+// RemoveTeamShares and existingTeams do what the shares' foreign key does in PostgreSQL (D-379).
+func (s Store) RemoveTeamShares(ctx context.Context, teamID string) error {
+	sharing, err := s.dashboards.Where(func(d customdashboard.Dashboard) bool { return slices.Contains(d.SharedWith, teamID) })
+	for _, d := range sharing {
+		d.SharedWith = slices.DeleteFunc(d.SharedWith, func(id string) bool { return id == teamID })
+		err = errors.Join(err, s.dashboards.Put(ctx, d))
+	}
+	return err
+}
+
+func (s Store) existingTeams(teamIDs []string) ([]string, error) {
+	existing := []string{}
+	for _, id := range teamIDs {
+		_, found, err := s.teams.Get(id)
+		if err != nil {
+			return nil, err
+		}
+		if found {
+			existing = append(existing, id)
+		}
+	}
+	return existing, nil
 }
 
 func (s Store) UsingDataset(_ context.Context, personID, datasetID string) ([]customdashboard.Ref, error) {

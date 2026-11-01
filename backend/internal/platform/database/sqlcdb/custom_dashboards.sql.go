@@ -175,6 +175,16 @@ func (q *Queries) DeleteCustomDashboardShares(ctx context.Context, dashboardID s
 	return err
 }
 
+const deleteCustomDashboardSharesOfTeam = `-- name: DeleteCustomDashboardSharesOfTeam :exec
+DELETE FROM custom_dashboard_shares
+WHERE team_id = $1
+`
+
+func (q *Queries) DeleteCustomDashboardSharesOfTeam(ctx context.Context, teamID string) error {
+	_, err := q.db.Exec(ctx, deleteCustomDashboardSharesOfTeam, teamID)
+	return err
+}
+
 const deleteCustomDashboardWidgets = `-- name: DeleteCustomDashboardWidgets :exec
 DELETE FROM custom_dashboard_widgets
 WHERE dashboard_id = $1
@@ -306,7 +316,7 @@ func (q *Queries) InsertCustomDashboard(ctx context.Context, arg InsertCustomDas
 
 const insertCustomDashboardShares = `-- name: InsertCustomDashboardShares :exec
 INSERT INTO custom_dashboard_shares (dashboard_id, team_id)
-SELECT $1::text, unnest($2::text[])
+SELECT $1::text, t.id FROM teams t WHERE t.id = ANY($2::text[])
 `
 
 type InsertCustomDashboardSharesParams struct {

@@ -166,6 +166,16 @@ func (q *Queries) DeleteDatasetShares(ctx context.Context, datasetID string) err
 	return err
 }
 
+const deleteDatasetSharesOfTeam = `-- name: DeleteDatasetSharesOfTeam :exec
+DELETE FROM dataset_shares
+WHERE team_id = $1
+`
+
+func (q *Queries) DeleteDatasetSharesOfTeam(ctx context.Context, teamID string) error {
+	_, err := q.db.Exec(ctx, deleteDatasetSharesOfTeam, teamID)
+	return err
+}
+
 const getDataset = `-- name: GetDataset :one
 SELECT id, name, description, owner_id, file_name, sheet_name, row_count, version, created_at, created_by_id,
     created_by_name, updated_at, updated_by_id, updated_by_name
@@ -295,7 +305,7 @@ type InsertDatasetRowsParams struct {
 
 const insertDatasetShares = `-- name: InsertDatasetShares :exec
 INSERT INTO dataset_shares (dataset_id, team_id)
-SELECT $1, unnest($2::text[])
+SELECT $1, t.id FROM teams t WHERE t.id = ANY($2::text[])
 `
 
 type InsertDatasetSharesParams struct {

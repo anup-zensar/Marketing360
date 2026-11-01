@@ -95,6 +95,14 @@ func (s *PostgresStore) ReplaceShares(ctx context.Context, id string, teamIDs []
 	return s.insertShares(ctx, id, teamIDs)
 }
 
+// RemoveTeamShares unshares every dashboard from a deleted team (D-379).
+func (s *PostgresStore) RemoveTeamShares(ctx context.Context, teamID string) error {
+	if err := s.db.Queries(ctx).DeleteCustomDashboardSharesOfTeam(ctx, teamID); err != nil {
+		return fmt.Errorf("delete custom dashboard shares of team %s: %w", teamID, err)
+	}
+	return nil
+}
+
 func (s *PostgresStore) UsingDataset(ctx context.Context, personID, datasetID string) ([]Ref, error) {
 	rows, err := s.db.Queries(ctx).DashboardsUsingDataset(ctx, sqlcdb.DashboardsUsingDatasetParams{
 		DatasetID: &datasetID, PersonID: personID,

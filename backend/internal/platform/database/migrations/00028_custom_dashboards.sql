@@ -44,7 +44,7 @@ CREATE INDEX custom_dashboard_widgets_source_idx ON custom_dashboard_widgets (so
 
 CREATE TABLE custom_dashboard_shares (
     dashboard_id text NOT NULL REFERENCES custom_dashboards (id) ON DELETE CASCADE,
-    team_id      text NOT NULL REFERENCES teams (id) DEFERRABLE INITIALLY DEFERRED,
+    team_id      text NOT NULL REFERENCES teams (id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
     PRIMARY KEY (dashboard_id, team_id)
 );
 CREATE INDEX custom_dashboard_shares_team_idx ON custom_dashboard_shares (team_id);

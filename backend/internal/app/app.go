@@ -111,7 +111,9 @@ func (w *wiring) organisation() *auth.Service {
 		auth.Options{DemoMode: w.cfg.DemoMode(), DemoPassword: w.cfg.DemoPassword, Now: w.now})
 	w.access = access.NewService(history.Tools{Tx: s.Tx, IDs: w.generator, Log: w.history, Now: w.now},
 		s.Access, accessDirectory{people: w.people})
-	w.people.UseAccess(peopleAccessHooks(w.access))
+	hooks := peopleAccessHooks(w.access)
+	hooks.TeamDeleted = sharesLeaveWithTeam(hooks.TeamDeleted, s.CustomDashboards, s.Datasets)
+	w.people.UseAccess(hooks)
 	return authService
 }
 

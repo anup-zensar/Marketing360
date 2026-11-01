@@ -83,7 +83,11 @@ WHERE dashboard_id = $1;
 
 -- name: InsertCustomDashboardShares :exec
 INSERT INTO custom_dashboard_shares (dashboard_id, team_id)
-SELECT sqlc.arg(dashboard_id)::text, unnest(sqlc.arg(team_ids)::text[]);
+SELECT sqlc.arg(dashboard_id)::text, t.id FROM teams t WHERE t.id = ANY(sqlc.arg(team_ids)::text[]);
+
+-- name: DeleteCustomDashboardSharesOfTeam :exec
+DELETE FROM custom_dashboard_shares
+WHERE team_id = sqlc.arg(team_id);
 
 -- name: DashboardsUsingDataset :many
 SELECT d.id, d.name
