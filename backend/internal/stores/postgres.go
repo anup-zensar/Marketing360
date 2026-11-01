@@ -11,6 +11,7 @@ import (
 	"mapp/internal/budget"
 	"mapp/internal/bulk"
 	"mapp/internal/campaign"
+	"mapp/internal/customdashboard"
 	"mapp/internal/dataset"
 	"mapp/internal/financials"
 	"mapp/internal/history"
@@ -35,7 +36,8 @@ func Postgres(db *database.DB) Set {
 		Tx: db, Counters: counters, Samples: sample.NewPostgresStore(db),
 		Organisation: postgresOrganisation(db), Planning: postgresPlanning(db), Finance: postgresFinance(db),
 		Dashboards: Dashboards{
-			Datasets: dataset.NewPostgresStore(db),
+			CustomDashboards: customdashboard.NewPostgresStore(db),
+			Datasets:         dataset.NewPostgresStore(db),
 		},
 		Ready: db.Ping,
 		IsEmpty: func(ctx context.Context) (bool, error) {
