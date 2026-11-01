@@ -10,7 +10,7 @@
 6. Export: the file has Cards, Periods and Ranked list sheets equal to the screen.
 7. A person without Finance view for some plans sees committed and actual as "—" with the coverage note. No demo
    persona lacks it (Sara has it for both plans), so give someone a role without Finance view in Settings › Roles
-   and access; `BudgetCards` and `planbudget` tests prove it.
+   and access; `PlanBudgetReport.test.tsx` and `TestCards_FinanceOnlyVisiblePlans_FR006` prove it.
 
 Automated: `go test ./internal/measure/planbudget/...`, `pnpm exec vitest run src/features/measure`,
 `pnpm run test:e2e -- measure-plan-budget` and `BenchmarkReportsFrame`'s plan budget cases (run in the end batch).
