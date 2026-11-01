@@ -58,6 +58,59 @@ export function waitingReport(overrides: Partial<GsapLinkReport> = {}): GsapLink
   };
 }
 
+/** The Purchase orders tab: one PO with two lines and a credit note; totals over three rows on two pages. */
+export function ordersReport(overrides: Partial<GsapLinkReport> = {}): GsapLinkReport {
+  return {
+    tab: 'orders',
+    currency: 'EUR',
+    total: 3,
+    page: 1,
+    pageSize: 20,
+    sort: 'lineItem',
+    finance: { plans: 1, of: 2 },
+    swbs: null,
+    waiting: null,
+    orders: {
+      rows: [
+        {
+          lineItemId: 'L-1003',
+          lineItem: 'Venue hire Berlin',
+          path: PATH,
+          purchaseRequestId: 'PR-1001',
+          gsapPrNumber: '1000777',
+          poNumber: '4500001001',
+          poLines: ['10', '20'],
+          poDate: '2026-01-12',
+          vendor: 'Northlight Events GmbH',
+          poAmount: { amount: '15800.00', currency: 'EUR' },
+          invoiced: { amount: '15000.00', currency: 'EUR' },
+          paid: { amount: '12000.00', currency: 'EUR' },
+        },
+        {
+          lineItemId: 'L-1004',
+          lineItem: 'Speaker fees',
+          path: PATH,
+          purchaseRequestId: '',
+          gsapPrNumber: '',
+          poNumber: '4500001002',
+          poLines: ['10'],
+          poDate: '2026-05-04',
+          vendor: 'Keynote Speakers Ltd',
+          poAmount: { amount: '5000.00', currency: 'EUR' },
+          invoiced: { amount: '-500.00', currency: 'EUR' },
+          paid: { amount: '0.00', currency: 'EUR' },
+        },
+      ],
+      totals: {
+        poAmount: { amount: '30800.00', currency: 'EUR' },
+        invoiced: { amount: '24500.00', currency: 'EUR' },
+        paid: { amount: '12000.00', currency: 'EUR' },
+      },
+    },
+    ...overrides,
+  };
+}
+
 /** The SWBS tab of two line items: one waiting 7 days (over 48 hours), one 30 hours. */
 export function swbsReport(overrides: Partial<GsapLinkReport> = {}): GsapLinkReport {
   return {

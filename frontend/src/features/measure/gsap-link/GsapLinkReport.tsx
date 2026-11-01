@@ -8,6 +8,7 @@ import type { GsapLinkReport as Report } from './api';
 import { GSAP_TABS, useGsapTable } from './gsap-address';
 import type { GsapTable } from './gsap-address';
 import { TAB_LABELS } from './gsap-text';
+import { OrdersTab } from './OrdersTab';
 import { SwbsTab } from './SwbsTab';
 import { WaitingTab } from './WaitingTab';
 
@@ -57,6 +58,17 @@ function TabBody({ report, table, onChange }: TabBodyProps) {
     return (
       <WaitingTab
         tab={report.waiting}
+        finance={report.finance}
+        total={report.total}
+        table={table}
+        onChange={onChange}
+      />
+    );
+  }
+  if (report.orders) {
+    return (
+      <OrdersTab
+        tab={report.orders}
         finance={report.finance}
         total={report.total}
         table={table}

@@ -78,12 +78,12 @@ Write each test first and see it fail.
 
 ## Phase 5: User Story 3 — Purchase orders per line item (P2)
 
-- [ ] T020 [P] [US3] `orders_test.go`: `TestOrders_SumsPerLineItemAndPO_FR012` (credit notes negative, unlinked
+- [X] T020 [P] [US3] `orders_test.go`: `TestOrders_SumsPerLineItemAndPO_FR012` (credit notes negative, unlinked
   out), `TestOrders_PoOnTwoLineItems_FR011`, `TestOrders_TotalsAllPages_FR013`,
-  `TestOrders_OnlyFinanceViewPlans_FR004`, `TestAmounts_InReportCurrency_FR014`; and in `store_postgres_test.go`
-  `TestOrders_EqualLineItemFinancials_SC003` on the demo data
-- [ ] T021 [US3] `orders.go` and the tab in `service.go`
-- [ ] T022 [US3] Web: `OrdersTab.tsx` (totals row; "You can't see financial data"; a row opens its line item) and
+  `TestOrders_OnlyFinanceViewPlans_FR004`, `TestAmounts_InReportCurrency_FR014`; and in `orders_contract_test.go`
+  `TestOrders_EqualLineItemFinancials_SC003` against the API's Financials on the demo data
+- [X] T021 [US3] `orders.go` and the tab in `service.go`
+- [X] T022 [US3] Web: `OrdersTab.tsx` (totals row; "You can't see financial data"; a row opens its line item) and
   its test
 
 ## Phase 6: User Story 4 — Export (P2)
