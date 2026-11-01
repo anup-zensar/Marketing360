@@ -435,20 +435,20 @@ Pages (each F0 stub exports a component with no props): `DashboardBuilderPage` (
 
 ## Phase 7: Lane F2 — `builder/` (US1, US4, US5)
 
-- [ ] T050 [P] [F2] [US1] Tests first then `grid.ts` (first free place, placement of a drop, move and resize within
+- [x] T050 [P] [F2] [US1] Tests first then `grid.ts` (first free place, placement of a drop, move and resize within
   bounds without overlap, keyboard steps) — `grid.test.ts` with fast-check (never overlaps, never outside)
-- [ ] T051 [P] [F2] [US1] Tests first then `builder-reducer.ts` (load, rename, add, duplicate, delete, move, resize,
+- [x] T051 [P] [F2] [US1] Tests first then `builder-reducer.ts` (load, rename, add, duplicate, delete, move, resize,
   set query, set display, set filters; undo 50 / redo; dirty flag) — `builder-reducer.test.ts` (FR-027–FR-030)
-- [ ] T052 [F2] [US1] Tests first then `validate.ts` (the rules of data model §2.3 and §3 the API checks, mapped to
+- [x] T052 [F2] [US1] Tests first then `validate.ts` (the rules of data model §2.3 and §3 the API checks, mapped to
   field paths and widget messages) — `validate.test.ts` (FR-015, FR-033)
-- [ ] T053 [F2] [US1] `Canvas.tsx`, `CanvasWidget.tsx` (pointer drag and resize with capture, keyboard arrows and
+- [x] T053 [F2] [US1] `Canvas.tsx`, `CanvasWidget.tsx` (pointer drag and resize with capture, keyboard arrows and
   Shift+arrows, Delete, Ctrl/⌘+D, Escape, live-region announcements, drop of palette items), `WidgetPalette.tsx`
   (click or drag) — `Canvas.test.tsx` (keyboard moves and announcements, FR-028; drag with pointer events)
-- [ ] T054 [F2] [US1] `Inspector.tsx`, `DataTab.tsx` (fields from `useDataSources`, source change keeps what fits
+- [x] T054 [F2] [US1] `Inspector.tsx`, `DataTab.tsx` (fields from `useDataSources`, source change keeps what fits
   and says what was cleared, measures, filters, sort, top N, Other, Upload data link), `StyleTab.tsx` (options shown
   by type), `LayoutTab.tsx`, `DashboardDetails.tsx` (name, description, default filters); React Hook Form + Zod —
   `DataTab.test.tsx`, `StyleTab.test.tsx` (FR-031)
-- [ ] T055 [F2] [US1] `BuilderHeader.tsx`, `DashboardBuilderPage.tsx`, `api.ts` (create, update, copy): Save (all
+- [x] T055 [F2] [US1] `BuilderHeader.tsx`, `DashboardBuilderPage.tsx`, `api.ts` (create, update, copy): Save (all
   problems at once, focus first, navigate to `/builder/DB-…` after create), Undo/Redo shortcuts, View, Sharing (opens
   `SharingDialog`), unsaved-changes guard (`useUnsavedChanges`), version conflict (Reload / Keep editing), view-only
   for non-owners with Make a copy, narrow-window note, live previews through `WidgetView mode="edit"` —
