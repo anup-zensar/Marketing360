@@ -316,33 +316,33 @@ Pages (each F0 stub exports a component with no props): `DashboardBuilderPage` (
 
 ## Phase 3: Lane B1 — `internal/customdashboard` (US1, US2, US4)
 
-- [ ] T013 [P] [B1] [US1] Migration and queries of data model §8 (00028, including the role update) —
+- [x] T013 [P] [B1] [US1] Migration and queries of data model §8 (00028, including the role update) —
   `migrations/00028_custom_dashboards.sql`, `queries/custom_dashboards.sql`; `sqlc generate && sqlc vet`
-- [ ] T014 [P] [B1] [US1] `model.go` (Dashboard, Widget, Layout, Query, Display, Filters, Summary, Create, Update,
+- [x] T014 [P] [B1] [US1] `model.go` (Dashboard, Widget, Layout, Query, Display, Filters, Summary, Create, Update,
   Copy, Sharing inputs; JSON decoding of query and display with unknown fields refused)
-- [ ] T015 [B1] [US1] Tests first: `TestValidateDashboard_NameAndDescription_FR008`,
+- [x] T015 [B1] [US1] Tests first: `TestValidateDashboard_NameAndDescription_FR008`,
   `TestValidateWidget_RulesByType_FR015` (every type of §2.3), `TestValidateQuery_FieldsShapesAndValues_FR016_FR020`
   (shape only; operators and value counts §2.2), `TestValidateDisplay_OptionsByType_FR024_FR025`,
   `TestLayout_InsideAndNoOverlap_FR013`, `TestValidate_EveryProblemAtOnce_FR033` — `validate_test.go`, `layout_test.go`
-- [ ] T016 [B1] [US1] Implement `validate.go`, `layout.go` (functions ≤ complexity 8: one function per rule group)
-- [ ] T017 [B1] [US1] `store.go` (Store: `ListVisible`, `GetVisible`, `GetOwned`, `Insert`, `Update`, `Delete`,
+- [x] T016 [B1] [US1] Implement `validate.go`, `layout.go` (functions ≤ complexity 8: one function per rule group)
+- [x] T017 [B1] [US1] `store.go` (Store: `ListVisible`, `GetVisible`, `GetOwned`, `Insert`, `Update`, `Delete`,
   `ReplaceWidgets`, `ReplaceShares`, `UsingDataset`, `OwnerOf`, `NameTaken`, `CountOf`), `store_postgres.go`,
   `store_fake_test.go`, `customdashboardtest/store.go`; `stores/custom_dashboards.go` interface; wire in
   `stores/postgres.go` and `stores/storestest`
-- [ ] T018 [B1] [US2] Scope isolation on PostgreSQL: `TestPostgresStoreVisibleDashboards_ScopeIsolation_FR005`
+- [x] T018 [B1] [US2] Scope isolation on PostgreSQL: `TestPostgresStoreVisibleDashboards_ScopeIsolation_FR005`
   (owner, shared team member, former member, other person; list and get) — `store_postgres_test.go`
-- [ ] T019 [B1] [US1] Tests first then `service.go`: `List`, `Get`, `Create`, `Update` (owner 403, invisible 404,
+- [x] T019 [B1] [US1] Tests first then `service.go`: `List`, `Get`, `Create`, `Update` (owner 403, invisible 404,
   version 409, name 409, widgets replaced), `Delete` (`history.MoveToBin`), access objects —
   `TestCreate_OwnedUnsharedLogged_FR008_FR009`, `TestUpdate_NotOwner403_Invisible404_FR006`,
   `TestUpdate_VersionConflict_FR012`, `TestDelete_ToRecycleBinAndUndo_FR010`
-- [ ] T020 [B1] [US4] Tests first then `service_share.go`: `Share` (owner's teams or already shared; log
+- [x] T020 [B1] [US4] Tests first then `service_share.go`: `Share` (owner's teams or already shared; log
   "Shared with …"), `Copy` ("Copy of …", 80 characters, numbered, unshared, any viewer with build) —
   `TestShare_OwnTeamsOnly_FR046`, `TestCopy_NameAndOwner_FR011`, `TestShare_FormerMemberLosesSight_US4`
-- [ ] T021 [B1] [US1] `kinds.go`: kind `customDashboard` (snapshot with widgets and shares, Describe for widgets
+- [x] T021 [B1] [US1] `kinds.go`: kind `customDashboard` (snapshot with widgets and shares, Describe for widgets
   and sharing, PrepareRestore renaming "(restored)") — `TestLog_DescribesWidgetChanges_FR009`, `TestRestore_RenamesWhenTaken_FR010`
-- [ ] T022 [B1] [US1] `handler.go` (Gin only here; body limit 512 KB) and contract tests for the 7 operations
+- [x] T022 [B1] [US1] `handler.go` (Gin only here; body limit 512 KB) and contract tests for the 7 operations
   (`package customdashboard_test`, `apitest`) — `handler_test.go`
-- [ ] T023 [B1] [US2] Wiring `customDashboardsArea` (service, kind registration, handler) —
+- [x] T023 [B1] [US2] Wiring `customDashboardsArea` (service, kind registration, handler) —
   `internal/app/custom_dashboards.go`; seed DB-1001 "Lubricants Europe overview" by Priya Raman, shared with
   Lubricants Europe: bar (activities by type, sum of planned cost), line (planned cost by month by campaign), key
   figure (sum of plan budgets), table (campaigns: budget, planned cost), text note, and a bar over `DS-1001` (leads by
