@@ -17,7 +17,7 @@ func TestRunImport_ARowForABinnedActivityWaitsInTheReviewQueue_FR021(t *testing.
 	if run.Counts.Unmatched != 1 {
 		t.Fatalf("counts = %+v, want the row unmatched while its activity sits in the bin", run.Counts)
 	}
-	rows, err := f.store.ListReviewRows(t.Context(), "open", src.ID, 10)
+	rows, err := f.store.ListReviewRows(t.Context(), performance.ReviewFilter{Status: "open", SourceID: src.ID, Limit: 10})
 	if err != nil || len(rows) != 1 {
 		t.Fatalf("review rows = %d (%v), want the row waiting for the restore and re-check", len(rows), err)
 	}

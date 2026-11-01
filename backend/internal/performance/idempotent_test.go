@@ -161,7 +161,7 @@ func TestRunImport_SummaryAndBreakdownAreStored_FR022_046C18(t *testing.T) {
 	if len(groups) != 1 || groups[0].Stage != "inq" || !groups[0].Counts.Reconciles() {
 		t.Errorf("breakdown = %+v, want the inq group carrying both rows, reconciling (046-C18)", groups)
 	}
-	rows, err := f.store.ListReviewRows(t.Context(), "open", src.ID, 10)
+	rows, err := f.store.ListReviewRows(t.Context(), performance.ReviewFilter{Status: "open", SourceID: src.ID, Limit: 10})
 	if err != nil || len(rows) != 1 {
 		t.Errorf("review rows = %d (%v), want the rejected row waiting for review (FR-023)", len(rows), err)
 	}
@@ -174,7 +174,7 @@ func TestRunImport_AnIdenticalFileAddsNoSecondReviewRow_FR013(t *testing.T) {
 	f.runImport(t, src.ID, map[string]string{"r1": "oops"})
 	f.runImport(t, src.ID, map[string]string{"r1": "oops"})
 
-	rows, err := f.store.ListReviewRows(t.Context(), "open", src.ID, 10)
+	rows, err := f.store.ListReviewRows(t.Context(), performance.ReviewFilter{Status: "open", SourceID: src.ID, Limit: 10})
 	if err != nil || len(rows) != 1 {
 		t.Fatalf("open review rows = %d (%v), want 1: the identical row is already waiting (SC-004)", len(rows), err)
 	}

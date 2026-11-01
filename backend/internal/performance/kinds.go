@@ -15,6 +15,9 @@ func (s *Service) Kinds() []history.Kind {
 	}, {
 		Name: importKind, Singular: importKindSingular, Plural: importKindPlural,
 		Snapshot: neverBinned, Remove: noRemove, Put: noPut,
+	}, {
+		Name: reviewKind, Singular: "row to review", Plural: "rows to review",
+		Snapshot: neverBinned, Remove: noRemove, Put: noPut,
 	}}, s.childKinds()...)
 }
 

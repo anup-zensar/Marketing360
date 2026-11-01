@@ -1008,13 +1008,26 @@ FROM performance_review_rows
 JOIN performance_sources s ON s.id = performance_review_rows.source_id
 WHERE ($1::text IS NULL OR performance_review_rows.status = $1)
     AND ($2::text IS NULL OR performance_review_rows.source_id = $2)
+    AND ($3::text IS NULL OR performance_review_rows.id = $3)
+    AND ($4::text IS NULL OR performance_review_rows.import_id = $4)
+    AND ($5::text IS NULL OR performance_review_rows.reason = $5)
+    AND ($6::text IS NULL
+         OR performance_review_rows.raw::text ILIKE '%' || $6 || '%')
+    AND ($7::timestamptz IS NULL OR performance_review_rows.created_at >= $7)
+    AND ($8::timestamptz IS NULL OR performance_review_rows.created_at <= $8)
 ORDER BY performance_review_rows.created_at DESC, performance_review_rows.id COLLATE "C"
-LIMIT $3
+LIMIT $9
 `
 
 type ListPerformanceReviewRowsParams struct {
 	Status   *string
 	SourceID *string
+	ID       *string
+	ImportID *string
+	Reason   *string
+	KeyText  *string
+	Since    *time.Time
+	Until    *time.Time
 	MaxRows  int32
 }
 
@@ -1024,7 +1037,17 @@ type ListPerformanceReviewRowsRow struct {
 }
 
 func (q *Queries) ListPerformanceReviewRows(ctx context.Context, arg ListPerformanceReviewRowsParams) ([]ListPerformanceReviewRowsRow, error) {
-	rows, err := q.db.Query(ctx, listPerformanceReviewRows, arg.Status, arg.SourceID, arg.MaxRows)
+	rows, err := q.db.Query(ctx, listPerformanceReviewRows,
+		arg.Status,
+		arg.SourceID,
+		arg.ID,
+		arg.ImportID,
+		arg.Reason,
+		arg.KeyText,
+		arg.Since,
+		arg.Until,
+		arg.MaxRows,
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -76,8 +76,21 @@ type Imports interface {
 	CurrencyCodes(ctx context.Context) (map[string]bool, error)
 }
 
+// ReviewFilter is FR-023's findability: by key, source, reason, upload, date and status.
+type ReviewFilter struct {
+	ID       string
+	Status   string
+	SourceID string
+	ImportID string
+	Reason   string
+	KeyText  string
+	Since    *time.Time
+	Until    *time.Time
+	Limit    int
+}
+
 type Review interface {
-	ListReviewRows(ctx context.Context, status, sourceID string, limit int) ([]ReviewRowView, error)
+	ListReviewRows(ctx context.Context, f ReviewFilter) ([]ReviewRowView, error)
 	PutReviewRow(ctx context.Context, r ReviewRow) error
 }
 

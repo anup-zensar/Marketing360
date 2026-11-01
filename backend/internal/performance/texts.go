@@ -9,6 +9,7 @@ const (
 	aliasKind       = "externalNameAlias"
 	integrationKind = "integrationId"
 
+	reviewKind         = "performanceReviewRow"
 	sourceKind         = "performanceSource"
 	sourceKindSingular = "data source"
 	sourceKindPlural   = "data sources"
@@ -32,6 +33,8 @@ const (
 	deactivatedVerb = "deactivated"
 	reactivatedVerb = "reactivated"
 	undoneVerb      = "undone"
+	dismissedVerb   = "dismissed"
+	reopenedVerb    = "reopened"
 
 	importKind         = "performanceImport"
 	importKindSingular = "upload"
@@ -47,6 +50,9 @@ const (
 	msgIntegrationNotFound = "This activity has no integration ID for that data source."
 	msgIntegrationExists   = "Not saved - %s already addresses this activity as %s. Remove that integration ID first."
 	msgIntegrationValue    = "Give the integration ID a value of 1 to 120 characters."
+	msgReviewRowNotFound   = "This row doesn't exist or you can't see it."
+	msgCommentNeeded       = "Say why this row is being dismissed."
+	msgReviewNotChangeable = "Not changed - this row is %s."
 )
 
 func codeText(code int64) string {

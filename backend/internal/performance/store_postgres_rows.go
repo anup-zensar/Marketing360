@@ -65,9 +65,11 @@ func (s *PostgresStore) PutImport(ctx context.Context, i Import) error {
 	return nil
 }
 
-func (s *PostgresStore) ListReviewRows(ctx context.Context, status, sourceID string, limit int) ([]ReviewRowView, error) {
+func (s *PostgresStore) ListReviewRows(ctx context.Context, f ReviewFilter) ([]ReviewRowView, error) {
 	rows, err := s.db.Queries(ctx).ListPerformanceReviewRows(ctx, sqlcdb.ListPerformanceReviewRowsParams{
-		Status: optional(status), SourceID: optional(sourceID), MaxRows: rowLimit(limit),
+		Status: optional(f.Status), SourceID: optional(f.SourceID), ID: optional(f.ID),
+		ImportID: optional(f.ImportID), Reason: optional(f.Reason), KeyText: optional(f.KeyText),
+		Since: f.Since, Until: f.Until, MaxRows: rowLimit(f.Limit),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("select rows to review: %w", err)

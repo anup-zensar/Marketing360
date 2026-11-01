@@ -253,23 +253,42 @@ func (s *Store) PutImport(ctx context.Context, i performance.Import) error {
 	return s.imports.Put(ctx, i)
 }
 
-func (s *Store) ListReviewRows(_ context.Context, status, sourceID string, limit int) ([]performance.ReviewRowView, error) {
+func (s *Store) ListReviewRows(_ context.Context, f performance.ReviewFilter) ([]performance.ReviewRowView, error) {
 	all, err := s.reviews.List()
 	if err != nil {
 		return nil, err
 	}
 	views := []performance.ReviewRowView{}
 	for _, r := range all {
-		if (status != "" && string(r.Status) != status) || (sourceID != "" && r.SourceID != sourceID) {
+		if !reviewMatches(r, f) {
 			continue
 		}
 		src, _, _ := s.sources.Get(r.SourceID)
 		views = append(views, performance.ReviewRowView{ReviewRow: r, SourceName: src.Name})
 	}
-	if limit > 0 && len(views) > limit {
-		views = views[:limit]
+	if f.Limit > 0 && len(views) > f.Limit {
+		views = views[:f.Limit]
 	}
 	return views, nil
+}
+
+func reviewMatches(r performance.ReviewRow, f performance.ReviewFilter) bool {
+	if (f.Status != "" && string(r.Status) != f.Status) || (f.SourceID != "" && r.SourceID != f.SourceID) {
+		return false
+	}
+	if (f.ID != "" && r.ID != f.ID) || (f.ImportID != "" && r.ImportID != f.ImportID) {
+		return false
+	}
+	if f.Reason != "" && r.Reason != f.Reason {
+		return false
+	}
+	if f.KeyText != "" && !strings.Contains(strings.ToLower(string(r.Raw)), strings.ToLower(f.KeyText)) {
+		return false
+	}
+	if f.Since != nil && r.CreatedAt.Before(*f.Since) {
+		return false
+	}
+	return f.Until == nil || !r.CreatedAt.After(*f.Until)
 }
 
 func (s *Store) PutReviewRow(ctx context.Context, r performance.ReviewRow) error {

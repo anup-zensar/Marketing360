@@ -40,7 +40,7 @@ func (s *Service) persist(ctx context.Context, a actor.Actor, run Import, result
 // openReviewRaws keys the open review rows by their raw content, so re-loading an identical file leaves the
 // row already waiting rather than queueing it twice (SC-004).
 func (s *Service) openReviewRaws(ctx context.Context, sourceID string) (map[string]bool, error) {
-	rows, err := s.repo.ListReviewRows(ctx, string(ReviewOpen), sourceID, maxRows)
+	rows, err := s.repo.ListReviewRows(ctx, ReviewFilter{Status: string(ReviewOpen), SourceID: sourceID, Limit: maxRows})
 	if err != nil {
 		return nil, err
 	}
