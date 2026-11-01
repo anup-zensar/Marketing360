@@ -48,7 +48,7 @@ each story.
   people store and auth's sign-in reads; register and mount; remove 045's line from `notYetServed`; contract tests in
   `useraccess/handler_test.go`: `TestUserAccess_Contract`, `TestUserAccess_NeedsAccessManage_FR002`,
   `TestRows_EqualPeopleTab_SC003`, `TestSignIn_ShowsInReport_SC002`
-- [ ] T012 [US1] `frontend/src/features/measure/shared/ReportFrame.tsx`: the optional prop lane A agreed to — hides
+- [X] T012 [US1] `frontend/src/features/measure/shared/ReportFrame.tsx`: the optional prop lane A agreed to — hides
   the filter panel, In view, chips and Currency, keeps the header, saved views and export — with its test in
   `ReportFrame.test.tsx` (git checked for lane A's latest first; lane A pinged)
 - [ ] T013 [US1] `frontend/src/features/measure/user-access/`: `api.ts`, `access-address.ts` (q, team, status, sort,

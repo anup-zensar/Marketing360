@@ -18,6 +18,7 @@ import type { ReportFrame as Frame } from './api';
 import { downloadReport } from './api';
 import { ExportMenu } from './ExportMenu';
 import { FilterPanel } from './FilterPanel';
+import { PlainReportFrame } from './PlainReportFrame';
 import { DEFAULT_ADDRESS, isRestricted, resetFilters, writeAddress } from './report-address';
 import type { ReportAddress, Show } from './report-address';
 import { chipsOf, coverageText, inViewText, leftOutText, withoutChip } from './report-text';
@@ -34,6 +35,8 @@ export interface ReportFrameProps {
   /** The report's widgets for the frame; absent for a report not built yet. */
   children?: (frame: Frame, address: ReportAddress) => ReactNode;
   comingSoon?: string;
+  /** False for a report the plan filters do not apply to (User access, 045-C1): header, saved views and export only. */
+  filters?: boolean;
 }
 
 /** The address as the frame applied it: the resolved year and currency, left-out values dropped. */
@@ -55,8 +58,16 @@ function panelKey(applied: ReportAddress): string {
   return writeAddress({ ...applied, period, show, currency, tables }).toString();
 }
 
+export function ReportFrame(props: ReportFrameProps) {
+  return props.filters === false ? (
+    <PlainReportFrame {...props} />
+  ) : (
+    <FilteredReportFrame {...props} />
+  );
+}
+
 /** What every report page shares (039 FR-006 – FR-019, FR-031; contracts/ui.md). */
-export function ReportFrame({ report, period, show, children, comingSoon }: ReportFrameProps) {
+function FilteredReportFrame({ report, period, show, children, comingSoon }: ReportFrameProps) {
   const name = REPORT_ROUTES.find((r) => r.key === report)?.name ?? 'Report';
   usePageTitle(name);
   const [address, setAddress] = useReportAddress();
