@@ -17,6 +17,7 @@ import { apiError, pending, reply } from '@/testing/replies';
 import { DashboardListPage } from './DashboardListPage';
 
 const ALL: Permission[] = ['plans.view', 'dashboards.view', 'dashboards.build'];
+const VIEW_ONLY: Permission[] = ['plans.view', 'dashboards.view'];
 const SHARED = dashboardSummary({
   id: 'DB-1002',
   name: 'China leads',
@@ -148,15 +149,33 @@ describe('051 FR-003: the Dashboards list', () => {
       reply('GET /api/v1/custom-dashboards', { body: { mine: [], sharedWithMe: [] } }),
     ]);
 
-    expect(await screen.findByText('No dashboards yet')).toBeInTheDocument();
+    expect(await screen.findByText("You haven't created any dashboards yet")).toBeInTheDocument();
     const mine = section('My dashboards');
-    expect(mine).toHaveTextContent('Build one from your plans or your own data.');
-    expect(within(mine).getByRole('link', { name: 'New dashboard' })).toHaveAttribute(
+    expect(mine).toHaveTextContent('Would you like to create one?');
+    expect(within(mine).getByRole('list', { name: 'Ideas to start with' })).toHaveTextContent(
+      'Planned cost by month',
+    );
+    expect(within(mine).getByRole('link', { name: 'Create your first dashboard' })).toHaveAttribute(
       'href',
       '/builder',
     );
+    expect(within(mine).getByRole('link', { name: 'Upload your own data' })).toHaveAttribute(
+      'href',
+      '/datasets',
+    );
     expect(section('Shared with me')).toHaveTextContent('Nothing shared with you yet.');
     await expectNoAxeViolations();
+  });
+
+  it('invites only builders to create one', async () => {
+    renderPage(VIEW_ONLY, [
+      reply('GET /api/v1/custom-dashboards', { body: { mine: [], sharedWithMe: [] } }),
+    ]);
+
+    expect(await screen.findByText('You have no dashboards of your own')).toBeInTheDocument();
+    expect(
+      within(section('My dashboards')).queryByRole('link', { name: 'Create your first dashboard' }),
+    ).not.toBeInTheDocument();
   });
 });
 

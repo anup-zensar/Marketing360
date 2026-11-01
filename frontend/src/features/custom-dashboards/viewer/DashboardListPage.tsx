@@ -1,4 +1,4 @@
-import { LayoutDashboard, Plus, Share2 } from 'lucide-react';
+import { Plus, Share2 } from 'lucide-react';
 import { useId, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useAccess } from '@/session/access';
@@ -14,6 +14,7 @@ import type { CustomDashboardSummary } from '../model';
 import { useCustomDashboards } from './api';
 import { BuiltInCards, DashboardCard } from './DashboardCard';
 import { DeleteDashboardDialog } from './DeleteDashboardDialog';
+import { NoDashboardsYet } from './NoDashboardsYet';
 import { useCopyDashboard } from './useCopyDashboard';
 import styles from './DashboardListPage.module.css';
 
@@ -99,12 +100,7 @@ function CustomSections({ canBuild }: { canBuild: boolean }) {
           cards(list.data.mine)
         ) : (
           <Card>
-            <EmptyState
-              icon={<LayoutDashboard />}
-              title="No dashboards yet"
-              text="Build one from your plans or your own data."
-              action={canBuild && <LinkButton to="/builder">New dashboard</LinkButton>}
-            />
+            <NoDashboardsYet canBuild={canBuild} />
           </Card>
         )}
       </Section>
