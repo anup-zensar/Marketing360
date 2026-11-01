@@ -60,7 +60,7 @@ type Matching interface {
 }
 
 type Facts interface {
-	ListFactsForActivity(ctx context.Context, scope authz.Scope, activityID string, countedOnly bool) ([]FactView, error)
+	ListFactsForActivity(ctx context.Context, scope authz.Scope, q FactQuery) ([]FactView, error)
 	PutFact(ctx context.Context, f Fact) error
 	CurrentFacts(ctx context.Context, sourceID string, references []string) ([]Fact, error)
 	ListFactsOfImport(ctx context.Context, importID string) ([]Fact, error)
@@ -75,6 +75,14 @@ type Imports interface {
 	PutBreakdown(ctx context.Context, importID string, groups []Breakdown) error
 	Breakdowns(ctx context.Context, importIDs []string) (map[string][]Breakdown, error)
 	CurrencyCodes(ctx context.Context) (map[string]bool, error)
+}
+
+// FactQuery is FR-030's findability on one activity's facts.
+type FactQuery struct {
+	ActivityID  string
+	Search      string
+	CountedOnly bool
+	Limit       int
 }
 
 // ReviewFilter is FR-023's findability: by key, source, reason, upload, date and status.

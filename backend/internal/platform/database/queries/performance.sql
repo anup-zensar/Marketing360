@@ -101,9 +101,17 @@ JOIN performance_sources s ON s.id = performance_facts.source_id
 WHERE performance_facts.activity_id = sqlc.arg(activity_id)
     AND performance_facts.replaced_by_id IS NULL
     AND (NOT sqlc.arg(counted_only)::boolean OR NOT performance_facts.held)
+    AND (sqlc.narg(search)::text IS NULL
+         OR s.name ILIKE '%' || sqlc.narg(search) || '%'
+         OR performance_facts.stage ILIKE '%' || sqlc.narg(search) || '%'
+         OR performance_facts.web_metric ILIKE '%' || sqlc.narg(search) || '%'
+         OR performance_facts.matched_on ILIKE '%' || sqlc.narg(search) || '%'
+         OR performance_facts.import_id ILIKE '%' || sqlc.narg(search) || '%'
+         OR performance_facts.source_reference ILIKE '%' || sqlc.narg(search) || '%')
     AND activity_in_scope(performance_facts.activity_id, sqlc.arg(sees_everything)::boolean,
         sqlc.arg(viewer_id)::text, sqlc.arg(views_plans)::boolean, sqlc.arg(viewer_team_ids)::text[])
-ORDER BY performance_facts.fact_date DESC, performance_facts.id COLLATE "C";
+ORDER BY performance_facts.fact_date DESC, performance_facts.id COLLATE "C"
+LIMIT sqlc.arg(max_rows);
 
 -- name: ReleaseHeldFactsForActivity :execrows
 UPDATE performance_facts

@@ -44,14 +44,15 @@ func factParams(f Fact) sqlcdb.PutPerformanceFactParams {
 	return p
 }
 
-func (s *PostgresStore) ListFactsForActivity(ctx context.Context, scope authz.Scope, activityID string, countedOnly bool) ([]FactView, error) {
+func (s *PostgresStore) ListFactsForActivity(ctx context.Context, scope authz.Scope, q FactQuery) ([]FactView, error) {
 	a := argsOf(scope)
 	rows, err := s.db.Queries(ctx).ListFactsForActivity(ctx, sqlcdb.ListFactsForActivityParams{
-		ActivityID: optional(activityID), CountedOnly: countedOnly, SeesEverything: a.seesEverything,
+		ActivityID: optional(q.ActivityID), CountedOnly: q.CountedOnly, Search: optional(q.Search),
+		MaxRows: rowLimit(q.Limit), SeesEverything: a.seesEverything,
 		ViewerID: a.viewerID, ViewsPlans: a.viewsPlans, ViewerTeamIds: a.teamIDs,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("select the facts of activity %s: %w", activityID, err)
+		return nil, fmt.Errorf("select the facts of activity %s: %w", q.ActivityID, err)
 	}
 	facts := make([]FactView, 0, len(rows))
 	for _, r := range rows {

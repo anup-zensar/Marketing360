@@ -173,23 +173,36 @@ func (s *Store) MatchByExternalName(_ context.Context, _ authz.Scope, keys []str
 	return s.match(performance.MatchedExternalName, keys), nil
 }
 
-func (s *Store) ListFactsForActivity(_ context.Context, _ authz.Scope, activityID string, countedOnly bool) ([]performance.FactView, error) {
+func (s *Store) ListFactsForActivity(_ context.Context, _ authz.Scope, q performance.FactQuery) ([]performance.FactView, error) {
 	all, err := s.facts.List()
 	if err != nil {
 		return nil, err
 	}
 	views := []performance.FactView{}
 	for _, f := range all {
-		if f.ActivityID != activityID || f.ReplacedByID != "" {
-			continue
-		}
-		if countedOnly && f.Held {
+		if f.ActivityID != q.ActivityID || f.ReplacedByID != "" || (q.CountedOnly && f.Held) {
 			continue
 		}
 		src, _, _ := s.sources.Get(f.SourceID)
+		if q.Search != "" && !factMatches(f, src.Name, q.Search) {
+			continue
+		}
 		views = append(views, performance.FactView{Fact: f, SourceName: src.Name})
 	}
+	if q.Limit > 0 && len(views) > q.Limit {
+		views = views[:q.Limit]
+	}
 	return views, nil
+}
+
+func factMatches(f performance.Fact, sourceName, search string) bool {
+	search = strings.ToLower(search)
+	for _, hay := range []string{sourceName, f.Stage, string(f.WebMetric), string(f.MatchedOn), f.ImportID, f.SourceReference} {
+		if strings.Contains(strings.ToLower(hay), search) {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *Store) PutFact(ctx context.Context, f performance.Fact) error {

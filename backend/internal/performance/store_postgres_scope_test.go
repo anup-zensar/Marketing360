@@ -107,7 +107,7 @@ func TestPostgresStore_FactsOutsideTheScopeAreInvisible_FR044(t *testing.T) {
 	t.Parallel()
 	store := pgPerformance(t)
 
-	mine, err := store.ListFactsForActivity(t.Context(), team1Only, "A-1001", false)
+	mine, err := store.ListFactsForActivity(t.Context(), team1Only, performance.FactQuery{ActivityID: "A-1001"})
 	if err != nil {
 		t.Fatalf("ListFactsForActivity(A-1001) error: %v", err)
 	}
@@ -115,7 +115,7 @@ func TestPostgresStore_FactsOutsideTheScopeAreInvisible_FR044(t *testing.T) {
 		t.Errorf("in my own team I see %d facts, want 1", len(mine))
 	}
 
-	theirs, err := store.ListFactsForActivity(t.Context(), team1Only, "A-1002", false)
+	theirs, err := store.ListFactsForActivity(t.Context(), team1Only, performance.FactQuery{ActivityID: "A-1002"})
 	if err != nil {
 		t.Fatalf("ListFactsForActivity(A-1002) error: %v", err)
 	}

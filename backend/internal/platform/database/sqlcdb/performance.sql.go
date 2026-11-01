@@ -666,18 +666,28 @@ JOIN performance_sources s ON s.id = performance_facts.source_id
 WHERE performance_facts.activity_id = $1
     AND performance_facts.replaced_by_id IS NULL
     AND (NOT $2::boolean OR NOT performance_facts.held)
-    AND activity_in_scope(performance_facts.activity_id, $3::boolean,
-        $4::text, $5::boolean, $6::text[])
+    AND ($3::text IS NULL
+         OR s.name ILIKE '%' || $3 || '%'
+         OR performance_facts.stage ILIKE '%' || $3 || '%'
+         OR performance_facts.web_metric ILIKE '%' || $3 || '%'
+         OR performance_facts.matched_on ILIKE '%' || $3 || '%'
+         OR performance_facts.import_id ILIKE '%' || $3 || '%'
+         OR performance_facts.source_reference ILIKE '%' || $3 || '%')
+    AND activity_in_scope(performance_facts.activity_id, $4::boolean,
+        $5::text, $6::boolean, $7::text[])
 ORDER BY performance_facts.fact_date DESC, performance_facts.id COLLATE "C"
+LIMIT $8
 `
 
 type ListFactsForActivityParams struct {
 	ActivityID     *string
 	CountedOnly    bool
+	Search         *string
 	SeesEverything bool
 	ViewerID       string
 	ViewsPlans     bool
 	ViewerTeamIds  []string
+	MaxRows        int32
 }
 
 type ListFactsForActivityRow struct {
@@ -689,10 +699,12 @@ func (q *Queries) ListFactsForActivity(ctx context.Context, arg ListFactsForActi
 	rows, err := q.db.Query(ctx, listFactsForActivity,
 		arg.ActivityID,
 		arg.CountedOnly,
+		arg.Search,
 		arg.SeesEverything,
 		arg.ViewerID,
 		arg.ViewsPlans,
 		arg.ViewerTeamIds,
+		arg.MaxRows,
 	)
 	if err != nil {
 		return nil, err
