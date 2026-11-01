@@ -1,5 +1,5 @@
 import { screen, waitFor, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { nth } from '@/testing/dom';
 import { planBudgetRanked, planBudgetReport } from '@/testing/fixtures/plan-budget';
@@ -22,6 +22,7 @@ function renderPage(
     reply('GET /api/v1/reports/{report}/views', { body: { items: [], total: 0 } }),
     reply('GET /api/v1/reports/plan-budget', report),
     reply('GET /api/v1/reports/plan-budget/ranked', { body: planBudgetRanked() }),
+    reply('GET /api/v1/reports/{report}/export', () => new Response('file')),
   ]);
   const rendered = renderWithProviders(<PlanBudgetReport />, {
     route,
@@ -108,6 +109,21 @@ describe('PlanBudgetReport (040 US1)', () => {
         'Planned cost without dates: $70.00. Planned cost in other years: $40.00.',
       ),
     ).toBeInTheDocument();
+  });
+
+  it('exports the summary cards on their own (FR-016)', async () => {
+    URL.createObjectURL = () => 'blob:export';
+    URL.revokeObjectURL = () => {};
+    const save = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const { user, api } = renderPage();
+
+    await user.click(await screen.findByRole('button', { name: 'Export summary' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'CSV (.csv)' }));
+
+    await waitFor(() => expect(asked(api, '/api/v1/reports/plan-budget/export')).toHaveLength(1));
+    const sent = nth(asked(api, '/api/v1/reports/plan-budget/export'), 0);
+    expect([sent.get('widget'), sent.get('format')]).toEqual(['cards', 'csv']);
+    save.mockRestore();
   });
 
   it('asks for quarters when the period changes (FR-004)', async () => {
