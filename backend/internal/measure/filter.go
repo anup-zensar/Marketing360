@@ -103,7 +103,7 @@ func Canonical(f Filter) string {
 
 // ownParams are the parameters the shared filter does not read: a report's own, such as a tab or a sort.
 func ownParams(values url.Values) url.Values {
-	shared := append(allWorkParams(), "period", "show", "currency", "table", "report")
+	shared := slices.Concat(allWorkParams(), []string{"period", "show", "currency", "table", "report"})
 	own := url.Values{}
 	for name, v := range values {
 		if !slices.Contains(shared, name) {

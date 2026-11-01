@@ -1,6 +1,7 @@
 package measure
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"net/url"
@@ -40,7 +41,7 @@ func (s *Service) ListViews(ctx context.Context, a actor.Actor, report string) (
 			return err
 		}
 		slices.SortFunc(own, func(x, y StoredView) int {
-			return strings.Compare(strings.ToLower(x.Name)+"\x00"+x.ID, strings.ToLower(y.Name)+"\x00"+y.ID)
+			return cmp.Or(strings.Compare(strings.ToLower(x.Name), strings.ToLower(y.Name)), strings.Compare(x.ID, y.ID))
 		})
 		for _, v := range own {
 			page.Items = append(page.Items, v.view())
@@ -77,7 +78,7 @@ func (s *Service) CreateView(ctx context.Context, a actor.Actor, report string, 
 			return err
 		}
 		created = v.view()
-		return s.logView(ctx, a, v, history.ActionCreated, nil)
+		return s.logView(ctx, a, v, history.ActionCreated)
 	})
 	return created, err
 }
@@ -121,7 +122,7 @@ func (s *Service) DeleteView(ctx context.Context, a actor.Actor, ref ViewRef) (R
 		if err != nil {
 			return err
 		}
-		if err := s.logView(ctx, a, v, history.ActionDeleted, nil); err != nil {
+		if err := s.logView(ctx, a, v, history.ActionDeleted); err != nil {
 			return err
 		}
 		deleted = v.view()

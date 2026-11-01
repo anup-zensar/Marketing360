@@ -30,7 +30,8 @@ log at the end of wave A (build guide §4.5).
 
 - **039-C1** Q: When does a report follow a change in the filter panel? → A: on **Apply**, as Hive9's Update and
   client 016 FR-017. Ticking several values (brands, countries, cost centres) then refreshes the report once, not
-  on every tick. Period, Currency, Show, the chart or table choice and removing a chip still apply at once (FR-013).
+  on every tick. The year, Period, Currency, Show, the chart or table choice and removing a chip still apply at
+  once (FR-013).
 - **039-C2** Q: Does a saved view belong to one report or to every report? → A: to **one report**, with its own
   default star per report. Reports use different controls (Period, Show), so a view shared by every report could
   carry choices a report does not have (FR-024, FR-027).
@@ -180,8 +181,10 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
 - A value a business-unit condition hides on a record counts as **Not filled in** for that record (016 FR-039).
 - A % split value matches when its share is above 0 (016 FR-039).
 - An inactive Shell attribute value is listed, labelled "(inactive)", only while some record in view still uses it.
-- Unticking every value of a group matches nothing for that level; the panel says so next to **Apply**.
-- The year changes the plan list; plans selected in the old year are dropped and the panel says how many.
+- A group with no value ticked would match nothing, so **Apply** stays off and the panel says why next to it:
+  "Tick at least one value in Owner."
+- The year changes the plan list; plans chosen in the old year are dropped, and while plans are chosen the panel
+  says so under **Year** before the change ("Another year clears the 2 plans you chose.").
 - A past year has no "in progress" period: every period is actual; a future year has no actual period.
 - A deleted record in the recycle bin is not in view (as All work).
 - Two tabs open on different filters keep their own state; only saved views are shared across tabs. If both
@@ -244,8 +247,8 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
   when its share is above 0; a value hidden by its business-unit condition counts as **Not filled in**; a group
   with every choice ticked does not filter. Records in the recycle bin never match.
 - **FR-013**: Changes in the filter panel MUST take effect on **Apply** (039-C1); until then the report keeps its
-  figures and the panel says "Changes not applied yet". Period, Currency, Show, the chart or table choice and
-  removing a chip apply at once.
+  figures and the panel says "Changes not applied yet". The year, Period, Currency, Show, the chart or table
+  choice and removing a chip apply at once.
 - **FR-014**: The applied filters MUST appear above the widgets as removable chips naming each restricted filter
   ("Brand: Helix, Pennzoil"); removing a chip applies at once; **Reset filters** returns every filter but the year
   to its default.

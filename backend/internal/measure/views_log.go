@@ -8,9 +8,10 @@ import (
 	"mapp/internal/platform/actor"
 )
 
-func (s *Service) logView(ctx context.Context, a actor.Actor, v StoredView, action history.Action, changes []history.Change) error {
-	_, err := s.log.Log(ctx, a, history.LogInput{Kind: KindReportView, RecordID: v.ID, RecordName: v.Name,
-		Action: action, Changes: changes})
+const labelDefaultView = "Default view"
+
+func (s *Service) logView(ctx context.Context, a actor.Actor, v StoredView, action history.Action) error {
+	_, err := s.log.Log(ctx, a, history.LogInput{Kind: KindReportView, RecordID: v.ID, RecordName: v.Name, Action: action})
 	return err
 }
 
@@ -19,7 +20,9 @@ func (s *Service) logChange(ctx context.Context, a actor.Actor, before, after St
 	if err != nil {
 		return err
 	}
-	return s.logView(ctx, a, after, history.ActionChanged, changes)
+	_, err = s.log.Log(ctx, a, history.LogInput{Kind: KindReportView, RecordID: after.ID, RecordName: after.Name,
+		Action: history.ActionChanged, Changes: changes})
+	return err
 }
 
 // ViewKind tells the activity log about saved report views; they never go to the recycle bin (research R5).
@@ -53,9 +56,9 @@ func describeView(_ context.Context, field string, value any) (string, string, e
 	switch field {
 	case "isDefault":
 		if starred, _ := value.(bool); starred {
-			return "Default view", "Yes", nil
+			return labelDefaultView, "Yes", nil
 		}
-		return "Default view", "No", nil
+		return labelDefaultView, "No", nil
 	case "query":
 		return "Filters", "", nil
 	}
