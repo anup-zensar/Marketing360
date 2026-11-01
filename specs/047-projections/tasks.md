@@ -75,7 +75,38 @@ marks tasks that can run in parallel. The migrations are the truth the documents
   access-matrix test `TestAccessMatrix_EveryOperationRefusesWhomItsRuleExcludes_SC001` proves for every
   operation in the contract, the five new ones included. FR-022 was found unserved during the audit and
   implemented: an activity type now names its category, as it already names the models that allow it
-- [ ] T052 Run `/speckit-analyze`; fix every CRITICAL before done
-- [ ] T053 Run `/speckit-converge`; record remaining or "clean"
+- [X] T052 Run `/speckit-analyze`; fix every CRITICAL before done. Done 2026-11-02: two lenses
+  (spec-vs-code, documents-vs-truth) agreed on three CRITICALs — FR-004's worked example ignored the
+  velocities, the split marked January of a future plan year in progress, and FR-010's combined plan-year
+  figure was never served — plus FR-013's reason being swallowed by an actual. All four fixed in code; the
+  spec's own contradictions (US2's flat 100 a month, FR-012 against the stamp, SC-003's exact
+  reconciliation) and the stale plan/research/contract wording fixed alongside
+- [X] T053 Run `/speckit-converge`; record remaining or "clean". Done 2026-11-02: eight findings appended
+  as Phase 6. The one CRITICAL is this feature's own — no end-to-end test exists for US1 and US2, which
+  Constitution VI requires of every P1 story
 - [ ] T054 Open the PR into `measure-module` (note: branch stacked on 046's; retarget/rebase once PR #62
   merges), with the feature-map status change and the FR-005 ask
+
+## Phase 6: Convergence
+
+- [X] T055 Write `frontend/e2e/projections.spec.ts` covering **US1 and US2**, this feature's P1 stories,
+  with axe: an administrator sets a model's velocity and allowed stages and sees the lag in the worked
+  example; an approved activity with a goal shows its projected figures, the months split at today and the
+  model behind them. Per Constitution VI ("an end-to-end browser test for every P1 user story") (missing).
+  Done 2026-11-02: both pass against the real API and a seeded database, axe included. The journey proved
+  the stranded-goal warning end to end, in its own words: "1 plan set their goal at a stage this model
+  would no longer allow. They keep it and it keeps projecting; new goals can't choose it." 
+- [ ] T056 Extend `frontend/e2e/projections.spec.ts` to **US3**: create an activity category, assign a type
+  that is already in another, mark it the default, delete it and undo. Needs the integrator's two route
+  lines first (contracts/api.md, ask 1) per US3 (missing)
+- [ ] T057 Note the activity types a restore takes back from other categories, as a released default is
+  already noted, per FR-021 and 047-C14 (partial)
+- [ ] T058 Convert or refuse a currency mismatch in `projection.SplitAmounts` instead of stamping the
+  projected currency onto converted actuals, per FR-007 and 047-C6 (missing)
+- [ ] T059 Decide whether a goal of exactly zero is a goal, record it as a clarification, and make
+  `hasGoal` agree, per FR-013 (partial)
+- [ ] T060 Show each activity type's category on the Activity types Settings page, per FR-022 (missing)
+- [ ] T061 [integrator] Fold the goal-entry ask into `docs/sdd/decision-log.md` at wave end — a lane never
+  edits it — per FR-005 (missing)
+- [ ] T062 [lane D] Seed activity categories with the wave B demo data, so the list does not open empty,
+  per plan: demo data (missing)
