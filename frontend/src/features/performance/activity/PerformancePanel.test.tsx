@@ -16,8 +16,24 @@ function panel(overrides: Partial<Panel> = {}): Panel {
   return {
     state: 'ok',
     stages: [
-      { stage: 'inq', goal: 100, actual: 80, conversion: null, reason: '', projected: null, months: [] },
-      { stage: 'mql', goal: 10, actual: 8, conversion: 10.0, reason: '', projected: null, months: []  },
+      {
+        stage: 'inq',
+        goal: 100,
+        actual: 80,
+        conversion: null,
+        reason: '',
+        projected: null,
+        months: [],
+      },
+      {
+        stage: 'mql',
+        goal: 10,
+        actual: 8,
+        conversion: 10.0,
+        reason: '',
+        projected: null,
+        months: [],
+      },
     ],
     revenue: {
       goal: { amount: '5000.00', currency: 'USD' },
@@ -41,8 +57,24 @@ function emptyStages(
 ): Partial<Panel> {
   return {
     stages: [
-      { stage: 'inq', goal: null, actual: null, conversion: null, reason, projected: null, months: [] },
-      { stage: 'mql', goal: null, actual: null, conversion: null, reason, projected: null, months: [] },
+      {
+        stage: 'inq',
+        goal: null,
+        actual: null,
+        conversion: null,
+        reason,
+        projected: null,
+        months: [],
+      },
+      {
+        stage: 'mql',
+        goal: null,
+        actual: null,
+        conversion: null,
+        reason,
+        projected: null,
+        months: [],
+      },
     ],
     revenue: { goal: null, actual: null, excludedCount: 0, reason, projected: null, months: [] },
     webMetrics: [],
@@ -66,14 +98,16 @@ describe('PerformancePanel', () => {
     renderPanel(panel());
 
     expect(await screen.findByRole('row', { name: /INQ 100 80/ })).toBeInTheDocument();
-    expect(screen.getByRole('row', { name: /MQL 10 8 10\.0 %/ })).toBeInTheDocument();
+    expect(screen.getByRole('row', { name: /MQL 10 8 — 10\.0 %/ })).toBeInTheDocument();
     expect(screen.getByText(/1 excluded without a rate/)).toBeInTheDocument();
     expect(screen.getByText('stale')).toBeInTheDocument();
     await expectNoAxeViolations();
   });
 
   it('046 FR-027 gates a non-approved activity with the stated message and no figures', async () => {
-    renderPanel(panel({ state: 'notApproved', stages: [], webMetrics: [], sources: [], projection: null }));
+    renderPanel(
+      panel({ state: 'notApproved', stages: [], webMetrics: [], sources: [], projection: null }),
+    );
 
     expect(
       await screen.findByText('Approve the activity to see performance data.'),
@@ -117,5 +151,45 @@ describe('PerformancePanel', () => {
 
     expect((await screen.findAllByText('The last load failed.')).length).toBeGreaterThan(0);
     expectNoSampleFigure();
+  });
+});
+
+describe('projected figures (047)', () => {
+  it('shows each stage projected and names the model behind it (047 FR-012, FR-016)', async () => {
+    renderPanel(
+      panel({
+        stages: [
+          {
+            stage: 'inq',
+            goal: 100,
+            actual: 80,
+            projected: 120,
+            conversion: null,
+            reason: '',
+            months: [],
+          },
+          {
+            stage: 'mql',
+            goal: 10,
+            actual: 8,
+            projected: 12,
+            conversion: 10.0,
+            reason: '',
+            months: [],
+          },
+        ],
+        projection: { modelName: 'Lubricants 1.0', parametersChangedAt: '2026-01-02T09:00:00Z' },
+      }),
+    );
+
+    expect(await screen.findByText('120')).toBeInTheDocument();
+    expect(screen.getByText(/Projected from Lubricants 1\.0/)).toBeInTheDocument();
+  });
+
+  it('shows an em dash where nothing projects, never a zero (047 FR-013)', async () => {
+    renderPanel(panel());
+
+    expect(await screen.findAllByText('—')).not.toHaveLength(0);
+    expect(screen.queryByText(/Projected from/)).not.toBeInTheDocument();
   });
 });
