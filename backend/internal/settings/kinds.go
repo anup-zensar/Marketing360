@@ -12,6 +12,7 @@ import (
 const (
 	modelKind        = "model"
 	activityTypeKind = "activityType"
+	categoryKind     = "activityCategory"
 	attributeKind    = "shellAttribute"
 	optionKind       = "shellAttributeOption"
 	currencyKind     = "currency"
@@ -34,6 +35,11 @@ func (s *Service) Kinds() []history.Kind {
 			Name: activityTypeKind, Singular: activityTypeNoun, Plural: "activity types",
 			Snapshot: s.activityTypeSnapshot, Remove: s.repo.DeleteActivityType, Put: putRecord(s.repo.PutActivityType),
 			Describe: describeActivityType, PrepareRestore: s.prepareActivityTypeRestore,
+		},
+		{
+			Name: categoryKind, Singular: categoryNoun, Plural: "activity categories",
+			Snapshot: s.activityCategorySnapshot, Remove: s.repo.DeleteActivityCategory, Put: putRecord(s.repo.PutActivityCategory),
+			Describe: s.describeActivityCategory, PrepareRestore: s.prepareActivityCategoryRestore,
 		},
 		{
 			Name: attributeKind, Singular: attributeNoun, Plural: "Shell attributes",

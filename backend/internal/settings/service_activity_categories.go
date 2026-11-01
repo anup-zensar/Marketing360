@@ -19,7 +19,6 @@ const maxActivityCategoryName = 80
 const (
 	activityCategoryGoneMessage = "This activity category no longer exists — someone may have deleted it."
 	activityCategoryNameTaken   = "An activity category called '%s' already exists."
-	tickedTypeGoneMessage       = "An activity type you ticked no longer exists — reload the page and try again."
 )
 
 // CreateActivityCategory creates an active activity category (FR-018, FR-019, FR-020): a name of 1 to 80
@@ -49,7 +48,7 @@ func (s *Service) CreateActivityCategory(ctx context.Context, a actor.Actor, inp
 		if err = s.saveActivityCategory(ctx, a, c); err != nil {
 			return err
 		}
-		if err = s.logCreated(ctx, a, activityCategoryKind, c.ID, c.Name, ""); err != nil {
+		if err = s.logCreated(ctx, a, categoryKind, c.ID, c.Name, ""); err != nil {
 			return err
 		}
 		view, err = s.activityCategoryView(ctx, c)
@@ -77,7 +76,7 @@ func (s *Service) UpdateActivityCategory(ctx context.Context, a actor.Actor, id 
 		if err = problems.Err(); err != nil {
 			return err
 		}
-		if err = stored.CheckVersion(*update.Version, activityCategoryNoun); err != nil {
+		if err = stored.CheckVersion(*update.Version, categoryNoun); err != nil {
 			return err
 		}
 		changes, err := history.Diff(stored, changed)
@@ -89,7 +88,7 @@ func (s *Service) UpdateActivityCategory(ctx context.Context, a actor.Actor, id 
 			if err = s.saveActivityCategory(ctx, a, changed); err != nil {
 				return err
 			}
-			if err = s.logChanged(ctx, a, activityCategoryKind, changed.ID, changed.Name, changes, ""); err != nil {
+			if err = s.logChanged(ctx, a, categoryKind, changed.ID, changed.Name, changes, ""); err != nil {
 				return err
 			}
 			stored = changed
@@ -110,7 +109,7 @@ func (s *Service) DeleteActivityCategory(ctx context.Context, a actor.Actor, id 
 		if err != nil {
 			return err
 		}
-		entry, err = s.history.MoveToBin(ctx, a, activityCategoryKind, c.ID)
+		entry, err = s.history.MoveToBin(ctx, a, categoryKind, c.ID)
 		return err
 	})
 	return entry, err
@@ -144,7 +143,7 @@ func (s *Service) unmarkDefaultExcept(ctx context.Context, a actor.Actor, except
 		if err = s.repo.PutActivityCategory(ctx, changed); err != nil {
 			return err
 		}
-		if err = s.logChanged(ctx, a, activityCategoryKind, changed.ID, changed.Name, changes, ""); err != nil {
+		if err = s.logChanged(ctx, a, categoryKind, changed.ID, changed.Name, changes, ""); err != nil {
 			return err
 		}
 	}

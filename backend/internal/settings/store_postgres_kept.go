@@ -38,6 +38,12 @@ func (s *PostgresStore) activityTypes(ctx context.Context) (memo.Table[sqlcdb.Ac
 	}, func(r sqlcdb.ActivityType) string { return r.ID })
 }
 
+func (s *PostgresStore) activityCategories(ctx context.Context) (memo.Table[sqlcdb.ListActivityCategoriesRow], error) {
+	return keptTable(ctx, "activity categories", func(ctx context.Context) ([]sqlcdb.ListActivityCategoriesRow, error) {
+		return s.db.Queries(ctx).ListActivityCategories(ctx, nil)
+	}, func(r sqlcdb.ListActivityCategoriesRow) string { return r.ActivityCategory.ID })
+}
+
 func (s *PostgresStore) currencies(ctx context.Context) (memo.Table[sqlcdb.Currency], error) {
 	return keptTable(ctx, "currencies", func(ctx context.Context) ([]sqlcdb.Currency, error) {
 		return s.db.Queries(ctx).ListCurrencies(ctx)

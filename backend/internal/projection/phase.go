@@ -6,8 +6,7 @@ import (
 	"mapp/internal/platform/date"
 )
 
-// window is the part of the plan year the activity covers. An activity without a start runs from the
-// year's first day; one that is ongoing or has no end runs to its last (FR-006, 020 FR-049).
+// window is the part of the plan year the activity covers; undated or ongoing, it runs to the year's end.
 func window(in Inputs) (start, end date.Date, covered bool) {
 	start, end = date.YearStart(in.PlanYear), date.YearEnd(in.PlanYear)
 	if in.StartDate != nil && in.StartDate.After(start) {
@@ -24,8 +23,7 @@ func daysBetween(start, end date.Date) int64 {
 	return int64(end.Time().Sub(start.Time()).Hours()/hoursPerDay) + 1
 }
 
-// phase spreads goal evenly across the days of the window and collapses them to months. The running total
-// gives every month its exact share: the months add up to the goal with no remainder lost (FR-006).
+// phase spreads the goal across the window's days; the running total leaves no remainder unplaced.
 func phase(goal int64, start, end date.Date) []MonthFigure {
 	months := emptyMonths(start.Year())
 	totalDays := daysBetween(start, end)
@@ -50,7 +48,6 @@ func emptyMonths(year int) []MonthFigure {
 	return months
 }
 
-// daysOfMonth counts the days of the month that fall inside the window.
 func daysOfMonth(year int, month time.Month, start, end date.Date) int64 {
 	first := date.New(year, month, 1)
 	last := first.AddDays(daysIn(year, month) - 1)

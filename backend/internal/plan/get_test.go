@@ -134,10 +134,12 @@ func TestLookupAndReferences(t *testing.T) { //nolint:gocyclo // 11: two lookups
 		t.Errorf("Lookup = %q, %v; deleted found %v; %v", lookedUp.Name, found, missing, err)
 	}
 	want := []References{
-		{PlanID: kept.ID, Name: "FY2026 Lubricants Test", ModelID: lubricantsModel, OwnerID: priya.ID,
-			TeamIDs: []string{teamLubricants}, Attributes: attributesOf(lubricants), Currency: "USD"},
-		{PlanID: deleted.ID, Name: "FY2026 Mobility Test", ModelID: mobilityModel, TeamIDs: []string{teamMobility},
-			Attributes: attributesOf(lubricants), InRecycleBin: true, Currency: "USD"},
+		{PlanID: kept.ID, Name: "FY2026 Lubricants Test", ModelID: lubricantsModel, GoalStage: StageINQ,
+			OwnerID: priya.ID, TeamIDs: []string{teamLubricants}, Attributes: attributesOf(lubricants),
+			Currency: "USD"},
+		{PlanID: deleted.ID, Name: "FY2026 Mobility Test", ModelID: mobilityModel, GoalStage: StageINQ,
+			TeamIDs: []string{teamMobility}, Attributes: attributesOf(lubricants), InRecycleBin: true,
+			Currency: "USD"},
 	}
 	if got, expected := asJSON(t, refs), asJSON(t, want); refsErr != nil || got != expected {
 		t.Errorf("References = %s, %v\nwant         %s", got, refsErr, expected)

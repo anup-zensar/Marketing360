@@ -39,6 +39,7 @@ func customWith(p authz.Permission) Rule { return Rule{Kind: Custom, Permission:
 var routeRules = joinRules( //nolint:gochecknoglobals // the route table: built once when the program starts, then only read
 	shellRoutes(),
 	settingsRoutes(),
+	activityCategoryRoutes(),
 	peopleRoutes(),
 	planRoutes(),
 	campaignRoutes(),

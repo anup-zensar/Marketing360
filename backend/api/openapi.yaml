@@ -867,6 +867,124 @@ paths:
           $ref: "#/components/responses/Conflict"
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/settings/activity-categories:
+    get:
+      tags:
+        - Settings
+      operationId: listActivityCategories
+      summary: Every activity category (active and inactive), sorted by name ignoring letter case (FR-018, FR-022)
+      responses:
+        "200":
+          description: The activity categories with the activity types they group.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityCategoryPage"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags:
+        - Settings
+      operationId: createActivityCategory
+      summary: Create an activity category grouping activity types (FR-018)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivityCategoryCreate"
+      responses:
+        "201":
+          description: Created, active.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityCategory"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/settings/activity-categories/{categoryId}:
+    parameters:
+      - $ref: "#/components/parameters/ActivityCategoryId"
+    get:
+      tags:
+        - Settings
+      operationId: getActivityCategory
+      summary: One activity category with the activity types it groups
+      responses:
+        "200":
+          description: The activity category.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityCategory"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/Error"
+    patch:
+      tags:
+        - Settings
+      operationId: updateActivityCategory
+      summary: Change an activity category and the activity types it groups (FR-018, FR-019, FR-020)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivityCategoryUpdate"
+      responses:
+        "200":
+          description: The activity category after the change.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityCategory"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags:
+        - Settings
+      operationId: deleteActivityCategory
+      summary: Delete an activity category; its activity types become Uncategorised (FR-021)
+      responses:
+        "200":
+          description: Moved to the recycle bin.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/activity-types:
     get:
       tags:
@@ -9186,6 +9304,13 @@ components:
       schema:
         type: string
       example: AT-1001
+    ActivityCategoryId:
+      name: categoryId
+      in: path
+      required: true
+      schema:
+        type: string
+      example: CAT-1001
     AttributeId:
       name: attributeId
       in: path
@@ -13003,7 +13128,8 @@ components:
             - dependentAttribute
             - condition
             - linkedOption
-          description: What uses the record (the purchase request levels since 032).
+            - activityType
+          description: What uses the record (the purchase request levels since 032, activity types since 047).
         text:
           type: string
           description: The part as people read it, for example Used by 12 activities (1 in the recycle bin).
@@ -13286,6 +13412,106 @@ components:
           type: array
           items:
             type: string
+        version:
+          type: integer
+    ActivityCategory:
+      type: object
+      additionalProperties: false
+      description: A group of activity types; a type belongs to at most one category (047-C7).
+      required:
+        - id
+        - name
+        - isDefault
+        - activityTypes
+        - active
+        - usage
+        - version
+        - createdAt
+        - createdBy
+        - updatedAt
+        - updatedBy
+      properties:
+        id:
+          type: string
+          example: CAT-1001
+        name:
+          type: string
+          example: Digital
+        isDefault:
+          type: boolean
+          description: At most one category is the default the reports open on.
+        activityTypes:
+          type: array
+          description: The activity types in this category, sorted by name.
+          items:
+            $ref: "#/components/schemas/SettingRef"
+        active:
+          type: boolean
+        usage:
+          $ref: "#/components/schemas/Usage"
+        version:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: "#/components/schemas/ActorRef"
+        updatedAt:
+          type: string
+          format: date-time
+        updatedBy:
+          $ref: "#/components/schemas/ActorRef"
+    ActivityCategoryPage:
+      type: object
+      additionalProperties: false
+      required:
+        - items
+        - total
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityCategory"
+        total:
+          type: integer
+    ActivityCategoryCreate:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - isDefault
+        - activityTypeIds
+      properties:
+        name:
+          type: string
+        isDefault:
+          type: boolean
+          description: True takes the default away from the category that had it.
+        activityTypeIds:
+          type: array
+          description: The activity types to put in the new category; each leaves the category it was in.
+          items:
+            type: string
+    ActivityCategoryUpdate:
+      type: object
+      additionalProperties: false
+      description: >-
+        Only the fields to change, and the version. activityTypeIds is the complete new list of activity types in
+        the category: a type listed here leaves the category it was in, one left out becomes Uncategorised.
+      required:
+        - version
+      properties:
+        name:
+          type: string
+        isDefault:
+          type: boolean
+        activityTypeIds:
+          type: array
+          items:
+            type: string
+        active:
+          type: boolean
         version:
           type: integer
     ActivityType:

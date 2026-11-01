@@ -4,7 +4,13 @@
  * what its details say when it is gone.
  */
 export type SettingKind =
-  'model' | 'activityType' | 'shellAttribute' | 'option' | 'currency' | 'financeBudgetItem';
+  | 'model'
+  | 'activityType'
+  | 'activityCategory'
+  | 'shellAttribute'
+  | 'option'
+  | 'currency'
+  | 'financeBudgetItem';
 
 export interface SettingNouns {
   /** In the middle of a sentence: "Delete model 'Lubricants 1.0'?" */
@@ -30,6 +36,13 @@ export const SETTING_NOUNS: Record<SettingKind, SettingNouns> = {
     title: 'Activity type',
     inactiveEffect: "New activities can't choose an inactive type; activities using it keep it.",
     notFound: 'This activity type no longer exists — someone may have deleted it.',
+  },
+  activityCategory: {
+    noun: 'activity category',
+    title: 'Activity category',
+    inactiveEffect:
+      "The reports stop offering an inactive category; its activity types keep it and still count under it.",
+    notFound: 'This activity category no longer exists — someone may have deleted it.',
   },
   shellAttribute: {
     noun: 'Shell attribute',

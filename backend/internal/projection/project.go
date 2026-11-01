@@ -5,9 +5,7 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// Project runs the plan's model forward from the activity's goal: the goal stage phased across the
-// activity's months, each later stage that stage's volume at the model's rate placed by its velocity, and
-// revenue the deals at the model's average deal size — never past the plan year (FR-006–FR-009).
+// Project runs the model forward from the goal stage only, never past the plan year (FR-006 - FR-009).
 func Project(in Inputs) Projection {
 	start, end, covered := window(in)
 	out := Projection{Stamp: Stamp{ModelName: in.Model.Name, ParametersChangedAt: in.Model.ParametersChangedAt}}
@@ -31,8 +29,7 @@ func hasGoal(g Goals) bool {
 	return g.INQ != nil
 }
 
-// typed projects an activity that sets its later stages itself: each stage phases its own goal and the
-// model's rates and velocity change nothing (FR-009, 047-C6).
+// typed phases each stage's own goal: the override means the rates and velocity change nothing (FR-009).
 func typed(out Projection, in Inputs, start, end date.Date) Projection {
 	for _, stage := range []struct {
 		name string
@@ -48,7 +45,6 @@ func typed(out Projection, in Inputs, start, end date.Date) Projection {
 	return out
 }
 
-// calculated projects an activity whose later stages come from the model (domain model §4.5).
 func calculated(out Projection, in Inputs, start, end date.Date) Projection {
 	inq := phase(*in.Goals.INQ, start, end)
 	mql := shift(atRate(inq, in.Model.InqToMqlRate), in.Model.InqToMqlVelocityMonths)
@@ -58,8 +54,7 @@ func calculated(out Projection, in Inputs, start, end date.Date) Projection {
 	return out
 }
 
-// atRate converts each month at the rate, rounded half-up in that month, so a month's figure is the one a
-// reader can check by hand (FR-007).
+// atRate rounds half-up within each month, so every month's figure is one a reader can check by hand.
 func atRate(months []MonthFigure, rate money.Percent) []MonthFigure {
 	converted := make([]MonthFigure, len(months))
 	for i, m := range months {
@@ -68,9 +63,7 @@ func atRate(months []MonthFigure, rate money.Percent) []MonthFigure {
 	return converted
 }
 
-// shift moves each month's figure forward by the velocity. What lands past the plan year is dropped:
-// nothing projects beyond it, and bunching it into December would invent a month that never happens
-// (FR-008, 020 FR-051).
+// shift drops what lands past the plan year: bunching it into December would invent a month (FR-008).
 func shift(months []MonthFigure, by int) []MonthFigure {
 	shifted := make([]MonthFigure, len(months))
 	for i, m := range months {
@@ -92,8 +85,6 @@ func seriesOf(stage string, months []MonthFigure) Series {
 	return Series{Stage: stage, Months: months, Total: total}
 }
 
-// revenueOf prices each month's deals at the model's average deal size. A month whose revenue overflows is
-// left empty rather than failing the whole projection, as the goals themselves are shown (app adapter).
 func revenueOf(deals []MonthFigure, size money.Money) ([]MoneyFigure, money.Money) {
 	revenue := make([]MoneyFigure, len(deals))
 	total := money.Money{Currency: size.Currency}
@@ -108,8 +99,6 @@ func revenueOf(deals []MonthFigure, size money.Money) ([]MoneyFigure, money.Mone
 	return revenue, total
 }
 
-// phaseMoney spreads a typed revenue goal across the window in its own currency, in whole minor units, so
-// the months add up to the goal exactly.
 func phaseMoney(goal money.Money, start, end date.Date) ([]MoneyFigure, money.Money) {
 	cents := phase(goal.Amount.Cents(), start, end)
 	revenue := make([]MoneyFigure, len(cents))

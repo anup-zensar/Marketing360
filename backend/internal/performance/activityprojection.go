@@ -9,9 +9,7 @@ import (
 	"mapp/internal/projection"
 )
 
-// withProjection adds 047's figures to the panel: each stage's projected volume and the plan year split at
-// today, projected revenue, and the stamp naming the model behind them (FR-010, FR-012, FR-016). A panel
-// whose activity has no goal keeps its reasons and gains nothing.
+// withProjection fills the fields 046 reserved: projected volumes, projected revenue and the model stamp.
 func (s *Service) withProjection(ctx context.Context, panel Panel, in panelInput) Panel {
 	forecast := projection.Project(projection.Inputs{
 		Goals: projection.Goals{INQ: in.goals.INQ, MQL: in.goals.MQL, Revenue: in.goals.Revenue,
@@ -49,8 +47,7 @@ func (s *Service) projectedRevenue(ctx context.Context, figure RevenueFigure, fo
 	return figure
 }
 
-// monthlyCounts lays a stage's counted facts out across the plan year's months, in the engine's own shape,
-// so the actual and projected series line up month by month.
+// monthlyCounts lays counted facts out in the engine's shape, so actual and projected line up by month.
 func monthlyCounts(totals []StageTotals, stage string, year int) []projection.MonthFigure {
 	months := yearMonths(year)
 	for _, total := range totals {
@@ -64,8 +61,7 @@ func monthlyCounts(totals []StageTotals, stage string, year int) []projection.Mo
 	return months
 }
 
-// monthlyRevenue converts each month's revenue facts once at the current rate, exactly as the panel's
-// total does (046-C7): a month holding only unconvertible facts stays empty rather than guessing.
+// monthlyRevenue converts each month once at the current rate; a month with no rate stays empty (046-C7).
 func (s *Service) monthlyRevenue(ctx context.Context, totals []StageTotals, year int) []projection.MoneyFigure {
 	rates := s.currentRates(ctx)
 	months := make([]projection.MoneyFigure, 0, projection.Months)
@@ -104,8 +100,7 @@ func monthLabel(year, index int) string {
 	return time.Date(year, time.Month(index+1), 1, 0, 0, 0, 0, time.UTC).Format("2006-01")
 }
 
-// monthIndex reads a fact month ("2026-01") as its place in the plan year, or -1 when it belongs to
-// another year.
+// monthIndex places a fact month in the plan year, or -1 when it belongs to another year.
 func monthIndex(month string, year int) int {
 	at, err := time.Parse("2006-01", month)
 	if err != nil || at.Year() != year {

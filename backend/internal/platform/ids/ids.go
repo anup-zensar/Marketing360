@@ -17,7 +17,7 @@ const (
 
 	PrefixModel             = "MOD"
 	PrefixActivityType      = "AT"
-	PrefixActivityCategory  = "ACAT"
+	PrefixActivityCategory  = "CAT"
 	PrefixShellAttribute    = "SA"
 	PrefixShellOption       = "SO"
 	PrefixFinanceBudget     = "FB"

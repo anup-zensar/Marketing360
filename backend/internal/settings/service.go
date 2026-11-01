@@ -23,6 +23,7 @@ import (
 const (
 	modelNoun        = "model"
 	activityTypeNoun = "activity type"
+	categoryNoun     = "activity category"
 	attributeNoun    = "Shell attribute"
 	optionNoun       = "option"
 	currencyNoun     = "currency"

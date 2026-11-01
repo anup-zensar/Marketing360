@@ -17,7 +17,7 @@ ALTER TABLE models
     ALTER COLUMN allowed_goal_stages DROP DEFAULT;
 
 CREATE TABLE activity_categories (
-    id              text        PRIMARY KEY CHECK (id ~ '^ACAT-[0-9]+$'),
+    id              text        PRIMARY KEY CHECK (id ~ '^CAT-[0-9]+$'),
     name            text        NOT NULL CHECK (name <> ''),
     is_default      boolean     NOT NULL,
     active          boolean     NOT NULL,

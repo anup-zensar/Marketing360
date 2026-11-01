@@ -127,7 +127,7 @@ type ActivityType struct {
 // ActivityCategory groups activity types (table "activity_categories", 047-C7). Its ActivityTypeIDs are the
 // types assigned to it, read back from the join table whose primary key keeps each type in one category.
 type ActivityCategory struct {
-	ID              string   `json:"id"`        // "ACAT-1001"
+	ID              string   `json:"id"`        // "CAT-1001"
 	Name            string   `json:"name"`      // 1–80 characters, unique among categories ignoring letter case
 	IsDefault       bool     `json:"isDefault"` // at most one category is the default
 	Active          bool     `json:"active"`

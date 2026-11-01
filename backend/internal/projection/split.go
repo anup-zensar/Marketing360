@@ -5,8 +5,7 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// SplitMonth is one month as a report shows it: what happened, what is expected, and whether the month is
-// the one in progress — the only month that carries both (FR-010, 016 FR-028).
+// SplitMonth is one month: what happened, what is expected, and whether it is the one in progress.
 type SplitMonth struct {
 	Month      string `json:"month"`
 	Actual     *int64 `json:"actual"`
@@ -14,8 +13,6 @@ type SplitMonth struct {
 	InProgress bool   `json:"inProgress"`
 }
 
-// Split is a stage across the plan year, split at today: actual to the end of the last whole month before
-// today, projected from today, and the plan-year figure those two make (FR-010).
 type Split struct {
 	Months    []SplitMonth `json:"months"`
 	Actual    int64        `json:"actual"`
@@ -23,8 +20,7 @@ type Split struct {
 	Total     int64        `json:"total"`
 }
 
-// splitAt is the index of the month today falls in: 0 when today is before the plan year (everything is
-// still expected) and Months when it is after (everything has happened).
+// splitAt is where today falls: 0 before the plan year, Months after it.
 func splitAt(today date.Date, planYear int) int {
 	switch {
 	case today.Year() < planYear:
@@ -36,8 +32,6 @@ func splitAt(today date.Date, planYear int) int {
 	}
 }
 
-// SplitCounts combines a stage's actual months with its projected months at today. Both carry the plan
-// year's twelve months in order, as the engine and 046's totals produce them.
 func SplitCounts(actual, projected []MonthFigure, today date.Date, planYear int) Split {
 	at := splitAt(today, planYear)
 	out := Split{Months: make([]SplitMonth, 0, Months)}
@@ -59,8 +53,7 @@ func SplitCounts(actual, projected []MonthFigure, today date.Date, planYear int)
 	return out
 }
 
-// valueBefore counts a month towards the actual total only while it is a whole month behind today: the
-// month in progress is counted as projected, so the two never double-count (FR-010).
+// valueBefore keeps the month in progress out of the actual total, so nothing is counted twice (FR-010).
 func valueBefore(value int64, i, at int) int64 {
 	if i < at {
 		return value
@@ -85,7 +78,7 @@ func monthLabel(actual, projected []MonthFigure, i int) string {
 	return ""
 }
 
-// SplitMoneyMonth and SplitMoney are the revenue series' shape: the same rule, in one currency.
+// SplitMoneyMonth and SplitMoney carry the same rule for revenue, in one currency.
 type SplitMoneyMonth struct {
 	Month      string       `json:"month"`
 	Actual     *money.Money `json:"actual"`
@@ -100,7 +93,6 @@ type SplitMoney struct {
 	Total     money.Money       `json:"total"`
 }
 
-// SplitAmounts splits the revenue series at today, exactly as SplitCounts does the volumes.
 func SplitAmounts(actual, projected []MoneyFigure, today date.Date, planYear int) SplitMoney {
 	at := splitAt(today, planYear)
 	currency := currencyOf(actual, projected)

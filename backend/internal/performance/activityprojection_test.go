@@ -128,3 +128,48 @@ func stageOf(t *testing.T, panel performance.Panel, stage string) performance.St
 	t.Fatalf("the panel carries no %s stage: %+v", stage, panel.Stages)
 	return performance.StageFigure{}
 }
+
+func TestActivityPanel_TheActualSeriesCountsOnlyCountedFacts_FR014(t *testing.T) {
+	t.Parallel()
+	f, src := projectingFixture(t)
+	f.runImport(t, src.ID, map[string]string{"r1": "40"})
+
+	panel, err := f.service.ActivityPanel(t.Context(), alex, "A-1")
+	if err != nil {
+		t.Fatalf("ActivityPanel: %v", err)
+	}
+
+	inq := stageOf(t, panel, "inq")
+	february := inq.Months[1]
+	if february.Actual == nil || *february.Actual != 40 {
+		t.Fatalf("February actual = %v, want the 40 the loaded fact carries in its own month", february.Actual)
+	}
+	counted := int64(0)
+	for _, month := range inq.Months {
+		if month.Actual != nil {
+			counted += *month.Actual
+		}
+	}
+	if counted != 40 {
+		t.Errorf("the actual series totals %d, want only 046's counted facts — held, unmatched and replaced ones count nowhere", counted)
+	}
+}
+
+func TestActivityPanel_TodayComesFromTheInjectedClock_FR017(t *testing.T) {
+	t.Parallel()
+	f, _ := projectingFixture(t)
+
+	panel, err := f.service.ActivityPanel(t.Context(), alex, "A-1")
+	if err != nil {
+		t.Fatalf("ActivityPanel: %v", err)
+	}
+
+	// The fixture clock stands at 12 March 2026, so March is the month in progress and nothing else is.
+	inq := stageOf(t, panel, "inq")
+	for i, month := range inq.Months {
+		if month.InProgress != (i == 2) {
+			t.Errorf("%s inProgress = %t, want only March to be in progress under the injected clock",
+				month.Month, month.InProgress)
+		}
+	}
+}
