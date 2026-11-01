@@ -33,7 +33,6 @@ type PurchaseRequest struct {
 	Name           string
 	PlanID         string
 	OwnerID        string
-	CanOpen        bool
 	Amount         money.Amount
 	PurchaseOrders []string
 }

@@ -230,5 +230,5 @@ the export. One story per implementation prompt; commit at each checkpoint; stop
 
 ## Phase 6: Convergence
 
-- [ ] T044 Confirm with the purchase request (032) owners when a person may open a purchase request, and make `canOpen` follow it per request: today the adapter sets it for every request from the purchase-requests list permission alone, in `backend/internal/app/measure_approvals.go`, per FR-017 and 041-C5 (partial)
+- [X] T044 Confirm with the purchase request (032) owners when a person may open a purchase request, and make `canOpen` follow it per request: today the adapter sets it for every request from the purchase-requests list permission alone, in `backend/internal/app/measure_approvals.go`, per FR-017 and 041-C5 (partial)
 - [X] T045 Decide whether the status and average widgets need the "You can't see financial data" and "Covers N of M plans" states T016 listed, or record in the spec that the grid carries them because the widgets show no amounts, per FR-018 and FR-020 (partial)

@@ -74,7 +74,7 @@ func New(t testing.TB) Fixture {
 func WaitingRequest() Entry {
 	return Entry{
 		PurchaseRequest: approvalreport.PurchaseRequest{ID: RequestWaiting, Name: "Event stand", PlanID: PlanWithFinance,
-			OwnerID: Erin.ID, CanOpen: true, Amount: money.FromCents(250000), PurchaseOrders: []string{"4500001", "4500002"}},
+			OwnerID: Erin.ID, Amount: money.FromCents(250000), PurchaseOrders: []string{"4500001", "4500002"}},
 		LineItemIDs: []string{"li-" + ActivityWaiting},
 	}
 }

@@ -99,6 +99,15 @@ objects. SP&A One's approval engine approves three record types only (031), so t
   data is out of reach when none is); the widgets show counts, dates and days, which need no financial access.
   Applied to FR-018, FR-020 and the report states. (T045.)
 
+- **041-C13** — Q: When may a person open a purchase request from a row, so that its name is a link (041-C5)? →
+  A: **Whenever the report shows it.** The purchase request page opens a request exactly when the person's own
+  scope returns it (its owner, its approver, a plan they view, or a plan where they hold the list permission),
+  and the report reads purchase requests through that same scope, so every request in a row is one whose page
+  opens for the person; the same holds for an activity, which the report reads from the plans they view. The
+  first build set `canOpen` from the list permission alone, which would have made a request seen through a plan
+  plain text; that is corrected, and `canOpen` stays in the contract, true for every row. Applied to FR-017.
+  (T044.)
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See approval workload and cycle time (Priority: P1)

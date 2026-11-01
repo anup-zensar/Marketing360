@@ -76,14 +76,10 @@ func TestAmounts_NoFinanceView_041_FR018(t *testing.T) {
 func TestCanOpen_041_FR017(t *testing.T) {
 	t.Parallel()
 	f := approvalreporttest.New(t)
-	request := approvalreporttest.WaitingRequest()
-	request.CanOpen = false
-	f.Deps.Purchases = approvalreporttest.Purchases{Entries: []approvalreporttest.Entry{request}}
 
-	if !rowOf(t, f, approvalreporttest.ActivityWaiting).CanOpen {
-		t.Error("an activity in the person's plans can be opened")
-	}
-	if rowOf(t, f, approvalreporttest.RequestWaiting).CanOpen {
-		t.Error("a purchase request the person may not open must be plain text")
+	for _, itemID := range []string{approvalreporttest.ActivityWaiting, approvalreporttest.RequestWaiting} {
+		if !rowOf(t, f, itemID).CanOpen {
+			t.Errorf("%s is in view through the person's own scope, so its page opens for them", itemID)
+		}
 	}
 }

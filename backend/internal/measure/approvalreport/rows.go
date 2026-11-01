@@ -14,12 +14,11 @@ import (
 
 // record is what a row shows of the activity or purchase request a round is about.
 type record struct {
-	name    string
-	canOpen bool
-	owner   PersonRef
-	planID  string
-	orders  *string
-	amount  *money.Amount
+	name   string
+	owner  PersonRef
+	planID string
+	orders *string
+	amount *money.Amount
 }
 
 // rowSource is everything the rows need beyond the rounds: the records, who may see amounts, and the currency.
@@ -42,11 +41,11 @@ func recordsOf(scope measure.Scope, requests []PurchaseRequest) map[string]recor
 		if n.Owner != nil {
 			owner = PersonRef{ID: n.Owner.ID, Name: n.Owner.Name}
 		}
-		records[n.ID] = record{name: n.Name, canOpen: true, owner: owner, planID: n.PlanID, amount: n.PlannedCost}
+		records[n.ID] = record{name: n.Name, owner: owner, planID: n.PlanID, amount: n.PlannedCost}
 	}
 	for _, r := range requests {
 		amount := r.Amount
-		records[r.ID] = record{name: r.Name, canOpen: r.CanOpen, planID: r.PlanID, amount: &amount,
+		records[r.ID] = record{name: r.Name, planID: r.PlanID, amount: &amount,
 			owner: PersonRef{ID: r.OwnerID, Name: names[r.OwnerID]}, orders: joined(r.PurchaseOrders)}
 	}
 	return records
@@ -80,8 +79,9 @@ func rowsOf(entries []entry, actions []approval.Action, src rowSource, sees func
 	return rows
 }
 
+// baseRow marks every record openable: one is in view only when the person's own scope returned it.
 func baseRow(e entry, rec record, currency allwork.Currency, seesMoney bool) Row {
-	row := Row{ItemID: e.round.SubjectID, ItemName: rec.name, RecordType: e.kind, CanOpen: rec.canOpen,
+	row := Row{ItemID: e.round.SubjectID, ItemName: rec.name, RecordType: e.kind, CanOpen: true,
 		SubmittedOn: date.Today(e.round.SubmittedAt), PurchaseOrderNumber: rec.orders, Owner: rec.owner}
 	if seesMoney && rec.amount != nil {
 		row.Amount = &money.Money{Amount: money.FromUSD(*rec.amount, currency.Rate), Currency: currency.Code}
