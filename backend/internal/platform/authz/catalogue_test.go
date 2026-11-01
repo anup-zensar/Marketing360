@@ -37,8 +37,8 @@ func TestCatalogue(t *testing.T) {
 			t.Errorf("groups (-want +got):\n%s", diff)
 		}
 		all := authz.All()
-		if all[13] != authz.FinanceImport || all[14] != authz.PurchaseRequestsEdit {
-			t.Errorf("the purchase-request permissions follow finance.import: %v", all[12:16])
+		if all[13] != authz.FinanceImport || all[16] != authz.PurchaseRequestsEdit {
+			t.Errorf("the purchase-request permissions follow the financial ones, 046's included: %v", all[12:18])
 		}
 	})
 }

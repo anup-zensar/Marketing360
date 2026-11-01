@@ -19916,6 +19916,8 @@ components:
         - finance.view
         - finance.link
         - finance.import
+        - performance.import
+        - performance.link
         - purchaseRequests.edit
         - purchaseRequests.delete
         - purchaseRequests.submit

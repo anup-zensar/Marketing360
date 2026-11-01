@@ -21,8 +21,8 @@ func TestPermissions_GroupedAsTableA_FR001(t *testing.T) {
 		groups = append(groups, g.Name)
 		sizes = append(sizes, len(g.Permissions))
 	}
-	if !slices.Equal(groups, authz.Groups) || !slices.Equal(sizes, []int{11, 3, 4, 2, 2, 7}) {
-		t.Errorf("groups = %q of sizes %v, want Table A's six groups of 11, 3, 4, 2, 2 and 7 (032 FR-049)", groups, sizes)
+	if !slices.Equal(groups, authz.Groups) || !slices.Equal(sizes, []int{11, 5, 4, 2, 2, 7}) {
+		t.Errorf("groups = %q of sizes %v, want Table A's six groups of 11, 5, 4, 2, 2 and 7 (032 FR-049, 046 D-367)", groups, sizes)
 	}
 	first := got.Groups[0].Permissions[0]
 	if first != (PermissionInfo{Key: authz.PlansView, Label: "View plans and everything in them", Scoped: true}) {
@@ -49,7 +49,7 @@ func TestListRoles_AdministratorFirstWithLocks_FR018(t *testing.T) {
 		t.Errorf("roles = %q, want %q", names, want)
 	}
 	admin := roles[0]
-	if len(admin.Permissions) != 29 || len(admin.Locks) != 5 || admin.Locks[0].Reason != msgAdministratorLock ||
+	if len(admin.Permissions) != 31 || len(admin.Locks) != 5 || admin.Locks[0].Reason != msgAdministratorLock ||
 		len(admin.People) != 1 || admin.People[0].ID != alex.ID {
 		t.Errorf("Administrator = %+v", admin)
 	}

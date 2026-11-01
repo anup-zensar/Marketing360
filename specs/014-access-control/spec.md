@@ -487,6 +487,8 @@ starts the refusal message ("<Noun> isn't part of your role …").
 | Financial data | `finance.view` | See financial data | Yes | Seeing financial data |
 | | `finance.link` | Link financial transactions to line items | Yes | Linking financial transactions |
 | | `finance.import` | Import GSAP extracts | No | Importing GSAP extracts |
+| | `performance.import` | Upload or pull performance data and manage its sources (046, D-367) | No | Loading performance data |
+| | `performance.link` | Match performance rows to activities and manage their keys (046, D-367) | Yes | Matching performance rows |
 | Approvals | `approvals.decide` | Approve or decline when named as an approver | No | Approving activities |
 | | `approvals.decideOnBehalf` | Approve or decline on behalf of the named approvers | Yes | Deciding on behalf of other approvers |
 | Global budgets | `globalBudgets.view` | See global budgets and their allocations | Yes | Seeing global budgets |

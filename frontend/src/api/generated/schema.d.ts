@@ -8935,7 +8935,7 @@ export interface components {
          * @description A permission of spec Table A.
          * @enum {string}
          */
-        PermissionKey: "plans.view" | "plans.create" | "plans.edit" | "plans.publish" | "plans.delete" | "campaigns.edit" | "campaigns.delete" | "activities.edit" | "activities.delete" | "activities.submit" | "data.export" | "finance.view" | "finance.link" | "finance.import" | "purchaseRequests.edit" | "purchaseRequests.delete" | "purchaseRequests.submit" | "purchaseRequests.list" | "approvals.decide" | "approvals.decideOnBehalf" | "globalBudgets.view" | "globalBudgets.manage" | "settings.manage" | "exchangeRates.manage" | "workflows.manage" | "people.manage" | "access.manage" | "activityLog.viewAll" | "recycleBin.purge";
+        PermissionKey: "plans.view" | "plans.create" | "plans.edit" | "plans.publish" | "plans.delete" | "campaigns.edit" | "campaigns.delete" | "activities.edit" | "activities.delete" | "activities.submit" | "data.export" | "finance.view" | "finance.link" | "finance.import" | "performance.import" | "performance.link" | "purchaseRequests.edit" | "purchaseRequests.delete" | "purchaseRequests.submit" | "purchaseRequests.list" | "approvals.decide" | "approvals.decideOnBehalf" | "globalBudgets.view" | "globalBudgets.manage" | "settings.manage" | "exchangeRates.manage" | "workflows.manage" | "people.manage" | "access.manage" | "activityLog.viewAll" | "recycleBin.purge";
         PermissionInfo: {
             key: components["schemas"]["PermissionKey"];
             /** @example Edit plan details */

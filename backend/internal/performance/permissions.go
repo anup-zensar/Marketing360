@@ -2,8 +2,8 @@ package performance
 
 import "mapp/internal/platform/authz"
 
-// Declared here, not in authz's Table A: a row there breaks features 003 and 014 (contracts/api.md item 1).
+// Table A rows since D-367 reserved them for 046; these aliases keep the area reading as its own vocabulary.
 const (
-	PermissionImport authz.Permission = "performance.import"
-	PermissionLink   authz.Permission = "performance.link"
+	PermissionImport = authz.PerformanceImport
+	PermissionLink   = authz.PerformanceLink
 )

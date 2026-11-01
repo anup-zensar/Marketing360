@@ -38,3 +38,8 @@ export const NEVER_LOADED = 'Never';
 export const EMPTY_TITLE = 'No data sources yet';
 export const EMPTY_TEXT =
   'A data source says where performance figures come from. Add one to start loading data.';
+
+export const DELIVERY_WORDS: Record<'upload' | 'simulated', string> = {
+  upload: 'File upload',
+  simulated: 'Simulated feed',
+};
