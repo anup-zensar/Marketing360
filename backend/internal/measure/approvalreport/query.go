@@ -13,6 +13,8 @@ const (
 	paramRecordType = "recordType"
 	paramApprover   = "approver"
 	paramOutcome    = "outcome"
+	paramPage       = "page"
+	paramPageSize   = "pageSize"
 
 	msgChooseListed = "Choose one of the listed values."
 	msgPage         = "Choose a page from 1."
@@ -32,7 +34,7 @@ type Query struct {
 }
 
 func Params() []string {
-	return []string{"statusType", paramRecordType, paramApprover, paramOutcome, "q", "sort", "order", "page", "pageSize"}
+	return []string{"statusType", paramRecordType, paramApprover, paramOutcome, "q", "sort", "order", paramPage, paramPageSize}
 }
 
 func pageSizes() []int {
@@ -56,8 +58,8 @@ func ParseQuery(own url.Values) (Query, error) {
 	if q.Order != "" && q.Order != orderAsc && q.Order != orderDesc {
 		problems.Add("order", msgChooseListed)
 	}
-	q.Page = number(own, numberRule{"page", msgPage, func(n int) bool { return n >= 1 }}, &problems)
-	q.PageSize = number(own, numberRule{"pageSize", msgChooseListed, func(n int) bool { return slices.Contains(pageSizes(), n) }}, &problems)
+	q.Page = number(own, numberRule{paramPage, msgPage, func(n int) bool { return n >= 1 }}, &problems)
+	q.PageSize = number(own, numberRule{paramPageSize, msgChooseListed, func(n int) bool { return slices.Contains(pageSizes(), n) }}, &problems)
 	return q, problems.Err()
 }
 

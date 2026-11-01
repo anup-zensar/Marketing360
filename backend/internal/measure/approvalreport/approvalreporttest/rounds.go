@@ -30,6 +30,8 @@ func ended(r approval.Round, at time.Time) approval.Round {
 	return r
 }
 
+const skippedRound = "r-skipped"
+
 func roundsAt(now time.Time) []approval.Round {
 	day := func(back int) time.Time { return now.AddDate(0, 0, -back) }
 	activity := func(id, subject string, outcome approval.Outcome, submitted time.Time) roundSpec {
@@ -39,7 +41,7 @@ func roundsAt(now time.Time) []approval.Round {
 	automatic := ended(round(activity("r-automatic", ActivityAutomatic, approval.OutcomeApproved, day(4)),
 		level(1, anyOf, approval.ResolutionAutoApproved)), day(4))
 	automatic.AutoApproved = true
-	skipped := round(activity("r-skipped", ActivitySkippedLevel, approval.OutcomeApproved, day(9)),
+	skipped := round(activity(skippedRound, ActivitySkippedLevel, approval.OutcomeApproved, day(9)),
 		level(1, anyOf, approval.ResolutionSkipped, Alice()), level(2, anyOf, decide, Bob()))
 	request := roundSpec{"r-request", RequestWaiting, approval.KindPurchaseRequest, approval.OutcomeOpen, day(2)}
 	return []approval.Round{
@@ -83,8 +85,8 @@ func actionsAt(now time.Time) []approval.Action {
 	return []approval.Action{
 		approved,
 		delegated,
-		decision(decisionSpec{"a-skipped", "r-skipped", ActivitySkippedLevel, approval.ActionSkipped, 1, actor.System}, day(9)),
-		decision(decisionSpec{"a-skipped-2", "r-skipped", ActivitySkippedLevel, approval.ActionApproved, 2, Bob()}, day(8)),
+		decision(decisionSpec{"a-skipped", skippedRound, ActivitySkippedLevel, approval.ActionSkipped, 1, actor.System}, day(9)),
+		decision(decisionSpec{"a-skipped-2", skippedRound, ActivitySkippedLevel, approval.ActionApproved, 2, Bob()}, day(8)),
 		decision(decisionSpec{"a-automatic", "r-automatic", ActivityAutomatic, approval.ActionAutoApproved, 1, actor.System}, day(4)),
 	}
 }

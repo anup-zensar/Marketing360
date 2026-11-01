@@ -10,15 +10,20 @@ import (
 	"mapp/internal/platform/sheet"
 )
 
-func TestSheets_041_FR023(t *testing.T) {
-	t.Parallel()
+func sheetsOf(t *testing.T) (*approvalreport.Report, []measure.WidgetSheet) {
+	t.Helper()
 	f := approvalreporttest.New(t)
 	report := approvalreport.NewReport(approvalreport.NewService(f.DB, f.Deps))
-
 	sheets, err := report.Sheets(t.Context(), approvalreporttest.Alice(), measure.Filter{})
 	if err != nil {
 		t.Fatalf("Sheets() error: %v", err)
 	}
+	return report, sheets
+}
+
+func TestSheets_Order_041_FR023(t *testing.T) {
+	t.Parallel()
+	report, sheets := sheetsOf(t)
 
 	if !report.Available() || report.Key() != measure.KeyApprovals {
 		t.Errorf("Key, Available = %q, %v, want %q, true", report.Key(), report.Available(), measure.KeyApprovals)
@@ -26,18 +31,30 @@ func TestSheets_041_FR023(t *testing.T) {
 	if len(sheets) != 3 || sheets[0].Key != "status" || sheets[1].Key != "average" {
 		t.Fatalf("sheet keys = %v, want status, average, approvals in this order", sheets)
 	}
-	status, average := sheets[0].Sheet, sheets[1].Sheet
-	if status.Name != "Current approval status" || average.Name != "Average days to a decision" {
-		t.Errorf("sheet names = %q, %q", status.Name, average.Name)
+	if sheets[0].Sheet.Name != "Current approval status" || sheets[1].Sheet.Name != "Average days to a decision" {
+		t.Errorf("sheet names = %q, %q", sheets[0].Sheet.Name, sheets[1].Sheet.Name)
 	}
-	if got := status.Rows[0][0]; got != sheet.Bold("Activity") {
+}
+
+func TestSheets_Status_041_FR023(t *testing.T) {
+	t.Parallel()
+	_, sheets := sheetsOf(t)
+
+	if got := sheets[0].Sheet.Rows[0][0]; got != sheet.Bold("Activity") {
 		t.Errorf("status first block = %v, want the Activity heading", got)
 	}
+}
+
+func TestSheets_Average_041_FR023(t *testing.T) {
+	t.Parallel()
+	_, sheets := sheetsOf(t)
+	average := sheets[1].Sheet
+
 	heading := []sheet.Cell{sheet.Bold("Approver"), sheet.Bold("Days"), sheet.Bold("Decisions")}
+	all := []sheet.Cell{sheet.Text("All approvers"), sheet.Text("1.3"), sheet.Number(3)}
 	if got := average.Rows[0]; !equalRows(got, heading) {
 		t.Errorf("average headings = %v, want %v", got, heading)
 	}
-	all := []sheet.Cell{sheet.Text("All approvers"), sheet.Text("1.3"), sheet.Number(3)}
 	if got := average.Rows[1]; !equalRows(got, all) {
 		t.Errorf("average first row = %v, want %v", got, all)
 	}
