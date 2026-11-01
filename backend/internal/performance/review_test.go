@@ -70,7 +70,8 @@ func TestReviewRows_CandidatesAreFilteredToTheReadersScope_046C15(t *testing.T) 
 	}); err != nil {
 		t.Fatalf("RunImport: %v", err)
 	}
-	// The reader's matching tables reach A-2 alone, so A-3 must not be named to them.
+	// The reader's matching tables reach A-2 alone: with A-3 beyond their sight the whole list is
+	// withheld, because a partly hidden list would leak, through its length, what else exists (046-C15).
 	delete(f.store.Keys[performance.MatchedActivityID], "a-3")
 	f.store.Keys[performance.MatchedActivityID]["a-2"] = []string{"A-2"}
 
@@ -78,11 +79,17 @@ func TestReviewRows_CandidatesAreFilteredToTheReadersScope_046C15(t *testing.T) 
 	if err != nil || len(found) != 1 {
 		t.Fatalf("ReviewRows = %d (%v), want the ambiguous row still listed", len(found), err)
 	}
-	if len(found[0].Candidates) != 1 || found[0].Candidates[0] != "A-2" {
-		t.Errorf("candidates = %v, want only the activity within the reader's scope named", found[0].Candidates)
+	if len(found[0].Candidates) != 0 {
+		t.Errorf("candidates = %v, want none named while any lies outside the reader's scope", found[0].Candidates)
 	}
 	if found[0].Reason != "unmatched:ambiguous" {
 		t.Errorf("reason = %s, want the row keeping its stated reason", found[0].Reason)
+	}
+
+	f.store.Keys[performance.MatchedActivityID]["a-3"] = []string{"A-3"}
+	found, err = f.service.ReviewRows(t.Context(), alex, performance.ReviewFilter{Status: "open"})
+	if err != nil || len(found) != 1 || len(found[0].Candidates) != 2 {
+		t.Fatalf("ReviewRows = %+v (%v), want both candidates once both are within the scope", found, err)
 	}
 }
 

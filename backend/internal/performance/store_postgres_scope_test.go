@@ -130,14 +130,15 @@ func TestPostgresStore_MatchingNeverReachesOutsideTheScope_FR044(t *testing.T) {
 
 	t.Run("FR-044 by activity id", func(t *testing.T) {
 		t.Parallel()
-		found, err := store.MatchByActivityID(t.Context(), team1Only, []string{"A-1001", "A-1002"})
+		// Keys are matched and answered lower-cased, so a file's a-1001 reaches A-1001 (matcher contract).
+		found, err := store.MatchByActivityID(t.Context(), team1Only, []string{"a-1001", "A-1002"})
 		if err != nil {
 			t.Fatalf("MatchByActivityID() error: %v", err)
 		}
-		if _, reached := found["A-1002"]; reached {
+		if _, reached := found["a-1002"]; reached {
 			t.Error("a key outside the scope resolved: matching must not reach it")
 		}
-		if _, reached := found["A-1001"]; !reached {
+		if _, reached := found["a-1001"]; !reached {
 			t.Error("a key inside the scope did not resolve")
 		}
 	})

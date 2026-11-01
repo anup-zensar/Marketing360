@@ -67,7 +67,7 @@ func (s *PostgresStore) PutImport(ctx context.Context, i Import) error {
 
 func (s *PostgresStore) ListReviewRows(ctx context.Context, f ReviewFilter) ([]ReviewRowView, error) {
 	rows, err := s.db.Queries(ctx).ListPerformanceReviewRows(ctx, sqlcdb.ListPerformanceReviewRowsParams{
-		Status: optional(f.Status), SourceID: optional(f.SourceID), ID: optional(f.ID),
+		Status: optional(f.Status), StatusNot: optional(f.StatusNot), SourceID: optional(f.SourceID), ID: optional(f.ID),
 		ImportID: optional(f.ImportID), Reason: optional(f.Reason), KeyText: optional(f.KeyText),
 		Since: f.Since, Until: f.Until, MaxRows: rowLimit(f.Limit),
 	})
@@ -84,6 +84,9 @@ func (s *PostgresStore) ListReviewRows(ctx context.Context, f ReviewFilter) ([]R
 			Meta: metaOf(p.Version, metaRow{p.CreatedAt, p.CreatedByID, p.CreatedByName,
 				p.UpdatedAt, p.UpdatedByID, p.UpdatedByName}),
 		}
+		if parseErr := json.Unmarshal(p.Parsed, &row.Parsed); parseErr != nil {
+			return nil, fmt.Errorf("read the interpretation of review row %s: %w", p.ID, parseErr)
+		}
 		if len(p.Candidates) > 0 {
 			if err := json.Unmarshal(p.Candidates, &row.Candidates); err != nil {
 				return nil, fmt.Errorf("read the candidates of review row %s: %w", p.ID, err)
@@ -92,6 +95,14 @@ func (s *PostgresStore) ListReviewRows(ctx context.Context, f ReviewFilter) ([]R
 		reviewed = append(reviewed, ReviewRowView{ReviewRow: row, SourceName: r.SourceName})
 	}
 	return reviewed, nil
+}
+
+func parsedOf(r ReviewRow) []byte {
+	parsed, err := json.Marshal(r.Parsed)
+	if err != nil {
+		return []byte("{}")
+	}
+	return parsed
 }
 
 func (s *PostgresStore) PutReviewRow(ctx context.Context, r ReviewRow) error {
@@ -108,7 +119,7 @@ func (s *PostgresStore) PutReviewRow(ctx context.Context, r ReviewRow) error {
 		return fmt.Errorf("write the faults of review row %s: %w", r.ID, err)
 	}
 	err = s.db.Queries(ctx).PutPerformanceReviewRow(ctx, sqlcdb.PutPerformanceReviewRowParams{
-		ID: r.ID, ImportID: r.ImportID, SourceID: r.SourceID, Raw: r.Raw, Reason: r.Reason,
+		ID: r.ID, ImportID: r.ImportID, SourceID: r.SourceID, Raw: r.Raw, Parsed: parsedOf(r), Reason: r.Reason,
 		Faults: faults, Candidates: candidates, Status: string(r.Status), Comment: r.Comment,
 		Version: r.Version, CreatedAt: r.CreatedAt, CreatedByID: r.CreatedBy.ID,
 		CreatedByName: r.CreatedBy.Name, UpdatedAt: r.UpdatedAt, UpdatedByID: r.UpdatedBy.ID,

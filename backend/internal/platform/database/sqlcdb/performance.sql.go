@@ -546,6 +546,33 @@ func (q *Queries) GetPerformanceFact(ctx context.Context, id string) (GetPerform
 	return i, err
 }
 
+const heldActivityIDsOfSource = `-- name: HeldActivityIDsOfSource :many
+SELECT DISTINCT activity_id::text
+FROM performance_facts
+WHERE source_id = $1 AND held AND replaced_by_id IS NULL AND activity_id IS NOT NULL
+ORDER BY activity_id::text
+`
+
+func (q *Queries) HeldActivityIDsOfSource(ctx context.Context, sourceID string) ([]string, error) {
+	rows, err := q.db.Query(ctx, heldActivityIDsOfSource, sourceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var activity_id string
+		if err := rows.Scan(&activity_id); err != nil {
+			return nil, err
+		}
+		items = append(items, activity_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const integrationIDsOfActivities = `-- name: IntegrationIDsOfActivities :many
 SELECT id FROM activity_integration_ids
 WHERE activity_id = ANY ($1::text[]) ORDER BY id
@@ -1003,32 +1030,35 @@ func (q *Queries) ListPerformanceMappings(ctx context.Context, sourceIds []strin
 }
 
 const listPerformanceReviewRows = `-- name: ListPerformanceReviewRows :many
-SELECT performance_review_rows.id, performance_review_rows.import_id, performance_review_rows.source_id, performance_review_rows.raw, performance_review_rows.reason, performance_review_rows.faults, performance_review_rows.candidates, performance_review_rows.status, performance_review_rows.comment, performance_review_rows.version, performance_review_rows.created_at, performance_review_rows.created_by_id, performance_review_rows.created_by_name, performance_review_rows.updated_at, performance_review_rows.updated_by_id, performance_review_rows.updated_by_name, s.name AS source_name
+SELECT performance_review_rows.id, performance_review_rows.import_id, performance_review_rows.source_id, performance_review_rows.raw, performance_review_rows.parsed, performance_review_rows.reason, performance_review_rows.faults, performance_review_rows.candidates, performance_review_rows.status, performance_review_rows.comment, performance_review_rows.version, performance_review_rows.created_at, performance_review_rows.created_by_id, performance_review_rows.created_by_name, performance_review_rows.updated_at, performance_review_rows.updated_by_id, performance_review_rows.updated_by_name, s.name AS source_name
 FROM performance_review_rows
 JOIN performance_sources s ON s.id = performance_review_rows.source_id
 WHERE ($1::text IS NULL OR performance_review_rows.status = $1)
-    AND ($2::text IS NULL OR performance_review_rows.source_id = $2)
-    AND ($3::text IS NULL OR performance_review_rows.id = $3)
-    AND ($4::text IS NULL OR performance_review_rows.import_id = $4)
-    AND ($5::text IS NULL OR performance_review_rows.reason = $5)
-    AND ($6::text IS NULL
-         OR performance_review_rows.raw::text ILIKE '%' || $6 || '%')
-    AND ($7::timestamptz IS NULL OR performance_review_rows.created_at >= $7)
-    AND ($8::timestamptz IS NULL OR performance_review_rows.created_at <= $8)
+    AND ($2::text IS NULL OR performance_review_rows.status <> $2)
+    AND ($3::text IS NULL OR performance_review_rows.source_id = $3)
+    AND ($4::text IS NULL OR performance_review_rows.id = $4)
+    AND ($5::text IS NULL OR performance_review_rows.import_id = $5)
+    AND ($6::text IS NULL OR performance_review_rows.reason = $6)
+    AND ($7::text IS NULL
+         OR EXISTS (SELECT 1 FROM json_each_text(performance_review_rows.raw) kv
+                    WHERE kv.value ILIKE '%' || $7 || '%'))
+    AND ($8::timestamptz IS NULL OR performance_review_rows.created_at >= $8)
+    AND ($9::timestamptz IS NULL OR performance_review_rows.created_at <= $9)
 ORDER BY performance_review_rows.created_at DESC, performance_review_rows.id COLLATE "C"
-LIMIT $9
+LIMIT $10
 `
 
 type ListPerformanceReviewRowsParams struct {
-	Status   *string
-	SourceID *string
-	ID       *string
-	ImportID *string
-	Reason   *string
-	KeyText  *string
-	Since    *time.Time
-	Until    *time.Time
-	MaxRows  int32
+	Status    *string
+	StatusNot *string
+	SourceID  *string
+	ID        *string
+	ImportID  *string
+	Reason    *string
+	KeyText   *string
+	Since     *time.Time
+	Until     *time.Time
+	MaxRows   int32
 }
 
 type ListPerformanceReviewRowsRow struct {
@@ -1039,6 +1069,7 @@ type ListPerformanceReviewRowsRow struct {
 func (q *Queries) ListPerformanceReviewRows(ctx context.Context, arg ListPerformanceReviewRowsParams) ([]ListPerformanceReviewRowsRow, error) {
 	rows, err := q.db.Query(ctx, listPerformanceReviewRows,
 		arg.Status,
+		arg.StatusNot,
 		arg.SourceID,
 		arg.ID,
 		arg.ImportID,
@@ -1060,6 +1091,7 @@ func (q *Queries) ListPerformanceReviewRows(ctx context.Context, arg ListPerform
 			&i.PerformanceReviewRow.ImportID,
 			&i.PerformanceReviewRow.SourceID,
 			&i.PerformanceReviewRow.Raw,
+			&i.PerformanceReviewRow.Parsed,
 			&i.PerformanceReviewRow.Reason,
 			&i.PerformanceReviewRow.Faults,
 			&i.PerformanceReviewRow.Candidates,
@@ -1189,9 +1221,9 @@ func (q *Queries) MatchActivitiesByExternalName(ctx context.Context, arg MatchAc
 }
 
 const matchActivitiesByID = `-- name: MatchActivitiesByID :many
-SELECT id AS activity_id, id AS key
+SELECT id AS activity_id, lower(id) AS key
 FROM activities
-WHERE id = ANY ($1::text[])
+WHERE lower(id) = ANY ($1::text[])
     AND activity_in_scope(id, $2::boolean, $3::text,
         $4::boolean, $5::text[])
 `
@@ -1695,10 +1727,12 @@ func (q *Queries) PutPerformanceMapping(ctx context.Context, arg PutPerformanceM
 
 const putPerformanceReviewRow = `-- name: PutPerformanceReviewRow :exec
 INSERT INTO performance_review_rows (
-    id, import_id, source_id, raw, reason, faults, candidates, status, comment,
+    id, import_id, source_id, raw, parsed, reason, faults, candidates, status, comment,
     version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
 ON CONFLICT (id) DO UPDATE SET
+    parsed = excluded.parsed, reason = excluded.reason, faults = excluded.faults,
+    candidates = excluded.candidates,
     status = excluded.status, comment = excluded.comment, version = excluded.version,
     updated_at = excluded.updated_at, updated_by_id = excluded.updated_by_id,
     updated_by_name = excluded.updated_by_name
@@ -1709,6 +1743,7 @@ type PutPerformanceReviewRowParams struct {
 	ImportID      string
 	SourceID      string
 	Raw           []byte
+	Parsed        []byte
 	Reason        string
 	Faults        []byte
 	Candidates    []byte
@@ -1729,6 +1764,7 @@ func (q *Queries) PutPerformanceReviewRow(ctx context.Context, arg PutPerformanc
 		arg.ImportID,
 		arg.SourceID,
 		arg.Raw,
+		arg.Parsed,
 		arg.Reason,
 		arg.Faults,
 		arg.Candidates,

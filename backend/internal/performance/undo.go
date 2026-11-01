@@ -43,11 +43,20 @@ func (s *Service) undoImport(ctx context.Context, a actor.Actor, importID string
 	if err != nil {
 		return Import{}, err
 	}
-	if restoreErr := s.restoreReplaced(ctx, a, facts); restoreErr != nil {
-		return Import{}, restoreErr
+	// Deleting before restoring keeps the identity index satisfied: restoring first would put two current
+	// facts on one identity for the length of a statement.
+	replaced, err := s.repo.FactsReplacedBy(ctx, factIDs(facts))
+	if err != nil {
+		return Import{}, err
 	}
 	if deleteErr := s.repo.DeleteFacts(ctx, factIDs(facts)); deleteErr != nil {
 		return Import{}, deleteErr
+	}
+	if restoreErr := s.restoreReplaced(ctx, a, facts, replaced); restoreErr != nil {
+		return Import{}, restoreErr
+	}
+	if closeErr := s.closeRowsOfUndoneImport(ctx, a, importID); closeErr != nil {
+		return Import{}, closeErr
 	}
 	run.Status = ImportUndone
 	run.Version++
@@ -64,11 +73,7 @@ func (s *Service) undoImport(ctx context.Context, a actor.Actor, importID string
 
 // restoreReplaced brings back what this import superseded; a version whose replacement was itself replaced
 // later is repointed at the later fact, never resurrected: two current facts would double a figure.
-func (s *Service) restoreReplaced(ctx context.Context, a actor.Actor, facts []Fact) error {
-	replaced, err := s.repo.FactsReplacedBy(ctx, factIDs(facts))
-	if err != nil {
-		return err
-	}
+func (s *Service) restoreReplaced(ctx context.Context, a actor.Actor, facts, replaced []Fact) error {
 	replacerOf := make(map[string]string, len(facts))
 	for _, f := range facts {
 		replacerOf[f.ID] = f.ReplacedByID
@@ -101,4 +106,19 @@ func factIDs(facts []Fact) []string {
 		ids = append(ids, f.ID)
 	}
 	return ids
+}
+
+// closeRowsOfUndoneImport resolves the import's waiting rows with it: they describe a load that no longer
+// stands, and a re-check of one would hang new facts on an undone upload.
+func (s *Service) closeRowsOfUndoneImport(ctx context.Context, a actor.Actor, importID string) error {
+	rows, err := s.repo.ListReviewRows(ctx, ReviewFilter{StatusNot: string(ReviewResolved), ImportID: importID, Limit: maxRows})
+	if err != nil {
+		return err
+	}
+	for _, row := range rows {
+		if resolveErr := s.resolveRow(ctx, a, row.ReviewRow, undoneVerb); resolveErr != nil {
+			return resolveErr
+		}
+	}
+	return nil
 }

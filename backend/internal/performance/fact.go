@@ -104,11 +104,35 @@ const (
 	ReviewDismissed ReviewStatus = "dismissed"
 )
 
+// Interpreted is the row as the load read it through that day's mappings, kept so a correction and a
+// re-check never restate it through later mappings (FR-007).
+type Interpreted struct {
+	Reference string    `json:"reference"`
+	Date      string    `json:"date"`
+	Currency  string    `json:"currency"`
+	Keys      RowKeys   `json:"keys"`
+	Readings  []Reading `json:"readings"`
+	Corrected bool      `json:"corrected"`
+}
+
+// Row rebuilds what Classify takes, from the stored interpretation rather than from today's mappings.
+func (i Interpreted) Row(raw map[string]string) Row {
+	return Row{
+		Raw:       raw,
+		Reference: Cell{Column: "reference", Value: i.Reference},
+		Date:      Cell{Column: "date", Value: i.Date},
+		Currency:  Cell{Column: "currency", Value: i.Currency},
+		Keys:      i.Keys,
+		Readings:  i.Readings,
+	}
+}
+
 type ReviewRow struct {
 	ID         string       `json:"id"`
 	ImportID   string       `json:"importId"`
 	SourceID   string       `json:"sourceId"`
 	Raw        []byte       `json:"raw"`
+	Parsed     Interpreted  `json:"parsed"`
 	Reason     string       `json:"reason"`
 	Faults     []Fault      `json:"faults"`
 	Candidates []string     `json:"candidates,omitempty"`

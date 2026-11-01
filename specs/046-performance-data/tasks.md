@@ -196,21 +196,21 @@ other with a comment and reopen it.
 
 ### Tests (write first, confirm they fail)
 
-- [ ] T082 [P] [US5] Write `backend/internal/performance/review_test.go`: every rejected and unmatched row appears with its reason; **no row can be created by hand** (FR-023); find by key, source, reason, upload, date and status · proves SC-003
-- [ ] T083 [P] [US5] Write `backend/internal/performance/correct_test.go`: a corrected row re-checks and becomes *Resolved* on a match; dismissal **requires** a comment; reopening restores it, with both actions in the history (FR-024)
-- [ ] T084 [P] [US5] Write `backend/internal/performance/recheck_test.go`: open rows and held facts re-check on demand and automatically at each load from the same source (FR-025), in a **constant** query count regardless of queue size
-- [ ] T085 [P] [US5] Write `backend/internal/performance/precedence_test.go`: a later load with the same source and reference replaces a corrected row — **the source wins** (FR-026)
-- [ ] T086 [P] [US5] Write `backend/internal/performance/handler_review_test.go` as a contract test for the six review operations, including the **422** on dismissal without a comment
+- [X] T082 [P] [US5] Write `backend/internal/performance/review_test.go`: every rejected and unmatched row appears with its reason; **no row can be created by hand** (FR-023); find by key, source, reason, upload, date and status · proves SC-003
+- [X] T083 [P] [US5] Write `backend/internal/performance/correct_test.go`: a corrected row re-checks and becomes *Resolved* on a match; dismissal **requires** a comment; reopening restores it, with both actions in the history (FR-024)
+- [X] T084 [P] [US5] Write `backend/internal/performance/recheck_test.go`: open rows and held facts re-check on demand and automatically at each load from the same source (FR-025), in a **constant** query count regardless of queue size
+- [X] T085 [P] [US5] Write `backend/internal/performance/precedence_test.go`: a later load with the same source and reference replaces a corrected row — **the source wins** (FR-026)
+- [X] T086 [P] [US5] Write `backend/internal/performance/handler_review_test.go` as a contract test for the six review operations, including the **422** on dismissal without a comment
 - [ ] T087 [P] [US5] Write `frontend/src/features/performance/review/ReviewQueue.test.tsx`: the states data, empty, no access, filtered to nothing, and the required-comment dialog
 
 ### Implementation
 
 - [ ] T088 [US5] Implement the review queue reads and filters in `backend/internal/performance/review.go`, gated by `performance.import` and **filtering each row's `candidates` to the activities in the reader's scope** (046-C15): a row whose candidates all lie outside it still appears with its reason and names none of them
-- [ ] T089 [US5] Implement correct, dismiss (comment required) and reopen, each writing its history entry
-- [ ] T090 [US5] Implement on-demand and automatic re-check in `backend/internal/performance/recheck.go`, reusing the set-based matcher of T044 rather than looping rows
-- [ ] T091 [US5] Implement source-wins precedence over a correction
-- [ ] T092 [US5] Implement the review handlers; add their route rules and report them
-- [ ] T093 [US5] Remove this story's operations from `notYetServed`
+- [X] T089 [US5] Implement correct, dismiss (comment required) and reopen, each writing its history entry
+- [X] T090 [US5] Implement on-demand and automatic re-check in `backend/internal/performance/recheck.go`, reusing the set-based matcher of T044 rather than looping rows
+- [X] T091 [US5] Implement source-wins precedence over a correction
+- [X] T092 [US5] Implement the review handlers; add their route rules and report them
+- [X] T093 [US5] Remove this story's operations from `notYetServed`
 - [ ] T094 [P] [US5] Build `frontend/src/features/performance/review/` — the queue, its filters, the correction form and the dismissal dialog
 - [ ] T095 [US5] Run the quality-gate checks on everything changed
 

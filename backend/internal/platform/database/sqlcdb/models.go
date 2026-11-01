@@ -650,6 +650,7 @@ type PerformanceReviewRow struct {
 	ImportID      string
 	SourceID      string
 	Raw           []byte
+	Parsed        []byte
 	Reason        string
 	Faults        []byte
 	Candidates    []byte

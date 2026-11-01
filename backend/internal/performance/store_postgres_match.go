@@ -46,7 +46,7 @@ func grouped[T any](rows []T, pair func(T) (string, string)) map[string][]string
 func (s *PostgresStore) MatchByActivityID(ctx context.Context, scope authz.Scope, keys []string) (map[string][]string, error) {
 	a := argsOf(scope)
 	rows, err := s.db.Queries(ctx).MatchActivitiesByID(ctx, sqlcdb.MatchActivitiesByIDParams{
-		Keys: keys, SeesEverything: a.seesEverything, ViewerID: a.viewerID,
+		Keys: lowered(keys), SeesEverything: a.seesEverything, ViewerID: a.viewerID,
 		ViewsPlans: a.viewsPlans, ViewerTeamIds: a.teamIDs,
 	})
 	if err != nil {

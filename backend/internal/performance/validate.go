@@ -63,7 +63,13 @@ func readingFaults(row Row, currencies map[string]bool) []Fault {
 		return []Fault{{Column: firstColumn(row.Readings), Code: faultNoMeasure, Message: msgMeasureNeeded}}
 	}
 	var faults []Fault
+	seen := map[Measure]bool{}
 	for _, reading := range filled {
+		if seen[reading.Measure] {
+			faults = append(faults, Fault{Column: reading.Column, Code: faultDuplicateMeasure, Message: msgMeasureTwice})
+			continue
+		}
+		seen[reading.Measure] = true
 		if reading.money() {
 			faults = append(faults, moneyFaults(reading.Cell, row.Currency, currencies)...)
 			continue

@@ -8164,6 +8164,129 @@ paths:
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
         default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/review-rows:
+    get:
+      tags: [Performance data]
+      operationId: listReviewRows
+      summary: The rows to review, findable by key, source, reason, upload, date and status; none can be created by hand (046 FR-023)
+      parameters:
+        - { name: status, in: query, required: false, schema: { type: string, enum: [open, resolved, dismissed] } }
+        - { name: sourceId, in: query, required: false, schema: { type: string, pattern: "^PS-[0-9]+$" } }
+        - { name: importId, in: query, required: false, schema: { type: string, pattern: "^PIM-[0-9]+$" } }
+        - { name: reason, in: query, required: false, schema: { type: string, maxLength: 200 } }
+        - { name: key, in: query, required: false, schema: { type: string, maxLength: 200 } }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 500 } }
+      responses:
+        "200":
+          description: The rows, newest first; each row's candidates are filtered to the reader's scope (046-C15).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReviewRowList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/review-rows/{rowId}:
+    parameters:
+      - $ref: "#/components/parameters/ReviewRowId"
+    get:
+      tags: [Performance data]
+      operationId: getReviewRow
+      summary: One row with its content, every fault and its history of actions (046 FR-024)
+      responses:
+        "200":
+          description: The row.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReviewRow" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/review-rows/{rowId}/dismiss:
+    parameters:
+      - $ref: "#/components/parameters/ReviewRowId"
+    post:
+      tags: [Performance data]
+      operationId: dismissReviewRow
+      summary: Set a row aside with the required comment (046 FR-024)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DismissInput" }
+      responses:
+        "200":
+          description: The row, dismissed.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReviewRow" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/review-rows/{rowId}/reopen:
+    parameters:
+      - $ref: "#/components/parameters/ReviewRowId"
+    post:
+      tags: [Performance data]
+      operationId: reopenReviewRow
+      summary: Return a dismissed row to the queue (046 FR-024)
+      responses:
+        "200":
+          description: The row, open again.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReviewRow" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/review-rows/{rowId}/correct:
+    parameters:
+      - $ref: "#/components/parameters/ReviewRowId"
+    post:
+      tags: [Performance data]
+      operationId: correctReviewRow
+      summary: Fix the row's load-time cells and re-check it at once (046 FR-024, FR-007)
+      description: The reference may not change - a new identity is a new upload's to create (FR-013).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CorrectInput" }
+      responses:
+        "200":
+          description: The row after its re-check - resolved on a match, or open with its new verdict.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReviewRow" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}/recheck:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    post:
+      tags: [Performance data]
+      operationId: recheckSource
+      summary: Re-check the source's open rows and held facts on demand (046 FR-025)
+      responses:
+        "200":
+          description: What the re-check resolved, by outcome.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceCounts" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
 components:
   securitySchemes:
     sessionCookie:
@@ -8179,6 +8302,12 @@ components:
       required: true
       description: A data source's readable ID, such as PS-1001.
       schema: { type: string, pattern: "^PS-[0-9]+$" }
+    ReviewRowId:
+      name: rowId
+      in: path
+      required: true
+      description: A review row's readable ID, such as PRV-1001.
+      schema: { type: string, pattern: "^PRV-[0-9]+$" }
     MappingId:
       name: mappingId
       in: path
@@ -9274,6 +9403,78 @@ components:
         sources:
           type: array
           items: { $ref: "#/components/schemas/SourceOfFacts" }
+    ReviewFault:
+      type: object
+      required: [column, code, message]
+      properties:
+        column: { type: string }
+        code: { type: string }
+        message: { type: string }
+    ReviewRow:
+      type: object
+      description: One row a person must fix; never created by hand (FR-023).
+      required: [id, importId, sourceId, sourceName, raw, reason, faults, candidates, status, comment,
+                 version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        importId: { type: string }
+        sourceId: { type: string }
+        sourceName: { type: string }
+        raw:
+          type: object
+          additionalProperties: { type: string }
+          description: The row exactly as the file carried it.
+        reason: { type: string, description: "The headline the queue is findable by (FR-023)." }
+        faults:
+          type: array
+          items: { $ref: "#/components/schemas/ReviewFault" }
+        candidates:
+          type: array
+          items: { type: string }
+          description: The activities named when keys disagree, filtered to the reader's scope (046-C15).
+        status: { type: string, enum: [open, resolved, dismissed] }
+        comment: { type: string }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    ReviewRowList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/ReviewRow" }
+    DismissInput:
+      type: object
+      additionalProperties: false
+      required: [comment]
+      properties:
+        comment: { type: string, minLength: 1, maxLength: 500 }
+    CorrectInput:
+      type: object
+      additionalProperties: false
+      properties:
+        date: { type: [string, "null"] }
+        currency: { type: [string, "null"] }
+        keys:
+          type: [object, "null"]
+          additionalProperties: false
+          properties:
+            activityId: { type: string }
+            mediaCode: { type: string }
+            integrationId: { type: string }
+            externalName: { type: string }
+        values:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [column, value]
+            properties:
+              column: { type: string }
+              value: { type: string }
     MatchKeyType:
       type: string
       description: Which matching key a key column carries (046-C23); empty on every other column.

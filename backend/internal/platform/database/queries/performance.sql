@@ -60,9 +60,9 @@ ON CONFLICT (id) DO UPDATE SET
 DELETE FROM performance_source_mappings WHERE id = $1;
 
 -- name: MatchActivitiesByID :many
-SELECT id AS activity_id, id AS key
+SELECT id AS activity_id, lower(id) AS key
 FROM activities
-WHERE id = ANY (sqlc.arg(keys)::text[])
+WHERE lower(id) = ANY (sqlc.arg(keys)::text[])
     AND activity_in_scope(id, sqlc.arg(sees_everything)::boolean, sqlc.arg(viewer_id)::text,
         sqlc.arg(views_plans)::boolean, sqlc.arg(viewer_team_ids)::text[]);
 
@@ -134,12 +134,14 @@ SELECT sqlc.embed(performance_review_rows), s.name AS source_name
 FROM performance_review_rows
 JOIN performance_sources s ON s.id = performance_review_rows.source_id
 WHERE (sqlc.narg(status)::text IS NULL OR performance_review_rows.status = sqlc.narg(status))
+    AND (sqlc.narg(status_not)::text IS NULL OR performance_review_rows.status <> sqlc.narg(status_not))
     AND (sqlc.narg(source_id)::text IS NULL OR performance_review_rows.source_id = sqlc.narg(source_id))
     AND (sqlc.narg(id)::text IS NULL OR performance_review_rows.id = sqlc.narg(id))
     AND (sqlc.narg(import_id)::text IS NULL OR performance_review_rows.import_id = sqlc.narg(import_id))
     AND (sqlc.narg(reason)::text IS NULL OR performance_review_rows.reason = sqlc.narg(reason))
     AND (sqlc.narg(key_text)::text IS NULL
-         OR performance_review_rows.raw::text ILIKE '%' || sqlc.narg(key_text) || '%')
+         OR EXISTS (SELECT 1 FROM json_each_text(performance_review_rows.raw) kv
+                    WHERE kv.value ILIKE '%' || sqlc.narg(key_text) || '%'))
     AND (sqlc.narg(since)::timestamptz IS NULL OR performance_review_rows.created_at >= sqlc.narg(since))
     AND (sqlc.narg(until)::timestamptz IS NULL OR performance_review_rows.created_at <= sqlc.narg(until))
 ORDER BY performance_review_rows.created_at DESC, performance_review_rows.id COLLATE "C"
@@ -182,10 +184,12 @@ ON CONFLICT (id) DO UPDATE SET
 
 -- name: PutPerformanceReviewRow :exec
 INSERT INTO performance_review_rows (
-    id, import_id, source_id, raw, reason, faults, candidates, status, comment,
+    id, import_id, source_id, raw, parsed, reason, faults, candidates, status, comment,
     version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
 ON CONFLICT (id) DO UPDATE SET
+    parsed = excluded.parsed, reason = excluded.reason, faults = excluded.faults,
+    candidates = excluded.candidates,
     status = excluded.status, comment = excluded.comment, version = excluded.version,
     updated_at = excluded.updated_at, updated_by_id = excluded.updated_by_id,
     updated_by_name = excluded.updated_by_name;
@@ -340,3 +344,9 @@ WHERE activity_id = sqlc.arg(activity_id) AND source_id = sqlc.arg(source_id);
 -- name: DeleteAlias :execrows
 DELETE FROM activity_external_name_aliases
 WHERE id = sqlc.arg(id) AND activity_id = sqlc.arg(activity_id);
+
+-- name: HeldActivityIDsOfSource :many
+SELECT DISTINCT activity_id::text
+FROM performance_facts
+WHERE source_id = sqlc.arg(source_id) AND held AND replaced_by_id IS NULL AND activity_id IS NOT NULL
+ORDER BY activity_id::text;

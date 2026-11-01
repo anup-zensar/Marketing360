@@ -273,18 +273,27 @@ func (s *Store) ListReviewRows(_ context.Context, f performance.ReviewFilter) ([
 }
 
 func reviewMatches(r performance.ReviewRow, f performance.ReviewFilter) bool {
-	if (f.Status != "" && string(r.Status) != f.Status) || (f.SourceID != "" && r.SourceID != f.SourceID) {
-		return false
-	}
-	if (f.ID != "" && r.ID != f.ID) || (f.ImportID != "" && r.ImportID != f.ImportID) {
-		return false
-	}
+	return reviewFieldsMatch(r, f) && reviewContentMatches(r, f) && reviewDatesMatch(r, f)
+}
+
+func reviewFieldsMatch(r performance.ReviewRow, f performance.ReviewFilter) bool {
+	return reviewStatusMatches(r, f) && (f.SourceID == "" || r.SourceID == f.SourceID) &&
+		(f.ID == "" || r.ID == f.ID) && (f.ImportID == "" || r.ImportID == f.ImportID)
+}
+
+func reviewStatusMatches(r performance.ReviewRow, f performance.ReviewFilter) bool {
+	return (f.Status == "" || string(r.Status) == f.Status) &&
+		(f.StatusNot == "" || string(r.Status) != f.StatusNot)
+}
+
+func reviewContentMatches(r performance.ReviewRow, f performance.ReviewFilter) bool {
 	if f.Reason != "" && r.Reason != f.Reason {
 		return false
 	}
-	if f.KeyText != "" && !strings.Contains(strings.ToLower(string(r.Raw)), strings.ToLower(f.KeyText)) {
-		return false
-	}
+	return f.KeyText == "" || strings.Contains(strings.ToLower(string(r.Raw)), strings.ToLower(f.KeyText))
+}
+
+func reviewDatesMatch(r performance.ReviewRow, f performance.ReviewFilter) bool {
 	if f.Since != nil && r.CreatedAt.Before(*f.Since) {
 		return false
 	}
@@ -581,4 +590,21 @@ func (s *Store) RemoveIntegrationID(_ context.Context, activityID, sourceID stri
 		}
 	}
 	return false, nil
+}
+
+func (s *Store) HeldActivityIDs(_ context.Context, sourceID string) ([]string, error) {
+	all, err := s.facts.List()
+	if err != nil {
+		return nil, err
+	}
+	seen := map[string]bool{}
+	held := []string{}
+	for _, f := range all {
+		if f.SourceID == sourceID && f.Held && f.ReplacedByID == "" && f.ActivityID != "" && !seen[f.ActivityID] {
+			seen[f.ActivityID] = true
+			held = append(held, f.ActivityID)
+		}
+	}
+	slices.Sort(held)
+	return held, nil
 }

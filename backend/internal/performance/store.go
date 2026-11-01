@@ -65,6 +65,7 @@ type Facts interface {
 	CurrentFacts(ctx context.Context, sourceID string, references []string) ([]Fact, error)
 	ListFactsOfImport(ctx context.Context, importID string) ([]Fact, error)
 	FactsReplacedBy(ctx context.Context, replacerIDs []string) ([]Fact, error)
+	HeldActivityIDs(ctx context.Context, sourceID string) ([]string, error)
 	ReleaseHeld(ctx context.Context, activityID string, by actor.Actor, at time.Time) (int, error)
 }
 
@@ -78,15 +79,16 @@ type Imports interface {
 
 // ReviewFilter is FR-023's findability: by key, source, reason, upload, date and status.
 type ReviewFilter struct {
-	ID       string
-	Status   string
-	SourceID string
-	ImportID string
-	Reason   string
-	KeyText  string
-	Since    *time.Time
-	Until    *time.Time
-	Limit    int
+	ID        string
+	Status    string
+	StatusNot string
+	SourceID  string
+	ImportID  string
+	Reason    string
+	KeyText   string
+	Since     *time.Time
+	Until     *time.Time
+	Limit     int
 }
 
 type Review interface {

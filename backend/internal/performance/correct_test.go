@@ -44,10 +44,14 @@ func TestDismissAndReopen_BothLandInTheHistory_FR024(t *testing.T) {
 	if err != nil || reopened.Status != performance.ReviewOpen || reopened.Comment != "" {
 		t.Fatalf("Reopen = %+v (%v), want the row open again with the comment gone", reopened, err)
 	}
+	assertBothActionsKept(t, f, row.ID)
+}
 
+func assertBothActionsKept(t *testing.T, f *fixture, rowID string) {
+	t.Helper()
 	verbs := map[string]int{}
 	for _, entry := range f.log(t) {
-		if entry.RecordID == row.ID {
+		if entry.RecordID == rowID {
 			verbs[entry.Verb]++
 		}
 	}

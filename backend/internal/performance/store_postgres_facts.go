@@ -116,3 +116,11 @@ func (s *PostgresStore) FactsReplacedBy(ctx context.Context, replacerIDs []strin
 	}
 	return facts, nil
 }
+
+func (s *PostgresStore) HeldActivityIDs(ctx context.Context, sourceID string) ([]string, error) {
+	ids, err := s.db.Queries(ctx).HeldActivityIDsOfSource(ctx, sourceID)
+	if err != nil {
+		return nil, fmt.Errorf("select the held activities of %s: %w", sourceID, err)
+	}
+	return ids, nil
+}

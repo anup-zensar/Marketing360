@@ -17,9 +17,12 @@ func (s *Service) persist(ctx context.Context, a actor.Actor, run Import, result
 	if err != nil {
 		return err
 	}
-	waiting, err := s.openReviewRaws(ctx, run.SourceID)
-	if err != nil {
+	if err := s.supersedeAnsweredRows(ctx, a, run.SourceID, results); err != nil {
 		return err
+	}
+	waiting, waitErr := s.openReviewRaws(ctx, run.SourceID)
+	if waitErr != nil {
+		return waitErr
 	}
 	writer := factWriter{s: s, a: a, run: run, current: current, waiting: waiting}
 	for _, result := range results {
@@ -37,10 +40,10 @@ func (s *Service) persist(ctx context.Context, a actor.Actor, run Import, result
 	return nil
 }
 
-// openReviewRaws keys the open review rows by their raw content, so re-loading an identical file leaves the
-// row already waiting rather than queueing it twice (SC-004).
+// openReviewRaws keys the waiting rows - open and dismissed alike - by their raw content, so re-loading an
+// identical file neither queues it twice nor resurrects a dismissal (SC-004).
 func (s *Service) openReviewRaws(ctx context.Context, sourceID string) (map[string]bool, error) {
-	rows, err := s.repo.ListReviewRows(ctx, ReviewFilter{Status: string(ReviewOpen), SourceID: sourceID, Limit: maxRows})
+	rows, err := s.repo.ListReviewRows(ctx, ReviewFilter{StatusNot: string(ReviewResolved), SourceID: sourceID, Limit: maxRows})
 	if err != nil {
 		return nil, err
 	}
@@ -142,11 +145,24 @@ func (w factWriter) review(ctx context.Context, result RowResult) error {
 	if err != nil {
 		return err
 	}
-	return w.s.repo.PutReviewRow(ctx, ReviewRow{
-		ID: id, ImportID: w.run.ID, SourceID: w.run.SourceID, Raw: raw,
+	if putErr := w.s.repo.PutReviewRow(ctx, ReviewRow{
+		ID: id, ImportID: w.run.ID, SourceID: w.run.SourceID, Raw: raw, Parsed: interpretedOf(result.Row),
 		Reason: result.Reason, Faults: result.Faults, Candidates: result.Candidates,
 		Status: ReviewOpen, Meta: record.NewMeta(w.a, w.s.now()),
-	})
+	}); putErr != nil {
+		return putErr
+	}
+	w.waiting[string(raw)] = true
+	return nil
+}
+
+// interpretedOf keeps the load-time reading of the row, so a re-check never reinterprets it through the
+// mappings of a later day (FR-007).
+func interpretedOf(row Row) Interpreted {
+	return Interpreted{
+		Reference: row.Reference.Value, Date: row.Date.Value, Currency: row.Currency.Value,
+		Keys: row.Keys, Readings: row.Readings,
+	}
 }
 
 func rawOf(row Row) map[string]string {
@@ -158,4 +174,39 @@ func rawOf(row Row) map[string]string {
 
 func (r RowResult) reference() string {
 	return strings.TrimSpace(r.Row.Reference.Value)
+}
+
+// supersedeAnsweredRows closes the open rows a load answers, whatever the load's own verdicts: the source
+// wins over a correction in progress (FR-026). An uncorrected row the file re-sent byte-identically stays
+// waiting, so an identical re-upload still changes nothing (SC-004).
+func (s *Service) supersedeAnsweredRows(ctx context.Context, a actor.Actor, sourceID string, results []RowResult) error {
+	incoming := map[string]bool{}
+	identical := map[string]bool{}
+	for _, result := range results {
+		if reference := result.reference(); reference != "" {
+			incoming[reference] = true
+		}
+		if raw, err := json.Marshal(rawOf(result.Row)); err == nil {
+			identical[string(raw)] = true
+		}
+	}
+	open, err := s.repo.ListReviewRows(ctx, ReviewFilter{Status: string(ReviewOpen), SourceID: sourceID, Limit: maxRows})
+	if err != nil {
+		return err
+	}
+	for _, row := range open {
+		if !answeredByLoad(row.ReviewRow, incoming, identical) {
+			continue
+		}
+		if resolveErr := s.resolveRow(ctx, a, row.ReviewRow, supersededVerb); resolveErr != nil {
+			return resolveErr
+		}
+	}
+	return nil
+}
+
+func answeredByLoad(row ReviewRow, incoming, identical map[string]bool) bool {
+	answered := incoming[strings.TrimSpace(row.Parsed.Reference)]
+	resent := identical[string(row.Raw)] && !row.Parsed.Corrected
+	return answered && !resent
 }

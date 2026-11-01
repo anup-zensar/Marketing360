@@ -3,6 +3,7 @@ package performance
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strconv"
 	"strings"
 
@@ -39,6 +40,11 @@ func (s *Service) RunImport(ctx context.Context, a actor.Actor, in ImportInput) 
 	})
 	if err != nil {
 		return Import{}, fmt.Errorf("run the import of %s: %w", in.FileName, err)
+	}
+	// Every load re-checks its source afterwards (FR-025), in its own transaction: an upload must never
+	// fail over old queue data, so a re-check failure is logged and the load stands.
+	if _, recheckErr := s.RecheckAfterLoad(ctx, a, in.SourceID); recheckErr != nil {
+		slog.ErrorContext(ctx, "the re-check after a load failed", "source_id", in.SourceID, "error", recheckErr)
 	}
 	return run, nil
 }
@@ -111,7 +117,10 @@ func (s *Service) envOf(ctx context.Context, in ImportInput) (Env, error) {
 }
 
 func (s *Service) resolve(ctx context.Context, sourceID string, rows []Row) (Resolved, error) {
-	scope := authz.PermissionScopeOf(ctx, PermissionLink)
+	return s.resolveWith(ctx, authz.PermissionScopeOf(ctx, PermissionLink), sourceID, rows)
+}
+
+func (s *Service) resolveWith(ctx context.Context, scope authz.Scope, sourceID string, rows []Row) (Resolved, error) {
 	keys := distinctKeys(rows)
 	resolved := Resolved{}
 	for on, values := range keys {

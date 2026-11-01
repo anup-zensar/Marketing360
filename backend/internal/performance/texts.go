@@ -35,6 +35,8 @@ const (
 	undoneVerb      = "undone"
 	dismissedVerb   = "dismissed"
 	reopenedVerb    = "reopened"
+	resolvedVerb    = "resolved"
+	supersededVerb  = "superseded by a later load"
 
 	importKind         = "performanceImport"
 	importKindSingular = "upload"
@@ -53,6 +55,7 @@ const (
 	msgReviewRowNotFound   = "This row doesn't exist or you can't see it."
 	msgCommentNeeded       = "Say why this row is being dismissed."
 	msgReviewNotChangeable = "Not changed - this row is %s."
+	msgUnknownColumn       = "This row carries no column named %s."
 )
 
 func codeText(code int64) string {
@@ -97,6 +100,7 @@ const (
 	faultReferenceTooLong  = "referenceTooLong"
 	faultRepeatedReference = "repeatedReference"
 	faultNoMeasure         = "noMeasure"
+	faultDuplicateMeasure  = "duplicateMeasure"
 
 	msgReferenceNeeded   = "Every row needs the source's own reference, so a later load can replace it."
 	msgDateNeeded        = "Every row needs the date its data is for."
@@ -110,4 +114,5 @@ const (
 	msgReferenceTooLong  = "A source reference is at most 200 characters."
 	msgReferenceRepeated = "Another row in this file already carries this reference."
 	msgMeasureNeeded     = "A row must carry a figure in at least one of the source's measure columns."
+	msgMeasureTwice      = "Two filled columns carry the same measure; a row answers each measure once."
 )

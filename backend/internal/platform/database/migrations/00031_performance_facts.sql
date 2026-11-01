@@ -89,6 +89,7 @@ CREATE TABLE performance_review_rows (
     import_id       text        NOT NULL REFERENCES performance_imports (id) DEFERRABLE INITIALLY DEFERRED,
     source_id       text        NOT NULL REFERENCES performance_sources (id) DEFERRABLE INITIALLY DEFERRED,
     raw             json        NOT NULL CHECK (json_typeof(raw) = 'object'),
+    parsed          json        NOT NULL CHECK (json_typeof(parsed) = 'object'),
     reason          text        NOT NULL CHECK (char_length(reason) BETWEEN 1 AND 200),
     faults          json        NOT NULL CHECK (json_typeof(faults) = 'array'),
     candidates      json        CHECK (candidates IS NULL OR json_typeof(candidates) = 'array'),
@@ -105,6 +106,9 @@ CREATE TABLE performance_review_rows (
 );
 
 CREATE INDEX performance_review_rows_status_idx ON performance_review_rows (status, source_id);
+-- A row is queued once per content while anyone might act on it, so an identical re-load changes nothing.
+CREATE UNIQUE INDEX performance_review_rows_content_idx
+    ON performance_review_rows (source_id, md5(raw::text)) WHERE status <> 'resolved';
 CREATE INDEX performance_review_rows_import_idx ON performance_review_rows (import_id);
 
 -- +goose Down

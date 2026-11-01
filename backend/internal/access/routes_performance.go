@@ -29,5 +29,11 @@ func performanceRoutes() map[string]Rule {
 		"GET /api/v1/activities/{activityId}/integration-ids":                    signedIn(),
 		"PUT /api/v1/activities/{activityId}/integration-ids/{sourceId}":         need(performance.PermissionLink),
 		"DELETE /api/v1/activities/{activityId}/integration-ids/{sourceId}":      need(performance.PermissionLink),
+		"GET /api/v1/performance/review-rows":                                    need(performance.PermissionImport),
+		"GET /api/v1/performance/review-rows/{rowId}":                            need(performance.PermissionImport),
+		"POST /api/v1/performance/review-rows/{rowId}/dismiss":                   need(performance.PermissionImport),
+		"POST /api/v1/performance/review-rows/{rowId}/reopen":                    need(performance.PermissionImport),
+		"POST /api/v1/performance/review-rows/{rowId}/correct":                   need(performance.PermissionImport),
+		"POST /api/v1/performance/sources/{sourceId}/recheck":                    need(performance.PermissionImport),
 	}
 }
