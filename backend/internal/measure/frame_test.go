@@ -115,6 +115,19 @@ func TestFrame_AppliedFilterAndCurrency_FR018_FR030(t *testing.T) {
 	}
 }
 
+func TestFrame_NoPlansInYear_FR031(t *testing.T) {
+	t.Parallel()
+	frame := frameOf(t, frameService(fakePlanning{years: []int{2025, 2026}}), url.Values{"year": {"2027"}})
+
+	if frame.InView != (measure.InView{}) || len(frame.Choices.Plans) != 0 || frame.Filter.Year != 2027 {
+		t.Errorf("2027: in view %+v, %d plans to choose, year %d: want nothing in view", frame.InView,
+			len(frame.Choices.Plans), frame.Filter.Year)
+	}
+	if diff := cmp.Diff([]int{2025, 2026, 2027}, frame.Choices.Years); diff != "" {
+		t.Errorf("years to choose: the ones that have plans and the year shown (-want +got):\n%s", diff)
+	}
+}
+
 func TestFrame_UnknownReport_404(t *testing.T) {
 	t.Parallel()
 	_, err := frameService(fakePlanning{}).Frame(t.Context(), priyaActs(), "nope", measure.Filter{})
