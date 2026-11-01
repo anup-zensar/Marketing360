@@ -67,8 +67,6 @@ func TestEveryProtectedOperationRequiresSignIn_FR005(t *testing.T) {
 var notYetServed = []string{
 	// 043 Plan details report
 	"GET /api/v1/reports/plan-details",
-	// 045 User access report
-	"GET /api/v1/reports/user-access",
 }
 
 func TestNotYetServedIsAccurate(t *testing.T) {

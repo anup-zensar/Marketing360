@@ -11,10 +11,12 @@ import (
 
 type Store struct {
 	sessions *fake.Table[auth.Session]
+	signIns  *fake.Table[SignIn]
 }
 
 func NewStore(db *fake.DB) Store {
-	return Store{sessions: fake.TableOf(db, "sessions", func(s auth.Session) string { return s.ID })}
+	return Store{sessions: fake.TableOf(db, "sessions", func(s auth.Session) string { return s.ID }),
+		signIns: fake.TableOf(db, "sign_ins", func(r SignIn) string { return r.PersonID })}
 }
 
 func (s Store) Get(_ context.Context, id string) (auth.Session, bool, error) {
