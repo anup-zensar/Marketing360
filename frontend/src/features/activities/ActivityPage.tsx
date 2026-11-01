@@ -12,6 +12,7 @@ import { usePageTitle } from '@/ui/usePageTitle';
 import { allows } from '@/session/gate-action';
 import { ViewOnlyNote } from '@/ui/ViewOnlyNote/ViewOnlyNote';
 import { ViewOnlyArea } from '@/ui/ViewOnlyNote/view-only-area';
+import { DataSourcesArea } from '@/features/performance';
 import { changesNothingIn } from './activity-access';
 import { useActivity } from './api';
 import type { Activity } from './api';
@@ -224,6 +225,8 @@ function ActivityView({ activity, openReadyFirst }: ActivityViewProps) {
                 }}
               />
               <ActivityGoals activity={activity} model={facts.model} />
+              {/* Feature 046's slot: the activity's matching keys and what each source delivered. */}
+              <DataSourcesArea activityId={activity.id} />
             </div>
           )}
           {tab === 'approval' && (

@@ -170,7 +170,7 @@ previous name still matches as an alias.
 - [X] T070 [P] [US4] Write `backend/internal/performance/integrationid_test.go`: at most one per source, unique within the source, removal confirmed with its effect on matching, every change audited (FR-037)
 - [X] T071 [P] [US4] Write `backend/internal/performance/copy_test.go`: a copied activity carries **no** external name, alias, integration ID, media code or fact (FR-038)
 - [X] T072 [P] [US4] Write `backend/internal/performance/handler_keys_test.go` as a contract test for the five external-name and integration-ID operations, including both **409** cases
-- [ ] T073 [P] [US4] Write `frontend/src/features/performance/activity/DataSourcesArea.test.tsx`: external name and aliases, media-code count, both flags, per-source integration ID, fact count and last fact date, plus the no-source notice (FR-031)
+- [X] T073 [P] [US4] Write `frontend/src/features/performance/activity/DataSourcesArea.test.tsx`: external name and aliases, media-code count, both flags, per-source integration ID, fact count and last fact date, plus the no-source notice (FR-031)
 
 ### Implementation
 
@@ -180,8 +180,8 @@ previous name still matches as an alias.
 - [X] T077 [US4] Extend the matcher to resolve integration ID and external name **including aliases**, keeping the strict order of T044
 - [X] T078 [US4] Implement the handlers; add their route rules and report them. Report **two** changes outside this feature's folders: the activity-copy exclusion (FR-038), and the request to feature 006's lane for generation on approval (FR-036, 046-C14)
 - [X] T079 [US4] Remove this story's operations from `notYetServed`
-- [ ] T080 [P] [US4] Build the Data sources area in `frontend/src/features/performance/activity/`
-- [ ] T081 [US4] Run the quality-gate checks on everything changed
+- [X] T080 [P] [US4] Build the Data sources area in `frontend/src/features/performance/activity/`
+- [X] T081 [US4] Run the quality-gate checks on everything changed
 
 **Checkpoint**: all four matching keys exist; matching is complete.
 

@@ -36,6 +36,16 @@ const FORM_REFUSED = apiError(
 function openPage(access: Activity['access'], person: CurrentUser, formAllowed: boolean) {
   const section = launchFilmSection({ activity: activity({ id: 'A-1042' }) });
   mockApi([
+    reply('GET /api/v1/activities/{activityId}/performance/sources', {
+      body: {
+        externalName: '',
+        aliases: [],
+        mediaCodeCount: 0,
+        integrated: false,
+        goalEntered: false,
+        sources: [],
+      },
+    }),
     reply('GET /api/v1/activities/{activityId}', { body: launchFilm({ access }) }),
     reply('GET /api/v1/activities/{activityId}/approval', { body: approvalOf() }),
     reply('GET /api/v1/exchange-rates/current', { body: currentRates() }),
@@ -112,6 +122,16 @@ describe('014 FR-011: the activity page follows the reader’s access', () => {
 
   it('shows the no-access page at the edit address when the API refuses the form (FR-008)', async () => {
     mockApi([
+      reply('GET /api/v1/activities/{activityId}/performance/sources', {
+        body: {
+          externalName: '',
+          aliases: [],
+          mediaCodeCount: 0,
+          integrated: false,
+          goalEntered: false,
+          sources: [],
+        },
+      }),
       reply('GET /api/v1/activities/{activityId}', {
         body: launchFilm({ access: VIEWER_ACTIVITY_ACCESS }),
       }),
