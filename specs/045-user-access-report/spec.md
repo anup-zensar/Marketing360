@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-01
 
-**Status**: Draft
+**Status**: Built
 
 **Input**: User description: "People with role, teams, job title and last sign-in; search, sort, export; opens
 with `access.manage`. Demo sign-in records the time of a successful sign-in (migration 00029,

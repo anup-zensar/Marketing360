@@ -145,14 +145,13 @@ under the 100 ms of research R5.
 
 ## Dependencies and hand-offs
 
-- **039 (lane A)** — `measure.Report`/`WidgetSheet`, the `registerUserAccess` stub, the shared export, the report
-  page parts. Asked of lane A (R3): `ReportFrame` without the filter panel, In view and Currency for this report;
-  report parameters (`q`, `team`, `status`, `sort`) passed to `Sheets`; the rule
-  `GET /api/v1/reports/user-access: need(authz.AccessManage)` and the operation in `notYetServed` with the wave A
-  contract.
-- **Integrator** — fold `contracts/api.md` into the wave A contract; reserve migration number 00029 for 045 (039
-  has 00028); record 045-C1–C4; correct issue #38's client citation (FR-034, FR-035). `sqlcdb/models.go` gains the
-  column when regenerated (build guide §4.6).
+- **039 (lane A)** — used as merged: `measure.Report` with `measure.Parameterised` (`q`, `team`, `status`, `sort`
+  through `Filter.Own`), `access.manage` checked once in `openable` for the frame and the export, saved views, and
+  `ReportFrame filters={false}` (added by 045 as lane A agreed; the frame body is unchanged).
+- **Integrator** — record 045-C1–C4 in the decision log. Migration 00029 is 045's; a database that already applied
+  00034 (050) refuses an older number unless the migration provider allows out-of-order versions. Issue #38's
+  references are corrected; the stored value is `sign_ins` rather than a `people` column (research R2 addendum).
+  `sqlcdb/models.go` gains `SignIn` and `SignInRecording` when regenerated (build guide §4.6).
 - **#DEMO (lane D)** — none: the demo people are not changed (demo data is additive); the e2e test signs in to
   create the times.
 
