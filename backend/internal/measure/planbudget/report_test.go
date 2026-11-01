@@ -70,6 +70,31 @@ func TestCards_FinanceOnlyVisiblePlans_FR006(t *testing.T) {
 	}
 }
 
+func TestCards_DerivedFiguresOnlyFromVisibleFinance_FR006(t *testing.T) {
+	t.Parallel()
+	sc := scope(everything, true)
+	sc.Choices.FinancePlans = []string{"P-1"}
+	sc.Nodes = append(sc.Nodes,
+		allwork.Node{Level: allwork.LevelPlan, ID: "P-2", PlanID: "P-2", Name: "FY2026 Mobility", Budget: dollars(4000)},
+		allwork.Node{Level: allwork.LevelCampaign, ID: "C-3", ParentID: "P-2", PlanID: "P-2", Name: "Recharge"},
+		allwork.Node{Level: allwork.LevelInitiative, ID: "I-3", ParentID: "C-3", PlanID: "P-2", Name: "Hubs"},
+		allwork.Node{Level: allwork.LevelActivity, ID: "A-9", ParentID: "I-3", PlanID: "P-2", PlannedCost: dollars(2000)},
+		allwork.Node{Level: allwork.LevelLineItem, ID: "L-9", ParentID: "A-9", PlanID: "P-2", PlannedCost: dollars(2000)})
+	sc.Matched = allwork.Matched{Plans: []string{"P-1", "P-2"}, Campaigns: slices.Concat(everything.Campaigns, []string{"C-3"}),
+		Initiatives: slices.Concat(everything.Initiatives, []string{"I-3"}),
+		Activities:  slices.Concat(everything.Activities, []string{"A-9"}),
+		LineItems:   slices.Concat(everything.LineItems, []string{"L-9"})}
+
+	c := report(t, sc, measure.Filter{}).Cards
+
+	got := []string{shown(c.Budget), shown(c.Planned), shown(c.Committed), shown(c.Actual), shown(c.Unspent),
+		shown(c.NotYetCommitted), fmt.Sprint(*c.BudgetUsed, " ", *c.BudgetSpent, " ", *c.CommittedShare)}
+	want := []string{"5000.00", "2500.00", "400.00", "180.00", "820.00", "100.00", "50 18 80"}
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("budget and planned cover both plans; the rest only P-1, whose finance Priya sees (-want +got):\n%s", diff)
+	}
+}
+
 func TestPeriods_FR004_FR007(t *testing.T) {
 	t.Parallel()
 	r := report(t, scope(everything, true), measure.Filter{})

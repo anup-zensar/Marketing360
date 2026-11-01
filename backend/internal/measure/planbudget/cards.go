@@ -9,16 +9,15 @@ import (
 func (r *records) total() sums {
 	var t sums
 	for _, id := range r.matched.Plans {
-		s := r.sumsOf(id)
-		t.planned, t.committed, t.actual = t.planned.Add(s.planned), t.committed.Add(s.committed), t.actual.Add(s.actual)
-		t.financed = t.financed || s.financed
-	}
-	for _, n := range r.counted() {
-		budget := orZero(n.Budget)
-		if t.budget != nil {
-			budget = budget.Add(*t.budget)
+		p := r.sumsOf(id)
+		p.budget = nil
+		for _, n := range r.budgetBranch(id) {
+			p.budget = addAmount(p.budget, n.Budget)
 		}
-		t.budget = &budget
+		if r.financed[id] {
+			p.finBudget = p.budget
+		}
+		t = t.plus(p)
 	}
 	return t
 }
@@ -31,9 +30,10 @@ func (r *records) cards() Cards {
 	c.BudgetUsed = rollup.BudgetUsedPercent(&planned, budget)
 	if t.financed {
 		actual, committed := money.USD(t.actual), money.USD(t.committed)
-		c.BudgetSpent = rollup.BudgetUsedPercent(&actual, budget)
-		c.CommittedShare = rollup.BudgetUsedPercent(&committed, &planned)
-		notYet := money.USD(t.planned.Sub(t.committed))
+		finPlanned := money.USD(t.finPlanned)
+		c.BudgetSpent = rollup.BudgetUsedPercent(&actual, usdOf(t.finBudget))
+		c.CommittedShare = rollup.BudgetUsedPercent(&committed, &finPlanned)
+		notYet := money.USD(t.finPlanned.Sub(t.committed))
 		c.NotYetCommitted = r.display.Optional(&notYet)
 	}
 	return c

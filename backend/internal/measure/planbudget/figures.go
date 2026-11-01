@@ -31,6 +31,8 @@ type sums struct {
 	budget                     *money.Amount
 	planned, committed, actual money.Amount
 	financed                   bool
+	finBudget                  *money.Amount // the budget and planned cost of plans whose finance the person sees
+	finPlanned                 money.Amount
 }
 
 func newRecords(sc measure.Scope) *records {
@@ -80,6 +82,9 @@ func (r *records) sumsOf(id string) sums {
 		return s
 	}
 	s := r.addUp(id)
+	if r.financed[r.byID[id].PlanID] {
+		s.finBudget, s.finPlanned = s.budget, s.planned
+	}
 	r.memo[id] = s
 	return s
 }
@@ -175,12 +180,20 @@ func (r *records) figures(s sums) Figures {
 	if s.financed {
 		committed, actual := money.USD(s.committed), money.USD(s.actual)
 		f.Committed, f.Actual = d.Optional(&committed), d.Optional(&actual)
-		if budget != nil {
-			unspent := money.USD(budget.Amount.Sub(s.actual))
+		if s.finBudget != nil {
+			unspent := money.USD(s.finBudget.Sub(s.actual))
 			f.Unspent = d.Optional(&unspent)
 		}
 	}
 	return f
+}
+
+func addAmount(a, b *money.Amount) *money.Amount {
+	if b == nil {
+		return a
+	}
+	sum := orZero(a).Add(*b)
+	return &sum
 }
 
 func usdOf(a *money.Amount) *money.Money {
