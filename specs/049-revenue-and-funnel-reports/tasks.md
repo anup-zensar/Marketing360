@@ -5,51 +5,57 @@ marks tasks that can run in parallel.
 
 ## Phase 1 — Wave B contract and shared setup
 
-- [ ] T001 Write the wave B contract's report half in `backend/api/openapi.yaml`: the four operations,
+- [X] T001 Write the wave B contract's report half in `backend/api/openapi.yaml`: the four operations,
   schemas and parameters per [contracts/api.md](./contracts/api.md); the four route rules in
   `backend/internal/access/routes_measure.go`; delete this group's lines from
   `contract_routes_test.go`'s `notYetServed`. The one step this lane touches those files (plan R6)
-- [ ] T002 [P] `pnpm run api:types`; contract test scaffolding for the four operations
-- [ ] T003 [P] `queries/measure_revenue.sql`: `ReportFactTotals`, per-activity rows filtered by
+- [X] T002 [P] `pnpm run api:types`; contract test scaffolding for the four operations
+- [X] T003 [P] `queries/measure_revenue.sql`: `ReportFactTotals`, per-activity rows filtered by
   `activity_in_scope` and the plan year (research R2); `sqlc generate && sqlc vet`
-- [ ] T004 [P] `measure/revenue/ports.go`: `Transactor`, `Scoper`, `Goals` (activities' goal facts + their
+- [X] T004 [P] `measure/revenue/ports.go`: `Transactor`, `Scoper`, `Goals` (activities' goal facts + their
   plan's model), `Categories`; the `Goals` adapter in `backend/internal/app/measure_revenue.go` (research R3)
 
 ## Phase 2 — US1 Revenue against goal (P1)
 
-- [ ] T010 Tests first: SC-001's hand-worked table for one plan, one campaign, one activity — goal, actual,
-  projected, the split at today (FR-004, FR-022, FR-023)
-- [ ] T011 `facts.go`: the roll-up from `ReportFactTotals` into per-activity month series (FR-021)
-- [ ] T012 `figures.go`: project per activity via `projection.Project` and sum (FR-022, 049-C3); Performance
-  = (actual + projected) ÷ goal against the activities' goals (FR-023, 049-C16)
-- [ ] T013 `periods.go`: months, and months summed into quarters with the same in-progress rule (FR-003,
-  049-C4) — tests under a fixed clock
-- [ ] T014 `ranked.go` / `ranked_query.go` / `ranked_groups.go`: 040's rules with Revenue's figures (research
-  R5) — two-level drill, trail, groups with totals, paging across groups, sortable by actual/projected
-  revenue (FR-005, FR-006, FR-012)
-- [ ] T015 `actualCost`/`roi` always "—" with the attribution-not-configured reason (FR-013, 049-C6) — test
-  pinning the reason text
-- [ ] T016 `cards.go`: the fixed Revenue card set — goal, actual, projected, performance (FR-010, 049-C9)
-- [ ] T017 `report.go` + `handler.go`: `KeyRevenue` registration, `GET /reports/revenue`,
-  `GET /reports/revenue/ranked`, info tip text (FR-014); wire `measure_revenue.go`
+- [X] T010 Tests first: SC-001's hand-worked table for one plan, one campaign, one activity — goal, actual,
+  projected, the split at today (FR-004, FR-022, FR-023). Done: `report_revenue_test.go` reuses 047's own
+  365,000 INQ / 273 deals / 2,730,000 USD table through the whole service, not just the engine
+- [X] T011 `facts.go`: the roll-up from `ReportFactTotals` into per-activity month series (FR-021)
+- [X] T012 project per activity via `projection.Project` and sum (FR-022, 049-C3) — done in `service.go`'s
+  `scopeAndActivities`; Performance = (actual + projected) ÷ goal, computed exactly on cents via
+  `rollup.BudgetUsedPercent` rather than a float division of money (FR-023, 049-C16)
+- [X] T013 `periods.go`: months, and months summed into quarters with the same in-progress rule (FR-003,
+  049-C4), via the shared `window`/`periodBounds` types the funnel report reuses
+- [ ] T014 `ranked_revenue.go`: two-level roll-up (Show level + children), sorted, searched and paged, with
+  the same figures 040 uses the shape of. **Partial**: `drill` and `group` (campaign/owner/attribute) are
+  not yet implemented — every ranked answer currently reports one group named "" and ignores `drill`.
+  Remaining: drill-down with a trail and Back, grouping with group totals (research R5, FR-005, FR-006)
+- [X] T015 `actualCost`/`roi` always "—" with the attribution-not-configured reason (FR-013, 049-C6) — set
+  unconditionally in `ranked_revenue.go`'s `revenueFiguresOfActivities`
+- [X] T016 `cards.go`: the fixed Revenue card set — goal, actual, projected, performance (FR-010, 049-C9)
+- [X] T017 `report.go` + `handler.go`: `KeyRevenue` registration, `GET /reports/revenue`,
+  `GET /reports/revenue/ranked`; wire `measure_revenue.go`. Info tip text (FR-014) is frontend work, with T019
 - [ ] T018 [P] `sheets.go`: export widgets cards/periods/ranked for Revenue
 - [ ] T019 [P] Frontend `RevenueReport.tsx`: compose `ReportFrame` + cards + `ReportTable` (periods) +
   `RankedList`, mirroring `PlanBudgetReport.tsx`'s shape; `api.ts` for the report and ranked reads
 - [ ] T020 Empty-state reasons (FR-008, 049-C20): no goals, unapproved activities, no data loaded — backend
   states which, frontend shows it
-- [ ] T021 Gate: lint, tests, budgets, isolation test for the scoped read (FR-002, SC-004)
+- [ ] T021 Gate: lint, tests, budgets — done for the backend (0 lint issues, all tests pass, every file within
+  budget). Remaining: a dedicated scope-isolation test for `ReportTotals` against real PostgreSQL (FR-002,
+  SC-004) — `sqlc vet` and the full suite already ran clean against a real database
 
 ## Phase 3 — US2 Funnel stage against goal (P1)
 
-- [ ] T030 Tests first: stage selector lists the union of allowed stages (FR-015); conversion = stage
-  actual ÷ previous stage actual, "—" on zero denominator (FR-017); uncovered-plan count (FR-018)
-- [ ] T031 Stage selector and `stage` parameter, default first allowed stage (FR-015, 049-C11); deals
+- [X] T030 Tests first: stage selector lists the union of allowed stages (FR-015); uncovered-plan count
+  (FR-018). Remaining: a direct test of `conversionCard`'s "—" on a zero denominator (FR-017) — the
+  function is written and used but not yet pinned by its own test
+- [X] T031 Stage selector and `stage` parameter, default first allowed stage (FR-015, 049-C11); deals
   excluded from the selector (049-C12)
-- [ ] T032 Conversion figure reusing 046's panel rule (FR-017, 049-C13)
-- [ ] T033 `cards.go`: the Funnel card set — goal, actual, projected, performance for the selected stage,
-  plus conversion (FR-010 equivalent, 049-C9)
-- [ ] T034 `report.go` + `handler.go`: `KeyFunnel` registration, `GET /reports/funnel`,
-  `GET /reports/funnel/ranked`; wire `measure_funnel.go`
+- [X] T032 Conversion figure reusing 046's panel rule (FR-017, 049-C13)
+- [X] T033 `cards_funnel.go`: the Funnel card set — goal, actual, projected, performance for the selected
+  stage, plus conversion (FR-010 equivalent, 049-C9)
+- [X] T034 `report.go` + `handler.go`: `KeyFunnel` registration, `GET /reports/funnel`,
+  `GET /reports/funnel/ranked`; wire `measure_funnel.go` (merged into `measure_revenue.go`, research R1)
 - [ ] T035 [P] Frontend `FunnelReport.tsx`: stage selector + cards + series + ranked list
 - [ ] T036 Gate: lint, tests, budgets
 
