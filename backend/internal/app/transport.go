@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"mapp/internal/dataset"
 	"mapp/internal/platform/telemetry"
 	"mapp/internal/platform/web"
 	"mapp/internal/settings"
@@ -30,6 +31,8 @@ func newEngine(cfg Config) (*gin.Engine, *telemetry.Telemetry, error) {
 			"POST /api/v1/exchange-rates/import":        settings.MaxRateUploadBytes,
 			"POST /api/v1/plans/{planId}/imports/check": workbook.MaxUploadBytes,
 			"POST /api/v1/plans/{planId}/imports":       workbook.MaxUploadBytes,
+			"POST /api/v1/datasets/preview":             dataset.MaxUploadBodyBytes,
+			"POST /api/v1/datasets":                     dataset.MaxUploadBodyBytes,
 		}})
 	if err != nil {
 		return nil, nil, err
