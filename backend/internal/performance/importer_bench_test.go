@@ -2,10 +2,12 @@ package performance_test
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"testing"
 
 	"mapp/internal/performance"
+	"mapp/internal/performance/performancetest"
 	"mapp/internal/platform/authz"
 )
 
@@ -100,4 +102,70 @@ type matchCounter struct {
 func (m *matchCounter) MatchByActivityID(ctx context.Context, scope authz.Scope, keys []string) (map[string][]string, error) {
 	m.matchCalls++
 	return m.Store.MatchByActivityID(ctx, scope, keys)
+}
+
+// failingFacts makes the first fact write fall over, so the load's failure path is reachable on the fake.
+type failingFacts struct {
+	performance.Store
+	failed bool
+}
+
+func (f *failingFacts) PutFact(ctx context.Context, fact performance.Fact) error {
+	if !f.failed {
+		f.failed = true
+		return errOutage
+	}
+	return f.Store.PutFact(ctx, fact)
+}
+
+var errOutage = errors.New("the database went away")
+
+func TestRunImport_ALoadThatFellOverIsRecordedAsFailed_046C17(t *testing.T) {
+	t.Parallel()
+	broken := failingServiceOver(t)
+
+	rows, _ := bigFile(3, 5)
+	for i := range rows {
+		rows[i].Keys.ActivityID = "A-1"
+	}
+	_, err := broken.service.RunImport(t.Context(), alex, performance.ImportInput{
+		SourceID: broken.sourceID, FileName: "broken.csv", Origin: performance.OriginUpload,
+		Headings: []string{"ref", "date", "inqs"}, Rows: rows,
+	})
+	if err == nil {
+		t.Fatal("RunImport survived a dead fact store, want the error surfaced")
+	}
+
+	imports, listErr := broken.store.ListImports(t.Context(), "", broken.sourceID, 10)
+	if listErr != nil || len(imports) != 1 {
+		t.Fatalf("imports = %d (%v), want the one failed load recorded (046-C17)", len(imports), listErr)
+	}
+	if imports[0].Status != performance.ImportFailed || imports[0].Counts.Read != 3 {
+		t.Errorf("recorded = %+v, want status failed carrying the 3 rows it had read", imports[0])
+	}
+}
+
+type brokenFixture struct {
+	service  *performance.Service
+	store    *performancetest.Store
+	sourceID string
+}
+
+func failingServiceOver(t *testing.T) brokenFixture {
+	t.Helper()
+	f := newFixture(t)
+	f.store.Keys = map[performance.MatchedOn]map[string][]string{
+		performance.MatchedActivityID: {"a-1": {"A-1"}},
+	}
+	wrapped := &failingFacts{Store: f.store}
+	service := performance.NewService(f.tools, wrapped)
+	service.UseApprovals(approvedStub{"A-1": true})
+	src, err := service.CreateSource(t.Context(), alex, performance.SourceInput{
+		Name: "Fragile", OwnerID: alex.ID, Category: performance.CategoryCRM,
+		DeliveryRoute: performance.RouteUpload, Cadence: performance.CadenceMonthly,
+	})
+	if err != nil {
+		t.Fatalf("CreateSource: %v", err)
+	}
+	return brokenFixture{service: service, store: f.store, sourceID: src.ID}
 }

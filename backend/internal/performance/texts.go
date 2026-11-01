@@ -37,6 +37,7 @@ const (
 	deactivatedVerb = "deactivated"
 	reactivatedVerb = "reactivated"
 	undoneVerb      = "undone"
+	failedVerb      = "failed"
 	dismissedVerb   = "dismissed"
 	reopenedVerb    = "reopened"
 	resolvedVerb    = "resolved"

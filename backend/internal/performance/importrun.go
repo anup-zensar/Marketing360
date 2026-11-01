@@ -2,6 +2,7 @@ package performance
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strconv"
@@ -39,6 +40,7 @@ func (s *Service) RunImport(ctx context.Context, a actor.Actor, in ImportInput) 
 		return runErr
 	})
 	if err != nil {
+		s.recordFailedLoad(ctx, a, in, err)
 		return Import{}, fmt.Errorf("run the import of %s: %w", in.FileName, err)
 	}
 	// Every load re-checks its source afterwards (FR-025), in its own transaction: an upload must never
@@ -231,4 +233,33 @@ func mediaCodesOf(values []string) []int64 {
 		}
 	}
 	return codes
+}
+
+// recordFailedLoad keeps 046-C17's third state: a load that fell over is recorded as failed with the rows
+// it had read, in its own transaction after the body rolled back. A refusal - a classified *errs.Error such
+// as an unknown source - never started, so nothing is recorded for it.
+func (s *Service) recordFailedLoad(ctx context.Context, a actor.Actor, in ImportInput, cause error) {
+	var refusal *errs.Error
+	if errors.As(cause, &refusal) {
+		return
+	}
+	err := s.tx.Write(ctx, func(ctx context.Context) error {
+		id, idErr := s.ids.Next(ctx, ids.PrefixPerformanceImport)
+		if idErr != nil {
+			return idErr
+		}
+		failed := Import{ID: id, SourceID: in.SourceID, FileName: in.FileName, Origin: in.Origin,
+			Status: ImportFailed, Counts: Counts{Read: len(in.Rows)}, Meta: record.NewMeta(a, s.now())}
+		if putErr := s.repo.PutImport(ctx, failed); putErr != nil {
+			return putErr
+		}
+		_, logErr := s.history.Log(ctx, a, history.LogInput{
+			Kind: importKind, RecordID: failed.ID, RecordName: failed.FileName,
+			Action: history.ActionStatusChanged, Verb: failedVerb,
+		})
+		return logErr
+	})
+	if err != nil {
+		slog.ErrorContext(ctx, "a failed load could not be recorded", "source_id", in.SourceID, "error", err)
+	}
 }
