@@ -7974,6 +7974,116 @@ paths:
           $ref: "#/components/responses/NotFound"
         default:
           $ref: "#/components/responses/Error"
+  # Feature 040 Plan budget report (wave A contract)
+  /api/v1/reports/plan-budget:
+    get:
+      tags:
+        - Reports
+      operationId: getPlanBudgetReport
+      summary: Budget, planned cost, committed and actual of the records in view, as cards and by period (feature 040)
+      description: >-
+        Records match as the report frame matches them, in the person's reports.view scope (039). Budget counts once
+        per branch (040-C2). Committed and actual cover only plans whose financial data the person may see; actual
+        stops at today's period. Exported through exportReport with the widget keys cards, periods and ranked.
+      parameters:
+        - $ref: "#/components/parameters/AllWorkYear"
+        - $ref: "#/components/parameters/AllWorkPlan"
+        - $ref: "#/components/parameters/AllWorkPlanType"
+        - $ref: "#/components/parameters/AllWorkTeam"
+        - $ref: "#/components/parameters/AllWorkOwner"
+        - $ref: "#/components/parameters/AllWorkActivityType"
+        - $ref: "#/components/parameters/AllWorkActivityStatus"
+        - $ref: "#/components/parameters/AllWorkAttr"
+        - $ref: "#/components/parameters/ReportPeriod"
+        - $ref: "#/components/parameters/ReportShow"
+        - $ref: "#/components/parameters/ReportCurrency"
+        - $ref: "#/components/parameters/ReportTable"
+      responses:
+        "200":
+          description: The cards, the periods of the year and the notes on what the periods leave out.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlanBudgetReport"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/reports/plan-budget/ranked:
+    get:
+      tags:
+        - Reports
+      operationId: getPlanBudgetRanked
+      summary: The records of the Show level ranked by a figure, each with its children, grouped and paged (feature 040)
+      parameters:
+        - $ref: "#/components/parameters/AllWorkYear"
+        - $ref: "#/components/parameters/AllWorkPlan"
+        - $ref: "#/components/parameters/AllWorkPlanType"
+        - $ref: "#/components/parameters/AllWorkTeam"
+        - $ref: "#/components/parameters/AllWorkOwner"
+        - $ref: "#/components/parameters/AllWorkActivityType"
+        - $ref: "#/components/parameters/AllWorkActivityStatus"
+        - $ref: "#/components/parameters/AllWorkAttr"
+        - $ref: "#/components/parameters/ReportPeriod"
+        - $ref: "#/components/parameters/ReportShow"
+        - $ref: "#/components/parameters/ReportCurrency"
+        - $ref: "#/components/parameters/ReportTable"
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [budget, planned, committed, actual, leftToPlan, unspent]
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum: [desc, asc]
+        - name: group
+          in: query
+          description: none, plan, owner or attr:<attribute ID>.
+          schema:
+            type: string
+            pattern: ^(none|plan|owner|attr:[A-Z]+-[0-9]+)$
+        - name: size
+          in: query
+          schema:
+            type: integer
+            enum: [10, 25, 50]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+        - name: drill
+          in: query
+          description: The record whose children the list shows under it.
+          schema:
+            type: string
+            pattern: ^[A-Z]+-[0-9]+$
+      responses:
+        "200":
+          description: One page of top entries with their children, in groups.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlanBudgetRanked"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
   # Feature 043 Plan details report (wave A contract)
   /api/v1/reports/plan-details:
     get:
@@ -9488,6 +9598,216 @@ components:
         query:
           type: string
         isDefault:
+          type: boolean
+    # Feature 040 Plan budget report
+    PlanBudgetFigures:
+      type: object
+      additionalProperties: false
+      required: [budget, planned, committed, actual, leftToPlan, unspent, overAllocated]
+      properties:
+        budget:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        planned:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        committed:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        actual:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        leftToPlan:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        unspent:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        overAllocated:
+          type: boolean
+    PlanBudgetCards:
+      type: object
+      additionalProperties: false
+      required: [budget, planned, committed, actual, leftToPlan, unspent, overAllocated, budgetUsed, budgetSpent,
+        committedShare, notYetCommitted]
+      properties:
+        budget:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        planned:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        committed:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        actual:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        leftToPlan:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        unspent:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        overAllocated:
+          type: boolean
+        budgetUsed:
+          type: [integer, "null"]
+        budgetSpent:
+          type: [integer, "null"]
+        committedShare:
+          type: [integer, "null"]
+        notYetCommitted:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+    PlanBudgetPeriod:
+      type: object
+      additionalProperties: false
+      required: [key, state, budget, planned, actual, budgetToDate, plannedToDate, actualToDate]
+      properties:
+        key:
+          type: string
+          example: 2026-03
+        state:
+          type: string
+          enum: [actual, inProgress, planned]
+        budget:
+          $ref: "#/components/schemas/Money"
+        planned:
+          $ref: "#/components/schemas/Money"
+        actual:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        budgetToDate:
+          $ref: "#/components/schemas/Money"
+        plannedToDate:
+          $ref: "#/components/schemas/Money"
+        actualToDate:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+    PlanBudgetReport:
+      type: object
+      additionalProperties: false
+      required: [cards, period, periods, notes]
+      properties:
+        cards:
+          $ref: "#/components/schemas/PlanBudgetCards"
+        period:
+          type: string
+          enum: [month, quarter]
+        periods:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlanBudgetPeriod"
+        notes:
+          type: object
+          additionalProperties: false
+          required: [notPhased, noDates, otherYears, actualOtherYears]
+          properties:
+            notPhased:
+              oneOf:
+                - $ref: "#/components/schemas/Money"
+                - type: "null"
+            noDates:
+              oneOf:
+                - $ref: "#/components/schemas/Money"
+                - type: "null"
+            otherYears:
+              oneOf:
+                - $ref: "#/components/schemas/Money"
+                - type: "null"
+            actualOtherYears:
+              oneOf:
+                - $ref: "#/components/schemas/Money"
+                - type: "null"
+    RankedEntry:
+      type: object
+      additionalProperties: false
+      required: [id, level, name, planId, figures]
+      properties:
+        id:
+          type: string
+        level:
+          type: string
+          enum: [plan, campaign, initiative, activity, lineItem]
+        name:
+          type: string
+        planId:
+          type: string
+        figures:
+          $ref: "#/components/schemas/PlanBudgetFigures"
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/RankedEntry"
+    PlanBudgetRanked:
+      type: object
+      additionalProperties: false
+      required: [level, sort, order, group, page, size, total, trail, groups, drillLost]
+      properties:
+        level:
+          type: string
+          enum: [plan, campaign, initiative, activity]
+        sort:
+          type: string
+          enum: [budget, planned, committed, actual, leftToPlan, unspent]
+        order:
+          type: string
+          enum: [desc, asc]
+        group:
+          type: string
+        page:
+          type: integer
+        size:
+          type: integer
+        total:
+          type: integer
+        trail:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, level, name]
+            properties:
+              id:
+                type: string
+              level:
+                type: string
+              name:
+                type: string
+        groups:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [key, label, totals, entries]
+            properties:
+              key:
+                type: string
+              label:
+                type: string
+              totals:
+                $ref: "#/components/schemas/PlanBudgetFigures"
+              entries:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RankedEntry"
+        drillLost:
           type: boolean
     # Feature 043 Plan details report
     PlanDetailsLevel:
