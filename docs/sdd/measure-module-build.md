@@ -85,21 +85,30 @@ inside the programme's 10 Nov – 4 Dec 2026 slot.
    `routes_measure.go` holds every wave A rule. Lanes fill their stub, never the hub.
 3. **The contract is fixed per wave** (D-192 again). `backend/api/openapi.yaml` gets the whole wave's operations
    in step 1 (wave A) and step 7 (wave B). While building, a lane that finds a contract problem reports it in its
-   pull request; the integrator applies the fix. Remove your operations from `notYetServed` in
-   `internal/app/app_test.go`: they are listed in a group per feature, so the deletions never touch another lane's lines.
-4. **Shared files a lane never edits:** `openapi.yaml`, `routes_measure.go`, `app/measure.go`, `app.go`,
-   `navigation.ts`, `pages.tsx`, `router.tsx`, `features/measure/index.ts`, `components/index.ts`,
-   `styles/tokens.css`, `seed/seed.go`, `docs/sdd/feature-map.md`, `docs/sdd/decision-log.md`, the constitution.
-   Shared components a report needs go into `features/measure/shared/` through 039's lane.
+   pull request; the integrator applies the fix. Every operation in the contract must be served or listed in
+   `notYetServed` (`backend/internal/app/contract_routes_test.go`), so 039 lists the wave's operations there in
+   one group per feature, each group under its own comment line; a lane deletes only its own group's lines when
+   it serves them, and the comment lines keep those deletions apart from the neighbouring groups.
+4. **Shared files a lane never edits:** `openapi.yaml`, `access/routes.go`, `routes_measure.go`, `app/measure.go`,
+   `app.go`, `navigation.ts`, `pages.tsx`, `router.tsx`, `features/measure/index.ts`, the shared UI kit
+   `frontend/src/ui/` (including `ui/tokens.css`), `backend/seed/seed.go`, `docs/sdd/feature-map.md`,
+   `docs/sdd/decision-log.md`, the constitution. Shared components a report needs go into
+   `features/measure/shared/` through 039's lane.
 5. **Decisions.** A clarification answered while specifying is written in that spec's *Clarifications* section
    with a provisional label (`039-C1`). The integrator moves them into the decision log as D-… at the end of the
    wave, so four people never append to the same table. Feature-map status changes go in the pull-request
    description and are applied by the integrator the same way.
 6. **Migrations and sqlc.** Numbers are reserved in §2; a feature with no reserved number adds no migration. Run
-   `sqlc generate` after every rebase: the generated per-query files are yours, `models.go` only changes with a
-   migration.
-7. **Demo data.** D adds `seed/measure.go` (goals, dates and amounts that make every report meaningful) behind one
-   call that 039 creates in `seed.go`; the performance facts of wave B are seeded by 046 in the same file's wave B part.
+   `sqlc generate` after every rebase: the generated per-query files in `sqlcdb/` are yours; `sqlcdb/models.go`
+   changes with every migration, so on a conflict there take either side and run `sqlc generate` again. Before a
+   wave merges into `develop`, the integrator checks that `develop` has not used a reserved number meanwhile and
+   renumbers the Measure migrations if it has.
+7. **Demo data.** D adds `backend/seed/measure.go` (goals, dates and amounts that make every report meaningful)
+   behind one call that 039 creates in `backend/seed/seed.go`; the performance facts of wave B are seeded by 046 in
+   the same file's wave B part. The Measure demo data is **additive**, as the showcase is (D-354): it runs after the
+   demo story, creates new records and never changes an existing demo record, so the tests that count today's demo
+   data stay true; the whole end-to-end suite must stay green, and an expectation that has to change is changed in
+   the same pull request with its reason.
 8. **Branches.** `feature/0NN-short-name` from `measure-module`; pull requests into `measure-module` (CI runs the
    three checks there since the kick-off); `measure-module` → `develop` after each wave. Rebase on
    `measure-module` before opening the pull request.

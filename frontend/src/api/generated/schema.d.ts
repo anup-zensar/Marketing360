@@ -4245,10 +4245,245 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The reports the person may open, in the catalogue's order (feature 039, FR-001)
+         * @description A report not built yet is listed with available false ("Coming soon"); a report needing more than reports.view (User access needs access.manage) is listed only to people who hold it.
+         */
+        get: operations["listReports"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/frame": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * What every report page shares - the filter as applied, its choices and what is in view (feature 039, FR-006 – FR-019)
+         * @description Records match by All work's rules (010 FR-005, 016 FR-039), so "in view" equals All work's counts for the
+         *     same year and filters. Only plans in the person's reports.view scope count. A filter value that no longer
+         *     exists, is inactive or is outside the scope is left out and counted in leftOut, never named (FR-015).
+         */
+        get: operations["getReportFrame"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/{report}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A report as an Excel workbook, or one of its widgets as Excel or CSV (feature 039, FR-022)
+         * @description Excel holds one sheet per widget, then In view and About this export (report, year, filters in words, period, currency, exporter, date and time, rates used). CSV needs a widget and puts the notes before the rows. A report not built yet exports In view and About this export only. Nothing is stored or logged.
+         */
+        get: operations["exportReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/{report}/views": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The signed-in person's saved views of a report (feature 039, FR-024 – FR-026) */
+        get: operations["listReportViews"];
+        put?: never;
+        /** Save a report's address under a name (feature 039, FR-024, FR-027, FR-028) */
+        post: operations["createReportView"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/{report}/views/{viewId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a saved report view; the answer is the deleted view, for Undo (feature 039, FR-028) */
+        delete: operations["deleteReportView"];
+        options?: never;
+        head?: never;
+        /** Rename a saved report view, replace its address, or star or unstar it (feature 039, FR-026 – FR-028) */
+        patch: operations["updateReportView"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @enum {string} */
+        ReportKey: "planBudget" | "approvals" | "purchaseRequests" | "planDetails" | "gsapLink" | "userAccess" | "summary" | "revenue" | "funnel";
+        ReportEntry: {
+            key: components["schemas"]["ReportKey"];
+            /** @example plan-budget */
+            path: string;
+            /** @example Plan budget */
+            name: string;
+            purpose: string;
+            /** @description False while the report is not built ("Coming soon"). */
+            available: boolean;
+        };
+        ReportCatalogue: {
+            items: components["schemas"]["ReportEntry"][];
+        };
+        /** @enum {string} */
+        ReportLevel: "plan" | "campaign" | "initiative" | "activity" | "lineItem";
+        ReportAttributeFilter: {
+            /** @example SA-1022 */
+            attributeId: string;
+            /** @description Option IDs, yes, no, or none (Not filled in). */
+            values: string[];
+        };
+        ReportFilter: {
+            year: number;
+            plans: string[];
+            planTypes: components["schemas"]["PlanType"][];
+            teams: string[];
+            owners: string[];
+            activityTypes: string[];
+            activityStatuses: ("created" | "submitted" | "declined" | "approved" | "inProgress" | "complete")[];
+            attributes: components["schemas"]["ReportAttributeFilter"][];
+            /** @enum {string} */
+            period: "month" | "quarter";
+            /** @enum {string|null} */
+            show: "plan" | "campaign" | "initiative" | "activity" | null;
+            currency: string;
+            tables: string[];
+        };
+        ReportNamedChoice: {
+            id: string;
+            name: string;
+        };
+        ReportPlanChoice: {
+            id: string;
+            name: string;
+            planType: components["schemas"]["PlanType"];
+            teamIds: string[];
+        };
+        ReportTeamChoice: {
+            id: string;
+            name: string;
+            mine: boolean;
+        };
+        ReportAttributeValue: {
+            /** @description An option ID, yes, no, or none (Not filled in). */
+            id: string;
+            label: string;
+            active: boolean;
+        };
+        ReportAttributeGroup: {
+            level: components["schemas"]["ReportLevel"];
+            attributeId: string;
+            label: string;
+            values: components["schemas"]["ReportAttributeValue"][];
+        };
+        ReportCurrencyChoice: {
+            code: string;
+            name: string;
+        };
+        ReportChoices: {
+            years: number[];
+            plans: components["schemas"]["ReportPlanChoice"][];
+            planTypes: components["schemas"]["PlanType"][];
+            teams: components["schemas"]["ReportTeamChoice"][];
+            owners: components["schemas"]["ReportNamedChoice"][];
+            activityTypes: components["schemas"]["ReportNamedChoice"][];
+            activityStatuses: ("created" | "submitted" | "declined" | "approved" | "inProgress" | "complete")[];
+            attributeGroups: components["schemas"]["ReportAttributeGroup"][];
+            currencies: components["schemas"]["ReportCurrencyChoice"][];
+        };
+        ReportInView: {
+            plans: number;
+            campaigns: number;
+            initiatives: number;
+            activities: number;
+            lineItems: number;
+        };
+        ReportFinanceCoverage: {
+            /** @description Plans in view whose financial data the person may see. */
+            plans: number;
+            /** @description Plans in view. */
+            of: number;
+        };
+        ReportFrame: {
+            report: components["schemas"]["ReportKey"];
+            filter: components["schemas"]["ReportFilter"];
+            choices: components["schemas"]["ReportChoices"];
+            inView: components["schemas"]["ReportInView"];
+            finance: components["schemas"]["ReportFinanceCoverage"];
+            /** @description Filter values left out because they no longer exist, are inactive or are out of scope. */
+            leftOut: number;
+            displayCurrency: string;
+            /** Format: date-time */
+            generatedAt: string;
+            /** Format: date-time */
+            financeAsOf: string | null;
+        };
+        ReportView: {
+            /** @example RV-1001 */
+            id: string;
+            report: components["schemas"]["ReportKey"];
+            name: string;
+            isDefault: boolean;
+            /** @description The report's canonical address query. */
+            query: string;
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ReportViewPage: {
+            items: components["schemas"]["ReportView"][];
+            total: number;
+        };
+        ReportViewCreate: {
+            name: string;
+            query: string;
+            isDefault?: boolean;
+        };
+        ReportViewUpdate: {
+            version: number;
+            name?: string;
+            query?: string;
+            isDefault?: boolean;
+        };
         /**
          * @description What happens when planned cost goes over a budget — warn (save and show it) or refuse the save.
          * @enum {string}
@@ -8672,7 +8907,7 @@ export interface components {
          * @description A permission of spec Table A.
          * @enum {string}
          */
-        PermissionKey: "plans.view" | "plans.create" | "plans.edit" | "plans.publish" | "plans.delete" | "campaigns.edit" | "campaigns.delete" | "activities.edit" | "activities.delete" | "activities.submit" | "data.export" | "finance.view" | "finance.link" | "finance.import" | "purchaseRequests.edit" | "purchaseRequests.delete" | "purchaseRequests.submit" | "purchaseRequests.list" | "approvals.decide" | "approvals.decideOnBehalf" | "globalBudgets.view" | "globalBudgets.manage" | "settings.manage" | "exchangeRates.manage" | "workflows.manage" | "people.manage" | "access.manage" | "activityLog.viewAll" | "recycleBin.purge";
+        PermissionKey: "plans.view" | "plans.create" | "plans.edit" | "plans.publish" | "plans.delete" | "campaigns.edit" | "campaigns.delete" | "activities.edit" | "activities.delete" | "activities.submit" | "data.export" | "reports.view" | "finance.view" | "finance.link" | "finance.import" | "purchaseRequests.edit" | "purchaseRequests.delete" | "purchaseRequests.submit" | "purchaseRequests.list" | "approvals.decide" | "approvals.decideOnBehalf" | "globalBudgets.view" | "globalBudgets.manage" | "settings.manage" | "exchangeRates.manage" | "workflows.manage" | "people.manage" | "access.manage" | "activityLog.viewAll" | "recycleBin.purge";
         PermissionInfo: {
             key: components["schemas"]["PermissionKey"];
             /** @example Edit plan details */
@@ -10345,6 +10580,23 @@ export interface components {
         };
     };
     parameters: {
+        /** @description The report the frame is for. */
+        ReportKey: components["schemas"]["ReportKey"];
+        /** @description The report's path in the web app's address. */
+        ReportPath: "plan-budget" | "approvals" | "purchase-requests" | "plan-details" | "gsap-link" | "user-access" | "summary" | "revenue" | "funnel";
+        /** @example RV-1001 */
+        ReportViewId: string;
+        /** @description Time widgets by month (default) or quarter of the plan year. */
+        ReportPeriod: "month" | "quarter";
+        /** @description The level a report that ranks records shows. */
+        ReportShow: "plan" | "campaign" | "initiative" | "activity";
+        /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+        ReportCurrency: string;
+        /** @description Keys of the widgets shown as a table instead of a chart. */
+        ReportTable: string[];
+        ReportFormat: "xlsx" | "csv";
+        /** @description One widget of the report; required for CSV. */
+        ReportWidget: string;
         /** @example PR-1001 */
         PurchaseRequestId: string;
         /** @example PRR-1001 */
@@ -18496,6 +18748,269 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listReports: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The catalogue. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportCatalogue"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getReportFrame: {
+        parameters: {
+            query: {
+                /** @description The report the frame is for. */
+                report: components["parameters"]["ReportKey"];
+                /** @description The plans' year. Default - the current year. */
+                year?: components["parameters"]["AllWorkYear"];
+                /** @description Plan IDs (repeat the parameter for several). */
+                plan?: components["parameters"]["AllWorkPlan"];
+                /** @description Plans of these types (tested on plans). */
+                planType?: components["parameters"]["AllWorkPlanType"];
+                /** @description Team IDs; tested on the plan's teams. */
+                team?: components["parameters"]["AllWorkTeam"];
+                /** @description Person IDs; tested on plans, campaigns, initiatives and activities. */
+                owner?: components["parameters"]["AllWorkOwner"];
+                activityType?: components["parameters"]["AllWorkActivityType"];
+                activityStatus?: components["parameters"]["AllWorkActivityStatus"];
+                /**
+                 * @description A Shell-attribute filter, repeatable: <attributeId>:<value>,<value>… where a value is an option id,
+                 *     yes, no, or none (Not filled in). Tested on the attribute's level (016 FR-039).
+                 * @example [
+                 *       "SA-1022:SO-1301,none"
+                 *     ]
+                 */
+                attr?: components["parameters"]["AllWorkAttr"];
+                /** @description Time widgets by month (default) or quarter of the plan year. */
+                period?: components["parameters"]["ReportPeriod"];
+                /** @description The level a report that ranks records shows. */
+                show?: components["parameters"]["ReportShow"];
+                /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+                currency?: components["parameters"]["ReportCurrency"];
+                /** @description Keys of the widgets shown as a table instead of a chart. */
+                table?: components["parameters"]["ReportTable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The frame. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportFrame"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    exportReport: {
+        parameters: {
+            query?: {
+                format?: components["parameters"]["ReportFormat"];
+                /** @description One widget of the report; required for CSV. */
+                widget?: components["parameters"]["ReportWidget"];
+                /** @description The plans' year. Default - the current year. */
+                year?: components["parameters"]["AllWorkYear"];
+                /** @description Plan IDs (repeat the parameter for several). */
+                plan?: components["parameters"]["AllWorkPlan"];
+                /** @description Plans of these types (tested on plans). */
+                planType?: components["parameters"]["AllWorkPlanType"];
+                /** @description Team IDs; tested on the plan's teams. */
+                team?: components["parameters"]["AllWorkTeam"];
+                /** @description Person IDs; tested on plans, campaigns, initiatives and activities. */
+                owner?: components["parameters"]["AllWorkOwner"];
+                activityType?: components["parameters"]["AllWorkActivityType"];
+                activityStatus?: components["parameters"]["AllWorkActivityStatus"];
+                /**
+                 * @description A Shell-attribute filter, repeatable: <attributeId>:<value>,<value>… where a value is an option id,
+                 *     yes, no, or none (Not filled in). Tested on the attribute's level (016 FR-039).
+                 * @example [
+                 *       "SA-1022:SO-1301,none"
+                 *     ]
+                 */
+                attr?: components["parameters"]["AllWorkAttr"];
+                /** @description Time widgets by month (default) or quarter of the plan year. */
+                period?: components["parameters"]["ReportPeriod"];
+                /** @description The level a report that ranks records shows. */
+                show?: components["parameters"]["ReportShow"];
+                /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+                currency?: components["parameters"]["ReportCurrency"];
+            };
+            header?: never;
+            path: {
+                /** @description The report's path in the web app's address. */
+                report: components["parameters"]["ReportPath"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The file, named "SP&A One – <report> [– <widget>] – <year> – <date>". */
+            200: {
+                headers: {
+                    /** @description attachment with filename (ASCII) and filename* (UTF-8). */
+                    "Content-Disposition"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                    "text/csv": string;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listReportViews: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The report's path in the web app's address. */
+                report: components["parameters"]["ReportPath"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Only the signed-in person's views of this report. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportViewPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    createReportView: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The report's path in the web app's address. */
+                report: components["parameters"]["ReportPath"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportViewCreate"];
+            };
+        };
+        responses: {
+            /** @description Created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportView"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteReportView: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The report's path in the web app's address. */
+                report: components["parameters"]["ReportPath"];
+                /** @example RV-1001 */
+                viewId: components["parameters"]["ReportViewId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The deleted view. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportView"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    updateReportView: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The report's path in the web app's address. */
+                report: components["parameters"]["ReportPath"];
+                /** @example RV-1001 */
+                viewId: components["parameters"]["ReportViewId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportViewUpdate"];
+            };
+        };
+        responses: {
+            /** @description The view as saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportView"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             default: components["responses"]["Error"];
         };
     };
