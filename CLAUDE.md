@@ -1,6 +1,6 @@
 # CLAUDE.md — guidance for AI agents working on MAPP
 
-Read this with `.specify/memory/constitution.md` (the rules, version 4.7) before doing anything. Where
+Read this with `.specify/memory/constitution.md` (the rules, version 4.9) before doing anything. Where
 this file and the constitution disagree, the constitution wins and this file is corrected. Working in
 `backend/`? `backend/CLAUDE.md` loads the Go standards (`backend/docs/GO_STANDARDS.md`).
 
@@ -11,7 +11,10 @@ MAPP is Shell's marketing planning application replacing the Hive9 Plan module; 
 This phase covers only the **Plan module**: demo sign-in, application shell, home dashboard, settings, people and teams,
 plans, campaigns, initiatives, activities, line items, approvals, planning views, activity log and
 recycle bin, and Shell's purchase-request process on MAPP's side up to the purchase order, with SWBS codes,
-GSAP PRs and POs from a simulated GSAP (features 030–034). Spec-driven development with GitHub Spec Kit. The
+GSAP PRs and POs from a simulated GSAP (features 030–034). Since constitution 4.9.0 it also covers the
+**dashboard builder** (feature 051): people's own dashboards of Apache ECharts charts (ADR-0020) built from the
+Plan-module data they may see and from CSV or Excel datasets they upload, shared view-only with their teams.
+Spec-driven development with GitHub Spec Kit. The
 constitution applies Shell's
 Software Design & Construction Policy and SEMS, which are mandatory.
 
@@ -70,11 +73,13 @@ Software Design & Construction Policy and SEMS, which are mandatory.
     background secondary text, links and red text switch to Text Strong (`--ink-2: var(--ink)`).
 13. **Out of scope:** the Finance budgets module, accrual calculation, invoice approval, supporting
     documents on purchase requests, Measure's performance reporting, live GSAP integration, e-mail and sharing
-    to Outlook or Teams, real sign-in (SSO), AI. Do not
+    to Outlook or Teams, real sign-in (SSO), dashboards shared outside SP&A One's teams, scheduled or e-mailed
+    dashboards, live data connectors for uploaded data, AI. Do not
     build them. GSAP rates and transactions come only from simulated feeds behind adapters (ADR-0009); SWBS
     codes, GSAP PR numbers and purchase orders come only from the simulated GSAP (ADR-0016). Purchase requests
     on MAPP's side are in scope since constitution 4.4.0 (features 030–034, D-320); planning dashboards from
     plan and finance data, PowerPoint/PDF export and overspend control since 4.6.0 (features 036–037, D-333).
+    The self-service dashboard builder with uploaded datasets is in scope since 4.9.0 (feature 051, D-371).
 14. **Local only:** servers listen on `127.0.0.1`; no cloud services at run time; Docker or Podman only
     optionally, for PostgreSQL or for reviewers running the whole app from `compose.yaml` (ADR-0012);
     developing MAPP never needs them; no secrets in the repository.

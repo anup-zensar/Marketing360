@@ -255,6 +255,9 @@ global budgets panels — the same figures as on screen. **Export › PDF** give
 
 - **FR-001**: The sidebar MUST offer **Dashboards** to every person who may view plans; it opens the Executive
   dashboard, and the Regional dashboard is the second tab.
+  *Amended by [051](../051-dashboard-builder/spec.md) (D-372): **Dashboards** opens a list of every dashboard —
+  the Executive and Regional dashboards as built-in cards, then the person's own and those shared with them;
+  `/dashboards/executive` and `/dashboards/regional` keep working.*
 - **FR-002**: Every figure, row and list on a dashboard MUST cover only plans the person may see (014 scope),
   and everything in them; a plan outside the scope MUST NOT count anywhere, and its name MUST NOT appear.
 - **FR-003**: Committed, actual, unspent budget, budget spent and monthly actuals MUST cover only the plans
