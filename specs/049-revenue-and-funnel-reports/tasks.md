@@ -36,10 +36,11 @@ marks tasks that can run in parallel.
 - [X] T017 `report.go` + `handler.go`: `KeyRevenue` registration, `GET /reports/revenue`,
   `GET /reports/revenue/ranked`; wire `measure_revenue.go`. Info tip text (FR-014) is frontend work, with T019
 - [ ] T018 [P] `sheets.go`: export widgets cards/periods/ranked for Revenue
-- [ ] T019 [P] Frontend `RevenueReport.tsx`: compose `ReportFrame` + cards + `ReportTable` (periods) +
-  `RankedList`, mirroring `PlanBudgetReport.tsx`'s shape; `api.ts` for the report and ranked reads
-- [ ] T020 Empty-state reasons (FR-008, 049-C20): no goals, unapproved activities, no data loaded — backend
-  states which, frontend shows it
+- [X] T019 [P] Frontend `RevenueReport.tsx`: compose `ReportFrame` + cards + `ReportWidget` (periods, a
+  hand-rolled SVG chart reusing the four chart tokens) + `RankedList`, mirroring `PlanBudgetReport.tsx`'s
+  shape; `api.ts` for the report and ranked reads; page test with 5 cases incl. axe
+- [X] T020 Empty-state reasons (FR-008, 049-C20): no goals, unapproved activities, no data loaded — backend
+  states which (`report.reason`), frontend shows it via `reasons.ts`
 - [X] T021 Gate: lint, tests, budgets. Done: 0 lint issues, every file within budget, full suite green
   including `-race` against real PostgreSQL; `store_postgres_test.go` proves FR-002/SC-004 directly —
   a record outside the scope is invisible to `ReportTotals`
@@ -55,7 +56,8 @@ marks tasks that can run in parallel.
   stage, plus conversion (FR-010 equivalent, 049-C9)
 - [X] T034 `report.go` + `handler.go`: `KeyFunnel` registration, `GET /reports/funnel`,
   `GET /reports/funnel/ranked`; wire `measure_funnel.go` (merged into `measure_revenue.go`, research R1)
-- [ ] T035 [P] Frontend `FunnelReport.tsx`: stage selector + cards + series + ranked list
+- [X] T035 [P] Frontend `FunnelReport.tsx`: stage selector + cards + series + ranked list, mirroring
+  `RevenueReport.tsx`'s shape; page test with 5 cases incl. axe, uncovered-count and the "—" conversion
 - [ ] T036 Gate: lint, tests, budgets
 
 ## Phase 4 — US3 Activity category grouping (P2)
@@ -63,7 +65,8 @@ marks tasks that can run in parallel.
 - [X] T040 Tests first: `category` parameter narrows cards/series/ranked (FR-019); Uncategorised loses no
   activity, All categories counts each once (FR-020); saved views keep the parameter (049-C10)
 - [X] T041 Category parameter on both reports, read via the `Categories` port over `settings.ListActivityCategories`
-- [ ] T042 [P] Frontend category selector on both report pages
+- [X] T042 [P] Frontend category selector on both report pages (`CategorySelect.tsx`, shared from
+  `revenue/`, imported by `funnel/`)
 - [ ] T043 Gate: lint, tests, budgets
 
 ## Phase 5 — Cross-cutting and close-out

@@ -11826,7 +11826,12 @@ components:
       type: object
       required: [goal, actual, projected, performance, conversion]
       properties:
-        goal: { $ref: "#/components/schemas/RevenueCardFigure" }
+        goal:
+          type: object
+          required: [value, reason]
+          properties:
+            value: { type: [integer, "null"] }
+            reason: { type: string, enum: ["", noGoal, notApproved, noSource, noData] }
         actual:
           type: object
           required: [value, reason]

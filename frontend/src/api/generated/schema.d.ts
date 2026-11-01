@@ -5974,7 +5974,11 @@ export interface components {
             drillLost: boolean;
         };
         FunnelCards: {
-            goal: components["schemas"]["RevenueCardFigure"];
+            goal: {
+                value: number | null;
+                /** @enum {string} */
+                reason: "" | "noGoal" | "notApproved" | "noSource" | "noData";
+            };
             actual: {
                 value: number | null;
                 /** @enum {string} */
