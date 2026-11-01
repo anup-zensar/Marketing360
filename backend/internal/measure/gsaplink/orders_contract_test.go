@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"mapp/internal/measure/gsaplink"
 	"mapp/internal/platform/apitest"
 	"mapp/internal/platform/money"
 )
@@ -28,21 +29,26 @@ func TestOrders_EqualLineItemFinancials_SC003(t *testing.T) {
 		t.Fatalf("orders = %+v, want the demo purchase orders", r.Orders)
 	}
 	for _, row := range r.Orders.Rows {
-		var page struct{ Items []financialRow }
-		get(t, carlosSees, "/api/v1/financials/transactions?recordId="+row.LineItemID+"&pageSize=200", http.StatusOK).
-			Decode(t, &page)
-		sums := map[string]money.Amount{}
-		for _, item := range page.Items {
-			if item.PoNumber == row.PoNumber && item.AmountDisplay != nil {
-				sums[item.Type] = sums[item.Type].Add(item.AmountDisplay.Amount)
-			}
-		}
 		got := []money.Amount{row.PoAmount.Amount, row.Invoiced.Amount, row.Paid.Amount}
-		want := []money.Amount{sums["purchaseOrder"], sums["invoice"], sums["payment"]}
+		want := financialsOf(t, carlosSees, row)
 		for i := range got {
 			if got[i].Cmp(want[i]) != 0 {
 				t.Errorf("%s PO %s: figure %d = %s, Financials %s", row.LineItemID, row.PoNumber, i, got[i], want[i])
 			}
 		}
 	}
+}
+
+// financialsOf adds up the row's PO lines, invoices and payments as the line item's Financials lists them.
+func financialsOf(t *testing.T, c *apitest.Client, row gsaplink.OrderRow) []money.Amount {
+	t.Helper()
+	var page struct{ Items []financialRow }
+	get(t, c, "/api/v1/financials/transactions?recordId="+row.LineItemID+"&pageSize=200", http.StatusOK).Decode(t, &page)
+	sums := map[string]money.Amount{}
+	for _, item := range page.Items {
+		if item.PoNumber == row.PoNumber && item.AmountDisplay != nil {
+			sums[item.Type] = sums[item.Type].Add(item.AmountDisplay.Amount)
+		}
+	}
+	return []money.Amount{sums["purchaseOrder"], sums["invoice"], sums["payment"]}
 }

@@ -88,10 +88,10 @@ Write each test first and see it fail.
 
 ## Phase 6: User Story 4 — Export (P2)
 
-- [ ] T023 [P] [US4] `sheets_test.go`: `TestSheets_EveryRow_FR019` (the four widgets in order, every row, hidden
+- [X] T023 [P] [US4] `sheets_test.go`: `TestSheets_EveryRow_FR019` (the four widgets in order, every row, hidden
   amounts empty, totals), `TestSheets_EqualTables_SC005` (each sheet equals its tab's table over all pages)
-- [ ] T024 [US4] `sheets.go`: `measure.Report` (`Key`, `Available`, `Sheets`)
-- [ ] T025 [US4] e2e US4 step: a tab as CSV and Excel, the report's Export
+- [X] T024 [US4] `sheets.go`: `measure.Report` (`Key`, `Available`, `Sheets`)
+- [X] T025 [US4] e2e US4 step: a tab as CSV and Excel, the report's Export
 
 ## Phase 7: Polish
 

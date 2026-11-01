@@ -98,3 +98,19 @@ func TestGsapLink_NoReportsView_FR003(t *testing.T) {
 
 	get(t, server.SignIn(t, mei), report, http.StatusForbidden)
 }
+
+// TestGsapLinkExport_OwnParameters_FR019: the export reads the report's tab and sort and refuses one of another tab.
+// The request skips validation: the contract's exportReport lists 040's sort values and no tab yet (asked of lane A).
+func TestGsapLinkExport_OwnParameters_FR019(t *testing.T) {
+	t.Parallel()
+	carlosSees := apitest.New(t).SignIn(t, carlos)
+	export := "/api/v1/reports/gsap-link/export?year=2026&format=csv&widget=swbs"
+
+	skip := apitest.SkipRequestValidation()
+	if r := carlosSees.Do(t, http.MethodGet, export+"&tab=swbs&sort=lineItem", nil, skip); r.Status != http.StatusOK {
+		t.Errorf("export sorted by line item = %d %s, want 200", r.Status, r.Body)
+	}
+	if r := carlosSees.Do(t, http.MethodGet, export+"&sort=vendor", nil, skip); r.Status != http.StatusBadRequest {
+		t.Errorf("export sorted by vendor on the SWBS tab = %d, want 400", r.Status)
+	}
+}

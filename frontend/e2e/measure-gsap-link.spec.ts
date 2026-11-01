@@ -48,3 +48,32 @@ test('044 US2: the Waiting for GSAP tab in the address, with its cards (FR-001, 
   await page.goBack();
   await expect(page.getByRole('tab', { name: 'SWBS not received', selected: true })).toBeVisible();
 });
+
+test('044 US4: a tab exports as CSV and Excel with its sort, and the report as one workbook (FR-019)', async ({
+  page,
+}) => {
+  await signInAs(page, PRIYA);
+  await page.goto('/reports/gsap-link?sort=lineItem');
+  const table = page.getByRole('region', { name: 'SWBS not received' });
+  await expect(table.getByRole('link', { name: 'Stand build' })).toBeVisible();
+
+  for (const [format, extension] of [
+    ['CSV (.csv)', '.csv'],
+    ['Excel (.xlsx)', '.xlsx'],
+  ] as const) {
+    await table.getByRole('button', { name: 'Export' }).click();
+    const downloading = page.waitForEvent('download');
+    await page.getByRole('menuitem', { name: format }).click();
+    expect((await downloading).suggestedFilename()).toMatch(
+      new RegExp(`^SP&A One – GSAP link – SWBS not received – \\d{4} – .+\\${extension}$`),
+    );
+  }
+
+  // The page header's Export comes before the tab's.
+  await page.getByRole('button', { name: 'Export' }).first().click();
+  const downloading = page.waitForEvent('download');
+  await page.getByRole('menuitem', { name: 'Excel (.xlsx)' }).click();
+  expect((await downloading).suggestedFilename()).toMatch(
+    /^SP&A One – GSAP link – \d{4} – .+\.xlsx$/,
+  );
+});
