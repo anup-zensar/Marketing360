@@ -1,6 +1,7 @@
 # API Contract: User Access Report (045)
 
-For the **wave A contract** (lane A writes it into `backend/api/openapi.yaml`, tag **Reports**). It follows
+For the **wave A contract**, written into `backend/api/openapi.yaml` (tag **Reports**) by PR #57; `openapi.yaml`
+is the reference where the two differ. It follows
 039's convention: `GET /api/v1/reports/<path>` returns the report's widgets, and the report's
 `measure.Report.Sheets` feeds 039's shared export, so 045 adds **no export operation of its own**. Errors use the
 one envelope; 401 when signed out, 403 `forbidden` when the route rule refuses.
