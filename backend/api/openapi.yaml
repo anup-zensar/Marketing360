@@ -8224,6 +8224,55 @@ paths:
           $ref: "#/components/responses/Forbidden"
         default:
           $ref: "#/components/responses/Error"
+  # Feature 041 Approvals report (wave A contract)
+  /api/v1/reports/approvals:
+    get:
+      tags:
+        - Reports
+      operationId: getApprovalsReport
+      summary: The current approval status per record type, the average days to a decision and every approver step (feature 041)
+      description: >-
+        Rounds of the activities and purchase requests in the person's reports.view scope that match the report
+        frame; a purchase request is in view through its line items. Period and show are accepted and ignored. A
+        statusType, recordType, outcome or approver that matches nothing answers 200 with empty figures. The
+        widgets status, average and approvals are exported through exportReport.
+      parameters:
+        - $ref: "#/components/parameters/AllWorkYear"
+        - $ref: "#/components/parameters/AllWorkPlan"
+        - $ref: "#/components/parameters/AllWorkPlanType"
+        - $ref: "#/components/parameters/AllWorkTeam"
+        - $ref: "#/components/parameters/AllWorkOwner"
+        - $ref: "#/components/parameters/AllWorkActivityType"
+        - $ref: "#/components/parameters/AllWorkActivityStatus"
+        - $ref: "#/components/parameters/AllWorkAttr"
+        - $ref: "#/components/parameters/ReportPeriod"
+        - $ref: "#/components/parameters/ReportShow"
+        - $ref: "#/components/parameters/ReportCurrency"
+        - $ref: "#/components/parameters/ReportTable"
+        - $ref: "#/components/parameters/ApprovalsStatusType"
+        - $ref: "#/components/parameters/ApprovalsRecordType"
+        - $ref: "#/components/parameters/ApprovalsApprover"
+        - $ref: "#/components/parameters/ApprovalsOutcome"
+        - $ref: "#/components/parameters/ApprovalsSearch"
+        - $ref: "#/components/parameters/ApprovalsSort"
+        - $ref: "#/components/parameters/ApprovalsOrder"
+        - $ref: "#/components/parameters/ReportPage"
+        - $ref: "#/components/parameters/ApprovalsPageSize"
+      responses:
+        "200":
+          description: The status mix, the average days and one page of the grid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApprovalsReport"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     sessionCookie:
@@ -8445,6 +8494,93 @@ components:
           - lastSignedIn
           - -lastSignedIn
         default: name
+    # Feature 041 Approvals report
+    ApprovalsStatusType:
+      name: statusType
+      in: query
+      description: The record type of the status widget. A value that matches nothing answers with empty figures.
+      schema:
+        type: string
+        default: activity
+    ApprovalsRecordType:
+      name: recordType
+      in: query
+      description: Grid filter by record type; repeat for several. A value that matches nothing gives an empty grid.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+    ApprovalsApprover:
+      name: approver
+      in: query
+      description: Grid filter by approver ID; repeat for several. The widgets are not narrowed by it.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+    ApprovalsOutcome:
+      name: outcome
+      in: query
+      description: Grid filter by status; repeat for several.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+    ApprovalsSearch:
+      name: q
+      in: query
+      description: Free text over the grid's text columns.
+      schema:
+        type: string
+        maxLength: 200
+    ApprovalsSort:
+      name: sort
+      in: query
+      description: The grid column to sort by. Ties break by item ID, then level.
+      schema:
+        type: string
+        enum:
+          - itemId
+          - itemName
+          - recordType
+          - approver
+          - decidedOn
+          - outcome
+          - submittedOn
+          - level
+          - purchaseOrder
+          - amount
+          - owner
+          - comments
+        default: submittedOn
+    ApprovalsOrder:
+      name: order
+      in: query
+      schema:
+        type: string
+        enum:
+          - asc
+          - desc
+        default: desc
+    ApprovalsPageSize:
+      name: pageSize
+      in: query
+      description: Rows per page of the grid.
+      schema:
+        type: integer
+        enum:
+          - 5
+          - 10
+          - 25
+          - 50
+          - 100
+        default: 50
     # Feature 032 Purchase requests
     PurchaseRequestId:
       name: purchaseRequestId
@@ -9919,6 +10055,196 @@ components:
     PlanDetailsLevel:
       type: string
       enum: [plan, campaign, initiative, activity]
+    ApprovalsPerson:
+      type: object
+      additionalProperties: false
+      required: [id, name]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    ApprovalsReport:
+      type: object
+      additionalProperties: false
+      required: [statusMix, average, grid, financeCovers]
+      properties:
+        statusMix:
+          $ref: "#/components/schemas/ApprovalStatusMix"
+        average:
+          $ref: "#/components/schemas/ApprovalAverage"
+        grid:
+          $ref: "#/components/schemas/ApprovalGrid"
+        financeCovers:
+          type: object
+          additionalProperties: false
+          description: Plans with approval rounds whose amounts the person sees, of the plans with rounds.
+          required: [plans, of]
+          properties:
+            plans:
+              type: integer
+              minimum: 0
+            of:
+              type: integer
+              minimum: 0
+    ApprovalStatusMix:
+      type: object
+      additionalProperties: false
+      required: [recordType, recordTypes, total, waiting, items]
+      properties:
+        recordType:
+          type: string
+        recordTypes:
+          type: array
+          description: The record types that have rounds in the plans in view.
+          items:
+            type: string
+        total:
+          type: integer
+          minimum: 0
+        waiting:
+          type: object
+          additionalProperties: false
+          required: [count, oldestSince]
+          properties:
+            count:
+              type: integer
+              minimum: 0
+            oldestSince:
+              type: [string, "null"]
+              format: date-time
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [outcome, count, sharePercent]
+            properties:
+              outcome:
+                type: string
+                enum: [waiting, approved, declined, recalled, replaced, autoApproved]
+              count:
+                type: integer
+                minimum: 0
+              sharePercent:
+                type: integer
+                minimum: 0
+                maximum: 100
+    ApprovalAverage:
+      type: object
+      additionalProperties: false
+      required: [days, decisions, approvers]
+      properties:
+        days:
+          type: [string, "null"]
+          description: Days to a decision with one decimal; null when nothing was decided.
+        decisions:
+          type: integer
+          minimum: 0
+        approvers:
+          type: array
+          description: Slowest first.
+          items:
+            type: object
+            additionalProperties: false
+            required: [person, days, decisions]
+            properties:
+              person:
+                $ref: "#/components/schemas/ApprovalsPerson"
+              days:
+                type: string
+              decisions:
+                type: integer
+                minimum: 1
+    ApprovalGrid:
+      type: object
+      additionalProperties: false
+      required: [items, total, page, pageSize, choices]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApprovalsRow"
+        total:
+          type: integer
+          minimum: 0
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+        choices:
+          type: object
+          additionalProperties: false
+          required: [recordTypes, outcomes, approvers]
+          properties:
+            recordTypes:
+              type: array
+              items:
+                type: string
+            outcomes:
+              type: array
+              items:
+                type: string
+            approvers:
+              type: array
+              items:
+                $ref: "#/components/schemas/ApprovalsPerson"
+    ApprovalsRow:
+      type: object
+      additionalProperties: false
+      required:
+        - itemId
+        - itemName
+        - recordType
+        - canOpen
+        - approver
+        - decidedOn
+        - outcome
+        - submittedOn
+        - level
+        - levelName
+        - purchaseOrderNumber
+        - amount
+        - owner
+        - comments
+      properties:
+        itemId:
+          type: string
+        itemName:
+          type: string
+        recordType:
+          type: string
+        canOpen:
+          type: boolean
+        approver:
+          oneOf:
+            - $ref: "#/components/schemas/ApprovalsPerson"
+            - type: "null"
+        decidedOn:
+          type: [string, "null"]
+          format: date
+        outcome:
+          type: string
+          enum: [waiting, approved, declined, recalled, replaced, autoApproved, notNeeded]
+        submittedOn:
+          type: string
+          format: date
+        level:
+          type: integer
+          minimum: 1
+        levelName:
+          type: string
+        purchaseOrderNumber:
+          type: [string, "null"]
+        amount:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        owner:
+          $ref: "#/components/schemas/ApprovalsPerson"
+        comments:
+          type: string
     PlanDetailsReport:
       type: object
       additionalProperties: false

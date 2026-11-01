@@ -4458,6 +4458,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports/approvals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The current approval status per record type, the average days to a decision and every approver step (feature 041)
+         * @description Rounds of the activities and purchase requests in the person's reports.view scope that match the report frame; a purchase request is in view through its line items. Period and show are accepted and ignored. A statusType, recordType, outcome or approver that matches nothing answers 200 with empty figures. The widgets status, average and approvals are exported through exportReport.
+         */
+        get: operations["getApprovalsReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4699,6 +4719,78 @@ export interface components {
         };
         /** @enum {string} */
         PlanDetailsLevel: "plan" | "campaign" | "initiative" | "activity";
+        ApprovalsPerson: {
+            id: string;
+            name: string;
+        };
+        ApprovalsReport: {
+            statusMix: components["schemas"]["ApprovalStatusMix"];
+            average: components["schemas"]["ApprovalAverage"];
+            grid: components["schemas"]["ApprovalGrid"];
+            /** @description Plans with approval rounds whose amounts the person sees, of the plans with rounds. */
+            financeCovers: {
+                plans: number;
+                of: number;
+            };
+        };
+        ApprovalStatusMix: {
+            recordType: string;
+            /** @description The record types that have rounds in the plans in view. */
+            recordTypes: string[];
+            total: number;
+            waiting: {
+                count: number;
+                /** Format: date-time */
+                oldestSince: string | null;
+            };
+            items: {
+                /** @enum {string} */
+                outcome: "waiting" | "approved" | "declined" | "recalled" | "replaced" | "autoApproved";
+                count: number;
+                sharePercent: number;
+            }[];
+        };
+        ApprovalAverage: {
+            /** @description Days to a decision with one decimal; null when nothing was decided. */
+            days: string | null;
+            decisions: number;
+            /** @description Slowest first. */
+            approvers: {
+                person: components["schemas"]["ApprovalsPerson"];
+                days: string;
+                decisions: number;
+            }[];
+        };
+        ApprovalGrid: {
+            items: components["schemas"]["ApprovalsRow"][];
+            total: number;
+            page: number;
+            pageSize: number;
+            choices: {
+                recordTypes: string[];
+                outcomes: string[];
+                approvers: components["schemas"]["ApprovalsPerson"][];
+            };
+        };
+        ApprovalsRow: {
+            itemId: string;
+            itemName: string;
+            recordType: string;
+            canOpen: boolean;
+            approver: components["schemas"]["ApprovalsPerson"] | null;
+            /** Format: date */
+            decidedOn: string | null;
+            /** @enum {string} */
+            outcome: "waiting" | "approved" | "declined" | "recalled" | "replaced" | "autoApproved" | "notNeeded";
+            /** Format: date */
+            submittedOn: string;
+            level: number;
+            levelName: string;
+            purchaseOrderNumber: string | null;
+            amount: components["schemas"]["Money"] | null;
+            owner: components["schemas"]["ApprovalsPerson"];
+            comments: string;
+        };
         PlanDetailsReport: {
             show: components["schemas"]["PlanDetailsLevel"];
             currency: string;
@@ -11037,6 +11129,21 @@ export interface components {
         UserAccessStatus: "active" | "inactive" | "all";
         /** @description name (default), email, jobTitle, roles, teams, status or lastSignedIn, "-" for descending; Never is always last. Ties break by person ID. */
         UserAccessSort: "name" | "-name" | "email" | "-email" | "jobTitle" | "-jobTitle" | "roles" | "-roles" | "teams" | "-teams" | "status" | "-status" | "lastSignedIn" | "-lastSignedIn";
+        /** @description The record type of the status widget. A value that matches nothing answers with empty figures. */
+        ApprovalsStatusType: string;
+        /** @description Grid filter by record type; repeat for several. A value that matches nothing gives an empty grid. */
+        ApprovalsRecordType: string[];
+        /** @description Grid filter by approver ID; repeat for several. The widgets are not narrowed by it. */
+        ApprovalsApprover: string[];
+        /** @description Grid filter by status; repeat for several. */
+        ApprovalsOutcome: string[];
+        /** @description Free text over the grid's text columns. */
+        ApprovalsSearch: string;
+        /** @description The grid column to sort by. Ties break by item ID, then level. */
+        ApprovalsSort: "itemId" | "itemName" | "recordType" | "approver" | "decidedOn" | "outcome" | "submittedOn" | "level" | "purchaseOrder" | "amount" | "owner" | "comments";
+        ApprovalsOrder: "asc" | "desc";
+        /** @description Rows per page of the grid. */
+        ApprovalsPageSize: 5 | 10 | 25 | 50 | 100;
         /** @example PR-1001 */
         PurchaseRequestId: string;
         /** @example PRR-1001 */
@@ -19766,6 +19873,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserAccessReport"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getApprovalsReport: {
+        parameters: {
+            query?: {
+                /** @description The plans' year. Default - the current year. */
+                year?: components["parameters"]["AllWorkYear"];
+                /** @description Plan IDs (repeat the parameter for several). */
+                plan?: components["parameters"]["AllWorkPlan"];
+                /** @description Plans of these types (tested on plans). */
+                planType?: components["parameters"]["AllWorkPlanType"];
+                /** @description Team IDs; tested on the plan's teams. */
+                team?: components["parameters"]["AllWorkTeam"];
+                /** @description Person IDs; tested on plans, campaigns, initiatives and activities. */
+                owner?: components["parameters"]["AllWorkOwner"];
+                activityType?: components["parameters"]["AllWorkActivityType"];
+                activityStatus?: components["parameters"]["AllWorkActivityStatus"];
+                /**
+                 * @description A Shell-attribute filter, repeatable: <attributeId>:<value>,<value>… where a value is an option id,
+                 *     yes, no, or none (Not filled in). Tested on the attribute's level (016 FR-039).
+                 * @example [
+                 *       "SA-1022:SO-1301,none"
+                 *     ]
+                 */
+                attr?: components["parameters"]["AllWorkAttr"];
+                /** @description Time widgets by month (default) or quarter of the plan year. */
+                period?: components["parameters"]["ReportPeriod"];
+                /** @description The level a report that ranks records shows. */
+                show?: components["parameters"]["ReportShow"];
+                /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+                currency?: components["parameters"]["ReportCurrency"];
+                /** @description Keys of the widgets shown as a table instead of a chart. */
+                table?: components["parameters"]["ReportTable"];
+                /** @description The record type of the status widget. A value that matches nothing answers with empty figures. */
+                statusType?: components["parameters"]["ApprovalsStatusType"];
+                /** @description Grid filter by record type; repeat for several. A value that matches nothing gives an empty grid. */
+                recordType?: components["parameters"]["ApprovalsRecordType"];
+                /** @description Grid filter by approver ID; repeat for several. The widgets are not narrowed by it. */
+                approver?: components["parameters"]["ApprovalsApprover"];
+                /** @description Grid filter by status; repeat for several. */
+                outcome?: components["parameters"]["ApprovalsOutcome"];
+                /** @description Free text over the grid's text columns. */
+                q?: components["parameters"]["ApprovalsSearch"];
+                /** @description The grid column to sort by. Ties break by item ID, then level. */
+                sort?: components["parameters"]["ApprovalsSort"];
+                order?: components["parameters"]["ApprovalsOrder"];
+                /** @description The page of the report's table, from 1. */
+                page?: components["parameters"]["ReportPage"];
+                /** @description Rows per page of the grid. */
+                pageSize?: components["parameters"]["ApprovalsPageSize"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The status mix, the average days and one page of the grid. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalsReport"];
                 };
             };
             400: components["responses"]["BadRequest"];
