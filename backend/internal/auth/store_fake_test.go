@@ -9,10 +9,12 @@ import (
 // fakeStore is authtest.Store for this package's own tests, which cannot import authtest.
 type fakeStore struct {
 	sessions *fake.Table[Session]
+	signIns  *fake.Table[signIn]
 }
 
 func newFakeStore(db *fake.DB) fakeStore {
-	return fakeStore{sessions: fake.TableOf(db, "sessions", func(s Session) string { return s.ID })}
+	return fakeStore{sessions: fake.TableOf(db, "sessions", func(s Session) string { return s.ID }),
+		signIns: fake.TableOf(db, "sign_ins", func(r signIn) string { return r.PersonID })}
 }
 
 func (s fakeStore) Get(_ context.Context, id string) (Session, bool, error) {

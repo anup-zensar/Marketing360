@@ -39,6 +39,8 @@ func Open(ctx context.Context, dsn string) (*DB, error) {
 	}
 	cfg.AfterConnect = scanTimestampsInUTC
 	cfg.ConnConfig.Tracer = counter{}
+	// After five runs PostgreSQL may keep a generic plan, which cannot drop an unused "$1 IS NULL OR …" branch.
+	cfg.ConnConfig.RuntimeParams["plan_cache_mode"] = "force_custom_plan"
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		return nil, fmt.Errorf("create pool: %w", err)

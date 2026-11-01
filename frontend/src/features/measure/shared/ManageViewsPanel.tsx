@@ -43,7 +43,8 @@ export function ManageViewsPanel({ report, open, onOpenChange, views }: ManageVi
 
   function deleteView(view: ReportView) {
     remove.mutate(view.id, {
-      onSuccess: (deleted) =>
+      onSuccess: (deleted) => {
+        onOpenChange(false);
         show({
           message: `View '${deleted.name}' deleted`,
           action: {
@@ -51,7 +52,8 @@ export function ManageViewsPanel({ report, open, onOpenChange, views }: ManageVi
             altText: 'Save the view again',
             onClick: () => restore(deleted),
           },
-        }),
+        });
+      },
       onError: (error) => refused(error, 'name'),
     });
   }

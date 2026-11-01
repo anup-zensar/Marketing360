@@ -7,8 +7,8 @@ import (
 	"mapp/internal/platform/apibench"
 )
 
-// BenchmarkReportsFrame measures feature 039's SC-003 on the demo data and on the volume: a report's frame within
-// 2 seconds, for every plan and for one market, with and without filters, and the shared export.
+// BenchmarkReportsFrame measures 039's and 040's SC on the demo data and on the volume: a report's frame and Plan
+// budget within 2 seconds, for every plan and for one market, with and without filters, and the shared export.
 func BenchmarkReportsFrame(b *testing.B) {
 	for _, data := range []apibench.Data{apibench.Demo, apibench.Volume} {
 		b.Run(string(data), func(b *testing.B) {
@@ -29,5 +29,7 @@ func reportPages() []page {
 		{"frame filtered", alex, "/api/v1/reports/frame?report=planBudget&year=2026&planType=operational&activityStatus=approved"},
 		{"saved views", priya, "/api/v1/reports/plan-budget/views"},
 		{"export xlsx", alex, "/api/v1/reports/plan-budget/export?year=2026&format=xlsx"},
+		{"plan budget", alex, "/api/v1/reports/plan-budget?year=2026"},
+		{"plan budget ranked", alex, "/api/v1/reports/plan-budget/ranked?year=2026&show=activity&group=owner"},
 	}
 }
