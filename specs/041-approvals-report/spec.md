@@ -89,6 +89,9 @@ objects. SP&A One's approval engine approves three record types only (031), so t
   type, outcome or approver, in the widget or the grid, answers 200 with empty figures**, never an error; only a
   malformed `sort`, `order`, `page`, `pageSize` or frame filter is a 400. Applied to FR-008, SC-002, the edge
   cases and `contracts/api.md`. (Analysis.)
+- **041-C11** — Q: A purchase request has one PO number per line but the grid has one PO column; what does it
+  show? → A: **The distinct PO numbers of the request's lines, joined with commas, in line order; "—" when GSAP
+  has made none yet.** Applied to US2 scenario 1 and `contracts/api.md`. (T004.)
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -149,7 +152,8 @@ columns and order, and none of the rows belongs to a plan outside Alex's scope.
 
 1. **Given** the report, **When** the grid shows, **Then** each row is one named approver at one level of one
    submission (041-C2) with these columns in order: record ID, record name, record type, approver, decided on, outcome, submitted on,
-   level, purchase order number (purchase requests), amount, owner, comments.
+   level, purchase order number (purchase requests: the distinct numbers of its lines, joined, 041-C11), amount,
+   owner, comments.
 2. **Given** the grid, **When** the person types in the search box, **Then** it narrows to rows whose text
    columns contain the words, and the total count updates.
 3. **Given** the grid, **When** the person sorts by a column, **Then** all rows (not only the page) are ordered

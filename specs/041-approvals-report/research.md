@@ -58,9 +58,15 @@ subject IDs come from the year's activities plus `Purchases.Summaries(lineItemID
 same rule as 036's `board.subjectIDs` — and every filter of the frame narrows purchase requests through their line
 items.
 
-**Open**: `purchaserequest.Summaries` carries no name, owner or PO number. Which existing read to adapt is
-settled in the first backend task; if none gives them in one statement, the integrator widens `Summary` (outside
-Owns). Listed in plan.md for lane A.
+**Settled by T004**: `purchaserequest.Summaries` carries no name, owner or PO number, but it is built on
+`Store.OnLineItems(ctx, ViewScope, lineItemIDs)`, which returns whole purchase requests (name, `OwnerID`, status,
+lines with `PO.Number`, the GSAP header) in one scoped statement. The adapter calls `Summaries` for the amount,
+status and plan (one source for 032's amount) and `OnLineItems` for the rest — two fixed statements — building
+the scope as `ViewScope{Plans: authz.ScopeOf(ctx), List: authz.PermissionScopeOf(ctx, authz.PurchaseRequestsList)}`,
+the same scope 036 reads with. No change to `purchaserequest`, so `Summary` is not widened.
+
+**PO column** (041-C11): a request has one PO number per line, the grid column one value: the distinct PO numbers
+joined with commas in line order, "—" when none yet.
 
 ## R5 — Report-specific parameters
 

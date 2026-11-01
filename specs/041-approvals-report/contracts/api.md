@@ -76,7 +76,7 @@ ApprovalRow:
   submittedOn: date
   level: int
   levelName: string
-  purchaseOrderNumber: string | null       # purchase requests only
+  purchaseOrderNumber: string | null       # purchase requests only: distinct PO numbers of the lines, comma-joined in line order; null → "—" (041-C11)
   amount: Money | null                     # display currency; null → "—" (no finance.view)
   owner: PersonRef
   comments: string                         # in full; the grid truncates and the page expands

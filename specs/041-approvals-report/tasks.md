@@ -35,9 +35,11 @@ yet); commit once per finished story.
 
 **Purpose**: the package skeleton, its ports and fakes, and the one read decision both stories depend on.
 
-- [ ] T004 Confirm which existing `purchaserequest` read gives name, owner, amount and PO number of the
-  purchase requests on the plans in view in one statement (R4); if none does, write the finding in plan.md
-  question 4 and ask the integrator before US2 (US1 needs only `Summaries`)
+- [X] T004 Confirm which existing `purchaserequest` read gives name, owner, amount and PO number of the
+  purchase requests on the plans in view in one statement (R4). Finding: `Store.OnLineItems(ctx, ViewScope,
+  lineItemIDs)` returns whole purchase requests (name, owner, lines with PO numbers) in one scoped statement but
+  no USD amount; `Service.Summaries` (built on it) gives the amount, status and plan. The adapter calls both —
+  two fixed statements, no change to `purchaserequest` (research R4, plan.md question 4)
 - [ ] T005 [P] `backend/internal/measure/approvalreport/model.go`: the API types of `contracts/api.md`
   (`ApprovalsReport`, `ApprovalStatusMix`, `ApprovalAverage`, `ApprovalGrid`, `ApprovalRow`, `PersonRef`) and the
   outcome words (`waiting`, `approved`, `declined`, `recalled`, `replaced`, `autoApproved`, `notNeeded`) as
@@ -152,7 +154,8 @@ the file holds every matching row and no row of a plan outside Alex's scope.
 ### Implementation
 
 - [ ] T033 [US2] `approvalreport/rows.go`: rows from rounds and actions (levels, approvers, decisions, capacity),
-  names, owners, amounts and `canOpen` from the year's nodes and `Purchases` (T004)
+  names, owners, amounts, joined PO numbers (041-C11) and `canOpen` from the year's nodes, `Purchases` and
+  `OnLineItems` (T004)
 - [ ] T034 [US2] `approvalreport/grid.go`: filters, search, sort and paging over all rows; page-size allowlist;
   `choices` from the people and types with rows
 - [ ] T035 [US2] `service.go`, `handler.go`, `app/measure_approvals.go`: wire the grid, the extra parameters and

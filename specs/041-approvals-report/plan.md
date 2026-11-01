@@ -89,8 +89,10 @@ yellow primary button ✔.
    own ports.
 3. **File name.** The hub's stub is `app/measure_approvals.go` (`registerApprovals`); issue #34's Owns list says
    `app/measure_approvalreport.go`. 041 uses the hub's name; the issue should be corrected.
-4. **Purchase request name, owner, PO number** (R4): `purchaserequest.Summaries` carries none; if no existing
-   read gives them in one statement, may the integrator widen `Summary`?
+4. **Purchase request name, owner, PO number** (R4, answered by T004): `Summaries` carries none, but the existing
+   `Store.OnLineItems` does (scoped, one statement); the adapter uses it beside `Summaries` for the amount, so
+   `Summary` need not be widened. A request's several PO numbers (one per line) show as one value: the distinct
+   numbers joined, "—" when GSAP has made none (041-C11).
 5. **Benchmark file** location (above).
 6. **`restarted` and `cancelled`** shown as Replaced and Recalled (041-C6): confirm with the 017/031 owners.
 7. **Controls row.** This report has no time widget or ranked list, so it needs no Period or Show: can
