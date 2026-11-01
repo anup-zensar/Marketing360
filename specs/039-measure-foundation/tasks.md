@@ -43,7 +43,7 @@ rules, the wiring hub with one stub per report, the migration, the routes and st
   `sqlc generate && sqlc vet`
 - [X] T006 [P] Test first `TestSeedRoles_ReportsView_039_FR002` in `backend/seed/access_test.go`, then give
   `authz.ReportsView` to every built-in role that holds `PlansView` in `backend/seed/access.go`
-- [X] T007 Test first `TestCatalogue_FR001_FR003` in `backend/internal/measure/catalogue_test.go` (nine reports
+- [X] T007 Test first `TestCatalogue_NineInOrder_FR001`, `TestCatalogue_UserAccessWithAccessManage_FR003` and `TestCatalogue_RegisteredReportAvailable_FR001` in `backend/internal/measure/catalogue_test.go` (nine reports
   in data-model §3 order with key, path, name, purpose of contracts/ui.md; a registered stub is not available;
   `userAccess` needs `access.manage`); then `backend/internal/measure/model.go` (API types of contracts/api.md),
   `catalogue.go` (the `Report` interface `Key`, `Available`, `Sheets`; `Registry` with `Register`, `Get`,

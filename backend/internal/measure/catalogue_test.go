@@ -38,61 +38,63 @@ func stubRegistry(t *testing.T) *measure.Registry {
 	return registry
 }
 
-func TestCatalogue_FR001_FR003(t *testing.T) {
+// The nine reports in order, every stub coming soon, User access only with access.manage.
+func TestCatalogue_NineInOrder_FR001(t *testing.T) {
 	t.Parallel()
-	t.Run("FR-001 the nine reports in order, every stub coming soon, User access only with access.manage", func(t *testing.T) {
-		t.Parallel()
-		got := stubRegistry(t).Catalogue(withPermissions(t, authz.PlansView, authz.ReportsView))
-		var keys []string
-		for _, entry := range got.Items {
-			keys = append(keys, entry.Key)
-			if entry.Available || entry.Name == "" || entry.Purpose == "" || entry.Path == "" {
-				t.Errorf("entry %+v: want a stub with a name, a purpose and a path", entry)
-			}
+	got := stubRegistry(t).Catalogue(withPermissions(t, authz.PlansView, authz.ReportsView))
+	var keys []string
+	for _, entry := range got.Items {
+		keys = append(keys, entry.Key)
+		if entry.Available || entry.Name == "" || entry.Purpose == "" || entry.Path == "" {
+			t.Errorf("entry %+v: want a stub with a name, a purpose and a path", entry)
 		}
-		want := []string{"planBudget", "approvals", "purchaseRequests", "planDetails", "gsapLink", "summary", "revenue", "funnel"}
-		if diff := cmp.Diff(want, keys); diff != "" {
-			t.Errorf("catalogue without access.manage (-want +got):\n%s", diff)
-		}
-	})
-	t.Run("FR-003 a person who manages access also sees User access, sixth", func(t *testing.T) {
-		t.Parallel()
-		got := stubRegistry(t).Catalogue(withPermissions(t, authz.ReportsView, authz.AccessManage))
-		if len(got.Items) != 9 || got.Items[5].Key != "userAccess" || got.Items[5].Path != "user-access" {
-			t.Errorf("catalogue = %+v, want nine with userAccess sixth", got.Items)
-		}
-	})
-	t.Run("FR-001 a registered report is available", func(t *testing.T) {
-		t.Parallel()
-		registry := measure.NewRegistry()
-		if err := registry.Register(availableReport{key: "planBudget"}); err != nil {
-			t.Fatalf("Register() error = %v", err)
-		}
-		got := registry.Catalogue(withPermissions(t, authz.ReportsView))
-		if len(got.Items) != 8 || !got.Items[0].Available || got.Items[1].Available {
-			t.Errorf("catalogue = %+v, want planBudget available and the unregistered ones not", got.Items)
-		}
-	})
-	t.Run("a key outside the catalogue or registered twice is refused", func(t *testing.T) {
-		t.Parallel()
-		registry := measure.NewRegistry()
-		if err := registry.Register(measure.Stub("someReport")); err == nil {
-			t.Error("Register(someReport) error = nil, want an error")
-		}
-		if err := registry.Register(measure.Stub("approvals")); err != nil {
-			t.Fatalf("Register(approvals) error = %v", err)
-		}
-		if err := registry.Register(measure.Stub("approvals")); err == nil {
-			t.Error("Register(approvals) twice error = nil, want an error")
-		}
-	})
-	t.Run("a path finds its report, an unknown path none", func(t *testing.T) {
-		t.Parallel()
-		if key, found := measure.KeyOfPath("purchase-requests"); !found || key != "purchaseRequests" {
-			t.Errorf("KeyOfPath(purchase-requests) = %q, %v", key, found)
-		}
-		if _, found := measure.KeyOfPath("finance-budget"); found {
-			t.Error("KeyOfPath(finance-budget) found a report, want none")
-		}
-	})
+	}
+	want := []string{"planBudget", "approvals", "purchaseRequests", "planDetails", "gsapLink", "summary", "revenue", "funnel"}
+	if diff := cmp.Diff(want, keys); diff != "" {
+		t.Errorf("catalogue without access.manage (-want +got):\n%s", diff)
+	}
+}
+
+func TestCatalogue_UserAccessWithAccessManage_FR003(t *testing.T) {
+	t.Parallel()
+	got := stubRegistry(t).Catalogue(withPermissions(t, authz.ReportsView, authz.AccessManage))
+	if len(got.Items) != 9 || got.Items[5].Key != "userAccess" || got.Items[5].Path != "user-access" {
+		t.Errorf("catalogue = %+v, want nine with userAccess sixth", got.Items)
+	}
+}
+
+func TestCatalogue_RegisteredReportAvailable_FR001(t *testing.T) {
+	t.Parallel()
+	registry := measure.NewRegistry()
+	if err := registry.Register(availableReport{key: "planBudget"}); err != nil {
+		t.Fatalf("Register() error = %v", err)
+	}
+	got := registry.Catalogue(withPermissions(t, authz.ReportsView))
+	if len(got.Items) != 8 || !got.Items[0].Available || got.Items[1].Available {
+		t.Errorf("catalogue = %+v, want planBudget available and the unregistered ones not", got.Items)
+	}
+}
+
+func TestRegistry_RefusesUnknownKeyAndSecondRegistration(t *testing.T) {
+	t.Parallel()
+	registry := measure.NewRegistry()
+	if err := registry.Register(measure.Stub("someReport")); err == nil {
+		t.Error("Register(someReport) error = nil, want an error")
+	}
+	if err := registry.Register(measure.Stub("approvals")); err != nil {
+		t.Fatalf("Register(approvals) error = %v", err)
+	}
+	if err := registry.Register(measure.Stub("approvals")); err == nil {
+		t.Error("Register(approvals) twice error = nil, want an error")
+	}
+}
+
+func TestKeyOfPath(t *testing.T) {
+	t.Parallel()
+	if key, found := measure.KeyOfPath("purchase-requests"); !found || key != "purchaseRequests" {
+		t.Errorf("KeyOfPath(purchase-requests) = %q, %v", key, found)
+	}
+	if _, found := measure.KeyOfPath("finance-budget"); found {
+		t.Error("KeyOfPath(finance-budget) found a report, want none")
+	}
 }

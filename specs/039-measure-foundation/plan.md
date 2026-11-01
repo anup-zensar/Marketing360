@@ -141,7 +141,7 @@ and F2; the hub files are written once here so the other lanes never edit them (
 | Finance coverage "Covers N of M" (FR-004) | `measure/frame.go` | `TestFrame_FinanceCoverage_FR004` |
 | Left out counted, never named (FR-015) | `measure/frame.go` | `TestFrame_LeftOutCountedNotNamed_FR015` |
 | Choices: year list, plans of the year, owners and types of the selected plans, attribute groups per level, inactive values in use, no text attributes (FR-008–FR-011) | `measure/choices.go` | `TestChoices_FR008_FR011` |
-| Catalogue order, availability, extra rules (FR-001, FR-003) | `measure/catalogue.go` | `TestCatalogue_FR001_FR003` |
+| Catalogue order, availability, extra rules (FR-001, FR-003) | `measure/catalogue.go` | `TestCatalogue_NineInOrder_FR001`, `TestCatalogue_UserAccessWithAccessManage_FR003`, `TestCatalogue_RegisteredReportAvailable_FR001` |
 | `reports.view` in Table A; built-in roles that view plans hold it (FR-002) | `authz`, `seed/access.go` | `TestCatalogue_ReportsView_039_FR002`, `TestSeedRoles_ReportsView_039_FR002` |
 | Saved views: name rules, per report, default per report, update, delete, owner only (FR-024–FR-029) | `measure/views.go` | `TestViews_FR024_FR029` |
 | Views versioned (409 on a stale version) and every change logged; entries seen by the owner and `activityLog.viewAll` (FR-028, R5) | `measure/views.go`, `app/history_access.go` | `TestViews_VersionAndLog_FR028`, `TestHistoryAccess_ReportView_039_FR028` |
