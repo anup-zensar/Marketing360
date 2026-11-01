@@ -40,14 +40,14 @@ yet); commit once per finished story.
   lineItemIDs)` returns whole purchase requests (name, owner, lines with PO numbers) in one scoped statement but
   no USD amount; `Service.Summaries` (built on it) gives the amount, status and plan. The adapter calls both —
   two fixed statements, no change to `purchaserequest` (research R4, plan.md question 4)
-- [ ] T005 [P] `backend/internal/measure/approvalreport/model.go`: the API types of `contracts/api.md`
+- [X] T005 [P] `backend/internal/measure/approvalreport/model.go`: the API types of `contracts/api.md`
   (`ApprovalsReport`, `ApprovalStatusMix`, `ApprovalAverage`, `ApprovalGrid`, `ApprovalRow`, `PersonRef`) and the
   outcome words (`waiting`, `approved`, `declined`, `recalled`, `replaced`, `autoApproved`, `notNeeded`) as
   constants; money as `money.Money`, never a float
-- [ ] T006 [P] `backend/internal/measure/approvalreport/ports.go`: the small consumer interfaces the report reads
+- [X] T006 [P] `backend/internal/measure/approvalreport/ports.go`: the small consumer interfaces the report reads
   through — `Transactor` (`Read`), `Planning` (the year's nodes for plans in the reports scope, as 039's
   `measure.Planning`), `Rounds` (`RoundsOfSubjects`, `ActionsOfSubjects` for subject IDs), `Purchases` (R4), `Deps`
-- [ ] T007 [P] `backend/internal/measure/approvalreport/approvalreporttest/`: fakes of the ports on
+- [X] T007 [P] `backend/internal/measure/approvalreport/approvalreporttest/`: fakes of the ports on
   `platform/fake` (`fake.DB`, `fake.Table[T]`), with a fixture of rounds in every engine outcome, levels with
   one, any and all approvers, an automatic level, a skipped level and a plan without `finance.view`
 
@@ -60,64 +60,64 @@ same plans.
 
 ### Tests first (write, see fail)
 
-- [ ] T008 [P] [US1] `TestOutcomeWord_041_FR006` in `approvalreport/outcomes_test.go`: table of every engine
+- [X] T008 [P] [US1] `TestOutcomeWord_041_FR006` in `approvalreport/outcomes_test.go`: table of every engine
   `Outcome` and `AutoApproved` value → one word (R3: `restarted`→replaced, `cancelled`→recalled)
-- [ ] T009 [P] [US1] `TestStatusMix_041_FR006_FR007` in `service_test.go` on the fakes: counts and whole-number
+- [X] T009 [P] [US1] `TestStatusMix_041_FR006_FR007` in `service_test.go` on the fakes: counts and whole-number
   shares add to the total; the selected record type only; only types that have rounds are offered (and no plan,
   campaign, initiative, line-item or accrual type, FR-024); default `activity`; a type with no rounds in view, or
   an unknown `statusType`, is answered with total 0 and no error (041-C10)
-- [ ] T010 [P] [US1] `TestWaiting_ByType_041_FR008` and `TestPurchaseRequestsInView_041_C8`: waiting count and
+- [X] T010 [P] [US1] `TestWaiting_ByType_041_FR008` and `TestPurchaseRequestsInView_041_C8`: waiting count and
   oldest-waiting-since of the selected type; a purchase request is in view only through a line item in view (the
   frame's plan, owner, activity type, status and attribute filters narrow it); equality with 036 is proved at
   contract level in T015
-- [ ] T011 [P] [US1] `TestAverage_041_FR009`, `TestAverage_NoDecisions_041_FR011` in `average_test.go`:
+- [X] T011 [P] [US1] `TestAverage_041_FR009`, `TestAverage_NoDecisions_041_FR011` in `average_test.go`:
   `approval.AverageDecisionDays` over person-decided rounds, auto-approved and open rounds left out, a round
   decided within the hour counts 0.0 days, `null` and never zero when none (R1); the rule is the one of Approvals
   › Monitoring, which covers rounds ended this month only, so equality is not asserted against it
-- [ ] T012 [P] [US1] `TestApproverAverages_041_FR010`: per-approver mean from the round's submission to that
+- [X] T012 [P] [US1] `TestApproverAverages_041_FR010`: per-approver mean from the round's submission to that
   person's own decision, slowest first, the decider credited for backup, delegate and on-behalf decisions, waiting,
   recalled, replaced, not-needed and automatic steps not counted (041-C2, C7)
-- [ ] T013 [P] [US1] `TestScope_PerPersona_041_FR003` in `service_test.go`: a person sees only rounds of plans in
+- [X] T013 [P] [US1] `TestScope_PerPersona_041_FR003` in `service_test.go`: a person sees only rounds of plans in
   their `reports.view` scope; a round of another plan is neither read nor counted; amounts `null` without
   `finance.view` and `financeCovers` says how many plans
-- [ ] T014 [P] [US1] `TestSheets_041_FR023` for the `status` and `average` widgets: sheet order, headings, the
+- [X] T014 [P] [US1] `TestSheets_041_FR023` for the `status` and `average` widgets: sheet order, headings, the
   "All approvers" first row, currency named in headings
-- [ ] T015 [P] [US1] `TestApprovalsReport_Contract_041` in `handler_test.go` (`package approvalreport_test`, on
+- [X] T015 [P] [US1] `TestApprovalsReport_Contract_041` in `handler_test.go` (`package approvalreport_test`, on
   `apitest`): 200 shape against `openapi.yaml`, 400 problems only for a malformed frame filter, `sort`, `order`,
   `page` or `pageSize`, 401 signed out, 403 without `reports.view`, 200 with empty widgets for an unknown
   `statusType`, `recordType`, `outcome` or `approver` (041-C10); plus `TestApprovalsReport_EqualsDashboard_041_SC002`
   on DemoDB: calls this endpoint and `GET /dashboards/executive`, and waiting summed over the three types, the
   oldest waiting date and the average equal 036's Approvals panel for the same plans
-- [ ] T016 [P] [US1] `frontend/src/features/measure/approvals/StatusWidget.test.tsx` and `AverageWidget.test.tsx`
+- [X] T016 [P] [US1] `frontend/src/features/measure/approvals/StatusWidget.test.tsx` and `AverageWidget.test.tsx`
   with MSW `reply()` and `vitest-axe`: one test per state — data, loading skeleton, "No approvals yet" with what
   creates them, "No decisions yet" with "—", "You can't see financial data" / "Covers N of M plans" where relevant,
   error with **Try again**; record-type selector offers only present types; table view lists the same figures
-- [ ] T017 [P] [US1] `ApprovalsReport.test.tsx`: page states from the frame — "No plans you may see for <year>",
+- [X] T017 [P] [US1] `ApprovalsReport.test.tsx`: page states from the frame — "No plans you may see for <year>",
   "Your filters exclude everything" with **Reset filters**, no access (the standard page), data; `schemas.test.ts`
   with fast-check: the report's own parameters round-trip through the address and malformed values are dropped
 
 ### Implementation
 
-- [ ] T018 [US1] `approvalreport/outcomes.go`: engine outcome → word (R3), `OutcomeWord(round)`
-- [ ] T019 [US1] `approvalreport/average.go`: overall and per-approver averages through
+- [X] T018 [US1] `approvalreport/outcomes.go`: engine outcome → word (R3), `OutcomeWord(round)`
+- [X] T019 [US1] `approvalreport/average.go`: overall and per-approver averages through
   `approval.AverageDecisionDays`, slowest first
-- [ ] T020 [US1] `approvalreport/service.go`: `Service.Report(ctx, a, f, q)` in one `Read`: the year's nodes for
+- [X] T020 [US1] `approvalreport/service.go`: `Service.Report(ctx, a, f, q)` in one `Read`: the year's nodes for
   plans in scope, **one** `RoundsOfSubjects` and **one** `ActionsOfSubjects` for those subjects (activities and
   purchase requests), status mix, waiting, averages; no statement per row; `Service.Sheets` for `status` and
   `average`
-- [ ] T021 [US1] `approvalreport/handler.go`: `RegisterRoutes` for `GET /reports/approvals`; parse 039's filter
+- [X] T021 [US1] `approvalreport/handler.go`: `RegisterRoutes` for `GET /reports/approvals`; parse 039's filter
   once (`measure.ParseFilter`) and the report's own parameters; the service never reads the request; `web.Respond`
   and `web.RespondError`
-- [ ] T022 [US1] `backend/internal/app/measure_approvals.go`: the body of `registerApprovals` — the adapter on
+- [X] T022 [US1] `backend/internal/app/measure_approvals.go`: the body of `registerApprovals` — the adapter on
   `stores.ApprovalStore`, `NewService`, `mount(w.signedIn, handler)`, register the `measure.Report` with
   `Available() == true`; delete this operation's line from `notYetServed` in `contract_routes_test.go`
-- [ ] T023 [P] [US1] `frontend/src/features/measure/approvals/schemas.ts` (Zod for `statusType` and the grid
+- [X] T023 [P] [US1] `frontend/src/features/measure/approvals/schemas.ts` (Zod for `statusType` and the grid
   parameters) and `api.ts` (`useApprovalsReport(filter, params)`, key `['reports','approvals',query]`, typed by the
   generated contract)
-- [ ] T024 [P] [US1] `StatusWidget.tsx` (036's SVG bars with the four chart tokens, never a chart library; each
+- [X] T024 [P] [US1] `StatusWidget.tsx` (036's SVG bars with the four chart tokens, never a chart library; each
   count and share also as text; record-type selector; Chart · Table) and `AverageWidget.tsx` (card, approver list)
   inside `ReportWidget`
-- [ ] T025 [US1] `ApprovalsReport.tsx`: replace the stub with `ReportFrame` and the widgets; Period and Show are
+- [X] T025 [US1] `ApprovalsReport.tsx`: replace the stub with `ReportFrame` and the widgets; Period and Show are
   not offered (spec FR-005); the grid slot stays empty until US2
 - [ ] T026 [US1] `frontend/e2e/measure-approvals.spec.ts` US1 with axe: Alex opens Reports › Approvals, the
   figures equal Approvals › Monitoring, switching the record type changes the mix, a filter narrows both widgets,
