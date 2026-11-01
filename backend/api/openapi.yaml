@@ -7881,11 +7881,16 @@ paths:
         - $ref: "#/components/parameters/ReportPeriod"
         - $ref: "#/components/parameters/ReportShow"
         - $ref: "#/components/parameters/ReportCurrency"
-        - $ref: "#/components/parameters/RankedSort"
+        - $ref: "#/components/parameters/ReportOwnSort"
+        - $ref: "#/components/parameters/ReportOwnTab"
         - $ref: "#/components/parameters/RankedOrder"
         - $ref: "#/components/parameters/RankedGroup"
         - $ref: "#/components/parameters/RankedSearch"
         - $ref: "#/components/parameters/RankedDrill"
+        - $ref: "#/components/parameters/ApprovalsStatusType"
+        - $ref: "#/components/parameters/ApprovalsRecordType"
+        - $ref: "#/components/parameters/ApprovalsApprover"
+        - $ref: "#/components/parameters/ApprovalsOutcome"
       responses:
         "200":
           description: The file, named "SP&A One – <report> [– <widget>] – <year> – <date>".
@@ -8306,6 +8311,20 @@ components:
           - summary
           - revenue
           - funnel
+    ReportOwnSort:
+      name: sort
+      in: query
+      description: The report's own sort, which the report validates (039 FR-022); a leading minus sorts descending.
+      schema:
+        type: string
+        pattern: ^-?[a-zA-Z]{1,40}$
+    ReportOwnTab:
+      name: tab
+      in: query
+      description: The report's own tab, which the report validates (044).
+      schema:
+        type: string
+        pattern: ^[a-z][A-Za-z]{0,39}$
     RankedSort:
       name: sort
       in: query

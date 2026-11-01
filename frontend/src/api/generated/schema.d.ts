@@ -11095,6 +11095,10 @@ export interface components {
         ReportKey: components["schemas"]["ReportKey"];
         /** @description The report's path in the web app's address. */
         ReportPath: "plan-budget" | "approvals" | "purchase-requests" | "plan-details" | "gsap-link" | "user-access" | "summary" | "revenue" | "funnel";
+        /** @description The report's own sort, which the report validates (039 FR-022); a leading minus sorts descending. */
+        ReportOwnSort: string;
+        /** @description The report's own tab, which the report validates (044). */
+        ReportOwnTab: string;
         RankedSort: "budget" | "planned" | "committed" | "actual" | "leftToPlan" | "unspent";
         RankedOrder: "desc" | "asc";
         /** @description none, plan, owner or attr:<attribute ID>. */
@@ -19460,13 +19464,24 @@ export interface operations {
                 show?: components["parameters"]["ReportShow"];
                 /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
                 currency?: components["parameters"]["ReportCurrency"];
-                sort?: components["parameters"]["RankedSort"];
+                /** @description The report's own sort, which the report validates (039 FR-022); a leading minus sorts descending. */
+                sort?: components["parameters"]["ReportOwnSort"];
+                /** @description The report's own tab, which the report validates (044). */
+                tab?: components["parameters"]["ReportOwnTab"];
                 order?: components["parameters"]["RankedOrder"];
                 /** @description none, plan, owner or attr:<attribute ID>. */
                 group?: components["parameters"]["RankedGroup"];
                 q?: components["parameters"]["RankedSearch"];
                 /** @description The record whose children the list shows under it. */
                 drill?: components["parameters"]["RankedDrill"];
+                /** @description The record type of the status widget. A value that matches nothing answers with empty figures. */
+                statusType?: components["parameters"]["ApprovalsStatusType"];
+                /** @description Grid filter by record type; repeat for several. A value that matches nothing gives an empty grid. */
+                recordType?: components["parameters"]["ApprovalsRecordType"];
+                /** @description Grid filter by approver ID; repeat for several. The widgets are not narrowed by it. */
+                approver?: components["parameters"]["ApprovalsApprover"];
+                /** @description Grid filter by status; repeat for several. */
+                outcome?: components["parameters"]["ApprovalsOutcome"];
             };
             header?: never;
             path: {

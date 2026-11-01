@@ -1,9 +1,11 @@
 import { screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { testUser } from '@/testing/fixtures/users';
 import { VIEWER } from '@/testing/fixtures/viewer';
+import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
+import { reply } from '@/testing/replies';
 import { ReportWidget } from './ReportWidget';
 import type { ReportWidgetProps } from './ReportWidget';
 
@@ -36,6 +38,8 @@ function renderWidget(
 }
 
 describe('ReportWidget and ReportTable (039 FR-020 – FR-023)', () => {
+  afterEach(() => vi.restoreAllMocks());
+
   it('shows its title, ⓘ tip and chart, and switches to the table kept in the address', async () => {
     const { user, router } = renderWidget();
 
@@ -99,5 +103,32 @@ describe('ReportWidget and ReportTable (039 FR-020 – FR-023)', () => {
     expect(screen.getByText('Covers 1 of 2 plans')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Try again' }));
     expect(onRetry).toHaveBeenCalled();
+  });
+  it('exports what the address shows: the report’s own sort, search and grid filters (FR-022)', async () => {
+    URL.createObjectURL = () => 'blob:export';
+    URL.revokeObjectURL = () => {};
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const api = mockApi([reply('GET /api/v1/reports/{report}/export', () => new Response('file'))]);
+    const { user } = renderWidget(
+      {},
+      '/reports/plan-details?sort=amount&order=asc&q=fleet&recordType=activity&recordType=purchaseRequest&outcome=approved',
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Export' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'CSV (.csv)' }));
+
+    await waitFor(() =>
+      expect(api.requests.some((r) => r.path === '/api/v1/reports/plan-details/export')).toBe(true),
+    );
+    const request = api.requests.find((r) => r.path === '/api/v1/reports/plan-details/export');
+    const sent = new URLSearchParams(request?.search);
+    expect([sent.get('widget'), sent.get('sort'), sent.get('order'), sent.get('q')]).toEqual([
+      'attr12Count',
+      'amount',
+      'asc',
+      'fleet',
+    ]);
+    expect(sent.getAll('recordType')).toEqual(['activity', 'purchaseRequest']);
+    expect(sent.getAll('outcome')).toEqual(['approved']);
   });
 });
