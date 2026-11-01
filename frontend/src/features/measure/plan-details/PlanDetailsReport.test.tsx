@@ -21,6 +21,7 @@ function renderReport(
     reply('GET /api/v1/me', { body: testUser() }),
     reply('GET /api/v1/reports/frame', { body: frame }),
     reply('GET /api/v1/reports/plan-details', { body: report }),
+    reply('GET /api/v1/reports/{report}/views', { body: { items: [], total: 0 } }),
   ]);
   renderWithProviders(<PlanDetailsReport />, {
     route,

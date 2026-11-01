@@ -1,7 +1,6 @@
 package plandetails
 
 import (
-	"math/big"
 	"slices"
 
 	"mapp/internal/allwork"
@@ -61,7 +60,7 @@ func partsOf(a allwork.Attribute, n *allwork.Node, units []string, amount money.
 	case v.Yes != nil:
 		parts = []part{yesNoPart(*v.Yes)}
 	default:
-		return divide(optionParts(a, v), v.Shares, amount)
+		return divide(optionParts(a, v), v, amount)
 	}
 	parts[0].amount = amount
 	return parts, false
@@ -89,40 +88,11 @@ func optionParts(a allwork.Attribute, v allwork.AttrValue) []part {
 	return parts
 }
 
-// divide gives a % split's values amount × share ÷ 100, half up, and the last the rest; any other value gets it all.
-func divide(parts []part, shares map[string]money.Percent, amount money.Amount) ([]part, bool) {
-	if len(parts) == 1 || shares == nil {
-		for i := range parts {
-			parts[i].amount = amount
-		}
-		return parts, len(parts) > 1
-	}
-	var given money.Amount
+// divide gives the options their amounts by All work's one rule (allwork.AttributeParts).
+func divide(parts []part, v allwork.AttrValue, amount money.Amount) ([]part, bool) {
+	amounts, each := allwork.AttributeParts(v, amount)
 	for i := range parts {
-		parts[i].amount = amount.Sub(given)
-		if i < len(parts)-1 {
-			parts[i].amount = shareOfAmount(amount, shares[parts[i].key])
-			given = given.Add(parts[i].amount)
-		}
+		parts[i].amount = amounts[i]
 	}
-	return parts, false
-}
-
-// shareOfAmount is a × p ÷ 100, rounded half away from zero to the cent, as All work's Breakdown rounds it.
-func shareOfAmount(a money.Amount, p money.Percent) money.Amount {
-	num := new(big.Int).Mul(big.NewInt(a.Cents()), big.NewInt(p.Hundredths()))
-	return money.FromCents(roundHalfAway(num, big.NewInt(10000)))
-}
-
-func roundHalfAway(num, den *big.Int) int64 {
-	negative := num.Sign()*den.Sign() < 0
-	n, d := new(big.Int).Abs(num), new(big.Int).Abs(den)
-	q, r := new(big.Int).QuoRem(n, d, new(big.Int))
-	if new(big.Int).Mul(r, big.NewInt(2)).Cmp(d) >= 0 {
-		q.Add(q, big.NewInt(1))
-	}
-	if negative {
-		q.Neg(q)
-	}
-	return q.Int64()
+	return parts, each
 }

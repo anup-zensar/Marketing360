@@ -59,31 +59,51 @@ type part struct {
 	amount money.Amount
 }
 
-// split divides amount among the values (data-model §3.5): one value gets it all; a % split gives each value
-// amount × share ÷ 100, half up, and the last the rest; several values without shares each get it all, and
-// the Breakdown says so.
+// split divides amount among the values by AttributeParts' rule; the Breakdown says when each gets it all.
 func (w *breakdownWork) split(amount money.Amount, values []value) []part {
-	if len(values) == 1 {
-		return []part{{value: values[0], amount: amount}}
-	}
-	parts := make([]part, 0, len(values))
-	if values[0].share == nil {
-		w.countsInEach = true
-		for _, v := range values {
-			parts = append(parts, part{value: v, amount: amount})
-		}
-		return parts
-	}
-	var given money.Amount
+	shares := make([]*money.Percent, len(values))
 	for i, v := range values {
-		a := amount.Sub(given)
-		if i < len(values)-1 {
-			a = shareOfAmount(amount, *v.share)
-			given = given.Add(a)
-		}
-		parts = append(parts, part{value: v, amount: a})
+		shares[i] = v.share
+	}
+	amounts, each := splitAmount(amount, shares)
+	w.countsInEach = w.countsInEach || each
+	parts := make([]part, 0, len(values))
+	for i, v := range values {
+		parts = append(parts, part{value: v, amount: amounts[i]})
 	}
 	return parts
+}
+
+// AttributeParts divides amount over a record's attribute value by option (data-model §3.5): one gets it all; a %
+// split gives each amount × share ÷ 100, half up, the last the rest; several without shares each get it all (true).
+func AttributeParts(v AttrValue, amount money.Amount) ([]money.Amount, bool) {
+	shares := make([]*money.Percent, len(v.OptionIDs))
+	for i, id := range v.OptionIDs {
+		if v.Shares != nil {
+			share := v.Shares[id]
+			shares[i] = &share
+		}
+	}
+	return splitAmount(amount, shares)
+}
+
+func splitAmount(amount money.Amount, shares []*money.Percent) ([]money.Amount, bool) {
+	amounts := make([]money.Amount, len(shares))
+	if len(shares) <= 1 || shares[0] == nil {
+		for i := range amounts {
+			amounts[i] = amount
+		}
+		return amounts, len(shares) > 1
+	}
+	var given money.Amount
+	for i, share := range shares {
+		amounts[i] = amount.Sub(given)
+		if i < len(shares)-1 {
+			amounts[i] = shareOfAmount(amount, *share)
+			given = given.Add(amounts[i])
+		}
+	}
+	return amounts, false
 }
 
 // shareOfAmount is a × p ÷ 100, rounded half up (away from zero) to the cent.

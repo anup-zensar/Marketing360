@@ -34,10 +34,10 @@ not apply against Breakdown's Not filled in), so the copy cannot drift.
 **Rationale**: the rule's code in `allwork` (`attributeValues`, `split`, `shareOfAmount`) is unexported and
 `allwork` is outside lane D's paths (issue #36 "Owns"). The copy is about 40 lines.
 
-**Preferred alternative, for the integrator**: export it once from `allwork` (for example
-`allwork.AttributeParts(a Attribute, n Node, units []string, amount money.Amount) []Part`, with Breakdown calling
-it — no behaviour change), as 036 exported `allwork.PlannedByActivity`. If the integrator approves this in wave A,
-`attribution.go` shrinks to a call and the equality test stays. Raised in the pull request, not done here.
+**Done at the integrator's request (wave A)**: the split rule is exported once as
+`allwork.AttributeParts(v AttrValue, amount money.Amount) ([]money.Amount, bool)`, which the Breakdown calls (no
+behaviour change, `TestAttributeParts_016_FR041`); `attribution.go` calls it and keeps only 043's own values (Does
+not apply, labels); the equality test stays.
 
 ## R3 — Does not apply (043-C2)
 
