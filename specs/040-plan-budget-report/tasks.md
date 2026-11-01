@@ -40,6 +40,6 @@ runs its own unit tests, lint and type-check.
 
 ## Phase 6: Polish (end-of-day batch)
 
-- [ ] T012 `frontend/e2e/measure-plan-budget.spec.ts` (US1, US2) with axe
-- [ ] T013 Plan budget cases in `BenchmarkReportsFrame`; record in plan.md (SC-002)
+- [X] T012 `frontend/e2e/measure-plan-budget.spec.ts` (US1, US2) with axe
+- [X] T013 Plan budget cases in `BenchmarkReportsFrame`; record in plan.md (SC-002)
 - [ ] T014 Comment budget and length of every touched file; quickstart by hand; spec status Built

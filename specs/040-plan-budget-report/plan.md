@@ -25,6 +25,8 @@ already reads (`financials.SpendByMonth`). Nothing is stored; the export reuses 
 **Project Type**: web application (backend + frontend)
 **Performance Goals**: report and ranked list within 2 s on the 028 volume (SC-002); one `Scope` read and one
 `SpendByMonth` read per request
+**Measured** (2026-11-02, `BenchmarkReportsFrame`, 028 volume, 3 runs each, with `fix/039-custom-plans`): report
+1.44 s, ranked list by activity grouped by owner 1.41 s, 39 statements each (SC-002 met; 9.1 s and 8.5 s without it)
 **Constraints**: figures defined once (measure-metrics §1); money exact decimals; files ≤ 300 lines; comments ≤ 5%
 **Scale/Scope**: 2 endpoints, 1 package, 1 page with 3 widgets
 
