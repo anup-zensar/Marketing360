@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-30
 
-**Status**: Draft
+**Status**: Built
 
 **Input**: User description: "Approvals report of the Measure module (wave A, lane C, issue #34): the status mix
 of approval rounds by record type (activities, purchase requests, modified purchase requests), the average days
