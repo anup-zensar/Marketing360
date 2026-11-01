@@ -6,6 +6,7 @@ import (
 
 	"mapp/internal/allwork"
 	"mapp/internal/platform/actor"
+	"mapp/internal/platform/date"
 )
 
 const msgNoReport = "There is no such report."
@@ -30,7 +31,7 @@ func (s *Service) Frame(ctx context.Context, a actor.Actor, report string, f Fil
 			return err
 		}
 		display, err := s.deps.Planning.Currency(ctx, a.ID)
-		frame = Frame{Report: report, Filter: applied(f, sc), Choices: choicesOf(sc, f, withYear(years, sc.Year), currencies),
+		frame = Frame{Report: report, Filter: applied(f, sc), Choices: choicesOf(sc, f, withYear(years, sc.Year, date.Today(s.now()).Year()), currencies),
 			InView: inViewOf(sc.Matched), Finance: financeOf(sc), LeftOut: len(sc.Matched.LeftOut),
 			DisplayCurrency: display.Code, GeneratedAt: s.now().UTC(), FinanceAsOf: sc.FinanceAsOf}
 		return err
@@ -65,9 +66,9 @@ func orEmpty(values []string) []string {
 	return values
 }
 
-// withYear is the years with plans in scope and the year shown, in order (FR-011).
-func withYear(years []int, year int) []int {
-	all := append(slices.Clone(years), year)
+// withYear is the years with plans in scope, the year shown and the current year, in order (FR-008, FR-011).
+func withYear(years []int, shown, current int) []int {
+	all := append(slices.Clone(years), shown, current)
 	slices.Sort(all)
 	return slices.Compact(all)
 }

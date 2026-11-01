@@ -156,6 +156,15 @@ func TestFrame_NoPlansInYear_FR031(t *testing.T) {
 	}
 }
 
+func TestFrame_YearsOfferTheCurrentYear_FR008(t *testing.T) {
+	t.Parallel()
+	frame := frameOf(t, frameService(fakePlanning{years: []int{2024}}), url.Values{"year": {"2024"}})
+
+	if diff := cmp.Diff([]int{2024, 2026}, frame.Choices.Years); diff != "" {
+		t.Errorf("years to choose on 2024 with plans only in 2024, today in 2026 (-want +got):\n%s", diff)
+	}
+}
+
 func TestFrame_UnknownReport_404(t *testing.T) {
 	t.Parallel()
 	_, err := frameService(fakePlanning{}).Frame(t.Context(), priyaActs(), "nope", measure.Filter{})
