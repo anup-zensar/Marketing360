@@ -22,7 +22,7 @@ var demoRoles = []struct {
 			authz.CampaignsEdit, authz.CampaignsDelete, authz.ActivitiesEdit, authz.ActivitiesDelete,
 			authz.ActivitiesSubmit, authz.DataExport, authz.FinanceView, authz.ApprovalsDecide,
 			authz.GlobalBudgetsView, authz.GlobalBudgetsManage, authz.PurchaseRequestsEdit, authz.PurchaseRequestsDelete,
-			authz.PurchaseRequestsSubmit, authz.PurchaseRequestsList,
+			authz.PurchaseRequestsSubmit, authz.PurchaseRequestsList, authz.DashboardsView, authz.DashboardsBuild,
 		}, authz.ScopeAll},
 	{"Planner", authz.BuiltInPlanner, "Plans for their own markets.",
 		[]authz.Permission{
@@ -30,13 +30,16 @@ var demoRoles = []struct {
 			authz.CampaignsEdit, authz.CampaignsDelete, authz.ActivitiesEdit, authz.ActivitiesDelete,
 			authz.ActivitiesSubmit, authz.DataExport, authz.FinanceView,
 			authz.PurchaseRequestsEdit, authz.PurchaseRequestsDelete, authz.PurchaseRequestsSubmit,
+			authz.DashboardsView, authz.DashboardsBuild,
 		}, authz.ScopeMyTeams},
 	{"Approver", authz.BuiltInApprover, "Approves activities they are named on.",
-		[]authz.Permission{authz.PlansView, authz.DataExport, authz.FinanceView, authz.ApprovalsDecide}, authz.ScopeMyTeams},
+		[]authz.Permission{authz.PlansView, authz.DataExport, authz.FinanceView, authz.ApprovalsDecide, authz.DashboardsView},
+		authz.ScopeMyTeams},
 	{"Viewer", authz.BuiltInViewer, "Sees plans of their markets without changing them.",
-		[]authz.Permission{authz.PlansView, authz.DataExport, authz.FinanceView}, authz.ScopeMyTeams},
+		[]authz.Permission{authz.PlansView, authz.DataExport, authz.FinanceView, authz.DashboardsView}, authz.ScopeMyTeams},
 	{requisitioner, "", "Turns approved purchase requests into GSAP purchase requests.",
-		[]authz.Permission{authz.PlansView, authz.FinanceImport, authz.PurchaseRequestsList}, authz.ScopeAll},
+		[]authz.Permission{authz.PlansView, authz.FinanceImport, authz.PurchaseRequestsList, authz.DashboardsView},
+		authz.ScopeAll},
 }
 
 // demoRoleAssignments are the roles of the seven demo people (plan "Demo data"), RA-1001 … RA-1008, in this

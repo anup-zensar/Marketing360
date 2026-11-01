@@ -19,6 +19,7 @@ type Set struct {
 	Organisation
 	Planning
 	Finance
+	Dashboards
 	Samples SampleStore
 	// Ready says why the data cannot be served now; IsEmpty whether nothing has been stored yet.
 	Ready   func(ctx context.Context) error
@@ -51,4 +52,9 @@ type Finance struct {
 	SwbsRuns   SwbsStore
 
 	PurchaseRequests PurchaseRequestStore
+}
+
+type Dashboards struct {
+	CustomDashboards CustomDashboardStore
+	Datasets         DatasetStore
 }

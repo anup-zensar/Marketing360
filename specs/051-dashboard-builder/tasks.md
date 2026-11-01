@@ -4,8 +4,9 @@
 [research.md](research.md), [data-model.md](data-model.md), [contracts/](contracts/), [quickstart.md](quickstart.md)
 
 **Status (2026-11-01)**: governance (constitution 4.9.0, D-371–D-378, ADR-0020), spec, plan and the API contract
-are committed on `feature/051-dashboard-builder`; the 17 operations are in `notYetServed`. Until F0 lands,
-`TestEveryOperationHasAnAccessRule_SC001` fails (the contract has operations without rules); F0's T003 fixes it.
+are committed on `feature/051-dashboard-builder`; the 17 operations are in `notYetServed`. F0 (T003–T012) is done:
+every operation has its route rule, and the lanes fork from the F0 commit. Until B1's migration 00028 widens
+`roles_permissions_check`, `go run ./cmd/seed` on PostgreSQL refuses the new permissions in the seeded roles.
 
 **Tests**: required by constitution VI — a unit test per rule, a test per acceptance scenario, a contract test per
 operation, a scope-isolation test per scoped store read (real PostgreSQL, `TEST_DATABASE_URL`), a test per view
@@ -32,7 +33,7 @@ requirement ID (`…_FR015`); source comments never do.
 
 | Lane | Owns (creates and changes freely) | Additive edits allowed (append only; never reorder or rewrite others' lines) |
 |---|---|---|
-| **F0** | `backend/internal/widgetdata/{ports.go,table.go,number.go,number_test.go}`, `backend/internal/access/routes_custom_dashboards.go`, `routes_datasets.go`, `routes_data_sources.go`, `backend/internal/app/{custom_dashboards.go,datasets.go,widget_data.go}` (stubs), `backend/internal/stores/{custom_dashboards.go,datasets.go}` (empty interfaces), `backend/seed/{dashboards.go,datasets.go}` (stubs), `frontend/src/features/custom-dashboards/{model.ts,keys.ts,widget-types.ts,index.ts}`, stubs `charts/index.ts`, `sharing/SharingDialog.tsx`, `builder/DashboardBuilderPage.tsx`, `viewer/DashboardListPage.tsx`, `viewer/DashboardViewerPage.tsx`, `datasets/DatasetsPage.tsx`, `datasets/DatasetPage.tsx` | `authz/catalogue.go` + `catalogue_test.go`; `access/routes.go` (join list); `access/roles_test.go`, `access/service_test.go`, `access/handler_test.go`, `seed/access.go`, `seed/access_test.go` (permission counts); `ids/ids.go`; `app/areas.go` (three calls); `stores/stores.go` (Set fields); `seed/seed.go` (two steps); `frontend/package.json`, `pnpm-lock.yaml` |
+| **F0** | `backend/internal/widgetdata/{ports.go,table.go,number.go,number_test.go}`, `backend/internal/access/routes_custom_dashboards.go`, `routes_datasets.go`, `routes_data_sources.go`, `backend/internal/app/{custom_dashboards.go,datasets.go,widget_data.go}` (stubs), `backend/internal/stores/{custom_dashboards.go,datasets.go}` (empty interfaces), `backend/seed/{dashboards.go,datasets.go}` (stubs), `frontend/src/features/custom-dashboards/{model.ts,keys.ts,widget-types.ts,index.ts}`, stubs `charts/index.ts`, `sharing/SharingDialog.tsx`, `builder/DashboardBuilderPage.tsx`, `viewer/DashboardListPage.tsx`, `viewer/DashboardViewerPage.tsx`, `datasets/DatasetsPage.tsx`, `datasets/DatasetPage.tsx` | `authz/catalogue.go` + `catalogue_test.go`; `access/routes.go` (join list); `access/roles_test.go`, `access/service_test.go`, `access/handler_test.go`, `seed/access.go`, `seed/access_test.go` (permission counts); `ids/ids.go`; `app/areas.go` (three calls); `stores/stores.go` (Set fields); `seed/seed.go` (two steps); `internal/auth/handler_test.go`, `internal/people/handler_test.go` (the `/me` permissions); `frontend/package.json`, `pnpm-lock.yaml`; `frontend/src/features/people/access/access-words.ts` (+ test) and `src/testing/fixtures/access.ts` (Table A in the web app) |
 | **B1** | `backend/internal/customdashboard/**`, `backend/internal/platform/database/migrations/00028_custom_dashboards.sql`, `queries/custom_dashboards.sql`, the sqlc output for it, `backend/internal/stores/custom_dashboards.go`, `backend/internal/app/custom_dashboards.go`, `backend/seed/dashboards.go` (+ test) | `stores/postgres.go`, `stores/storestest/*.go` (one field each); `sqlcdb` regenerated (`models.go`, `querier.go` — regenerate, never hand-edit); `docs/product/demo-users-and-data.md` (one paragraph) |
 | **B2** | `backend/internal/dataset/**`, `migrations/00029_datasets.sql`, `queries/datasets.sql` and its sqlc output, `backend/internal/stores/datasets.go`, `backend/internal/app/datasets.go`, `backend/seed/datasets.go` (+ test), `frontend/e2e/fixtures/event-leads.xlsx`, `event-leads.csv` | as B1; the body limit of the two upload operations where 038 configures limits (one entry each) |
 | **B3** | `backend/internal/widgetdata/**` except F0's three files (B3 may add methods to `number.go`), `backend/internal/app/widget_data.go`, `backend/internal/app/widgetdata_*.go`, `backend/internal/platform/apibench/widget_data_test.go` | `internal/financials/` (new file `transactions_on_line_items.go`, one `Store` method in `store.go`, `store_postgres.go`, the fake, one query in `queries/financials.sql`) if the transactions source needs it; `internal/allwork` exported helpers only if missing |
@@ -63,7 +64,8 @@ const (
 // Number is an exact decimal of ten-thousandths: "12.5" is 125000.
 type Number struct{ units int64 }
 
-func ParseNumber(s string) (Number, error) // up to 15 integer digits and 4 decimals; "," thousands not accepted here
+func ParseNumber(s string) (Number, error) // up to 15 integer digits and 4 decimals; "," thousands not accepted here;
+                                            // ErrNumberFormat, or ErrNumberRange beyond ±922,337,203,685,477.5807 (int64 units)
 func NumberOfUnits(units int64) Number
 func (n Number) Units() int64
 func (n Number) String() string            // shortest exact text: "12.5", "-3", "0.0001"
@@ -194,7 +196,7 @@ export const MAX_WIDGETS = 30;
 
 `keys.ts` (F0): `dashboardKeys.all`, `.one(id)`, `datasetKeys.all`, `.one(id)`, `.rows(id, offset)`,
 `dataSourceKeys.all`, `widgetDataKeys.all`, `.one(request: WidgetDataRequest)` (`['widget-data', source,
-stableHash(request)]`).
+stableHash(request)]`); `stableHash(value: unknown): string` is exported too (JSON with object keys sorted).
 
 `widget-types.ts` (F0):
 
@@ -277,37 +279,37 @@ Pages (each F0 stub exports a component with no props): `DashboardBuilderPage` (
 
 ## Phase 2: Foundation (F0 — blocks every lane; one commit on the feature branch)
 
-- [ ] T003 [F0] Permissions (FR-001, D-374): `authz.DashboardsView`, `authz.DashboardsBuild`, `GroupDashboards =
+- [x] T003 [F0] Permissions (FR-001, D-374): `authz.DashboardsView`, `authz.DashboardsBuild`, `GroupDashboards =
   "Dashboards"` between Global budgets and Administration, catalogue rows ("See custom dashboards shared with
   them" / "Seeing dashboards"; "Build dashboards and upload data" / "Building dashboards"; both not scoped) —
   `backend/internal/platform/authz/catalogue.go`; update the counts and groups in `catalogue_test.go`,
   `internal/access/roles_test.go`, `service_test.go`, `handler_test.go`
-- [ ] T004 [F0] Seed roles: `dashboards.view` to Global planner, Planner, Approver, Viewer and Requisitioner;
+- [x] T004 [F0] Seed roles: `dashboards.view` to Global planner, Planner, Approver, Viewer and Requisitioner;
   `dashboards.build` to Global planner and Planner (Administrator holds `authz.All()`) — `backend/seed/access.go`,
   `seed/access_test.go`
-- [ ] T005 [F0] Route rules exactly as `contracts/api.md` — `backend/internal/access/routes_custom_dashboards.go`,
+- [x] T005 [F0] Route rules exactly as `contracts/api.md` — `backend/internal/access/routes_custom_dashboards.go`,
   `routes_datasets.go`, `routes_data_sources.go`, joined in `access/routes.go`; `TestEveryOperationHasAnAccessRule_SC001`
   passes again
-- [ ] T006 [F0] ID prefixes `PrefixDashboard = "DB"`, `PrefixDataset = "DS"` in `Prefixes` —
+- [x] T006 [F0] ID prefixes `PrefixDashboard = "DB"`, `PrefixDataset = "DS"` in `Prefixes` —
   `backend/internal/platform/ids/ids.go`
-- [ ] T007 [F0] Shared Go types and ports of "Lane interfaces", with `TestNumber_ParseAndString` —
+- [x] T007 [F0] Shared Go types and ports of "Lane interfaces", with `TestNumber_ParseAndString` —
   `backend/internal/widgetdata/{ports.go,table.go,number.go,number_test.go}`
-- [ ] T008 [F0] Wiring stubs: `func (w *wiring) customDashboardsArea() error`, `datasetsArea() error`,
+- [x] T008 [F0] Wiring stubs: `func (w *wiring) customDashboardsArea() error`, `datasetsArea() error`,
   `widgetData()`, each returning nil / doing nothing, called from `areas()` (the two areas after
   `purchaseRequestsArea`, `widgetData` after `w.dashboards()`) — `backend/internal/app/{custom_dashboards.go,
   datasets.go,widget_data.go}`, `areas.go`; empty `CustomDashboardStore` and `DatasetStore` interfaces and a
   `Dashboards struct { CustomDashboards CustomDashboardStore; Datasets DatasetStore }` embedded in `stores.Set` —
   `backend/internal/stores/{custom_dashboards.go,datasets.go,stores.go}`; seed steps `d.addDatasets,
   d.addDashboards` after `d.addPurchaseRequests` with no-op bodies — `backend/seed/{datasets.go,dashboards.go,seed.go}`
-- [ ] T009 [F0] `cd frontend && pnpm add echarts@6.1.0` (exact pin; confirm `pnpm view echarts@6.1.0 time` is over
+- [x] T009 [F0] `cd frontend && pnpm add echarts@6.1.0` (exact pin; confirm `pnpm view echarts@6.1.0 time` is over
   a day old) — `frontend/package.json`, `pnpm-lock.yaml`
-- [ ] T010 [F0] `model.ts`, `keys.ts`, `widget-types.ts` as in "Lane interfaces", with `widget-types.test.ts`
+- [x] T010 [F0] `model.ts`, `keys.ts`, `widget-types.ts` as in "Lane interfaces", with `widget-types.test.ts`
   (needs match data model §2.3) — `frontend/src/features/custom-dashboards/`
-- [ ] T011 [F0] Stubs with the exact public signatures (placeholders rendering `null` or "Coming in this feature",
+- [x] T011 [F0] Stubs with the exact public signatures (placeholders rendering `null` or "Coming in this feature",
   hooks returning an idle query) — `charts/index.ts`, `sharing/SharingDialog.tsx`, `builder/DashboardBuilderPage.tsx`,
   `viewer/DashboardListPage.tsx`, `viewer/DashboardViewerPage.tsx`, `datasets/DatasetsPage.tsx`,
   `datasets/DatasetPage.tsx`, `index.ts`
-- [ ] T012 [F0] Run `go build ./... && go test -short ./...` and `pnpm run check`; commit
+- [x] T012 [F0] Run `go build ./... && go test -short ./...` and `pnpm run check`; commit
   `feat(051): foundation for the six lanes (FR-001)`
 
 **Checkpoint**: the lanes fork from this commit.

@@ -77,6 +77,7 @@ func Load(ctx context.Context, set stores.Set, now clock.Clock, opts ...Option) 
 			d.addFinancials,
 			d.addSavedViews,
 			d.addPurchaseRequests,
+			d.addDatasets, d.addDashboards,
 		}
 		if !o.withoutHistory {
 			steps = append(steps, d.addHistory)

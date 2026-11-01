@@ -29,7 +29,7 @@ var priyasAccessBody = `{"roles":[{"id":"RA-1005","role":{"id":"RL-1003","name":
 	`"scope":{"type":"myTeams","teams":` + priyasTeamsBody + `,"text":"My teams"},"scopeEmpty":false}],` +
 	`"permissions":[` + inLubricantsEurope("plans.view", "plans.create", "plans.edit", "plans.publish", "campaigns.edit",
 	"campaigns.delete", "activities.edit", "activities.delete", "activities.submit", "data.export", "finance.view",
-	"purchaseRequests.edit", "purchaseRequests.delete", "purchaseRequests.submit") + `],` +
+	"purchaseRequests.edit", "purchaseRequests.delete", "purchaseRequests.submit") + "," + everywhere("dashboards.view", "dashboards.build") + `],` +
 	`"administrators":[{"id":"U-1001","name":"Alex Morgan","initials":"AM","jobTitle":"Marketing administrator","active":true}],` +
 	`"noSelfApproval":true}`
 
@@ -37,6 +37,14 @@ func inLubricantsEurope(keys ...string) string {
 	parts := make([]string, 0, len(keys))
 	for _, key := range keys {
 		parts = append(parts, `{"key":"`+key+`","all":false,"teams":[`+lubricantsEuropeBody+`]}`)
+	}
+	return strings.Join(parts, ",")
+}
+
+func everywhere(keys ...string) string {
+	parts := make([]string, 0, len(keys))
+	for _, key := range keys {
+		parts = append(parts, `{"key":"`+key+`","all":true,"teams":[]}`)
 	}
 	return strings.Join(parts, ",")
 }

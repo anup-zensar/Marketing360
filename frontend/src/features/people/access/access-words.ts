@@ -60,6 +60,8 @@ export const PERMISSIONS: PermissionWords[] = [
     label: 'Create global budgets and allocate them to plans',
     scoped: true,
   },
+  { key: 'dashboards.view', label: 'See custom dashboards shared with them', scoped: false },
+  { key: 'dashboards.build', label: 'Build dashboards and upload data', scoped: false },
   {
     key: 'settings.manage',
     label:

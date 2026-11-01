@@ -258,8 +258,16 @@ export const CATALOGUE: PermissionCatalogue = {
       })),
     },
     {
+      name: 'Dashboards',
+      permissions: PERMISSIONS.slice(22, 24).map(({ key, label, scoped }) => ({
+        key,
+        label,
+        scoped,
+      })),
+    },
+    {
       name: 'Administration',
-      permissions: PERMISSIONS.slice(22).map(({ key, label, scoped }) => ({ key, label, scoped })),
+      permissions: PERMISSIONS.slice(24).map(({ key, label, scoped }) => ({ key, label, scoped })),
     },
   ],
 };
