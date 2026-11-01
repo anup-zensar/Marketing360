@@ -6,6 +6,9 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
+
+	"mapp/internal/history"
 
 	"github.com/google/go-cmp/cmp"
 
@@ -162,6 +165,19 @@ func TestFrame_YearsOfferTheCurrentYear_FR008(t *testing.T) {
 
 	if diff := cmp.Diff([]int{2024, 2026}, frame.Choices.Years); diff != "" {
 		t.Errorf("years to choose on 2024 with plans only in 2024, today in 2026 (-want +got):\n%s", diff)
+	}
+}
+
+func TestFrame_YearsOfTheReportsScope_FR008(t *testing.T) {
+	t.Parallel()
+	s := measure.NewService(history.Tools{Tx: fakeTx{}, Now: func() time.Time { return time.Date(2026, 10, 18, 0, 0, 0, 0, time.UTC) }},
+		measure.Deps{Planning: fakePlanning{nodes: frameNodes(), years: []int{2024, 2025}},
+			Plans: fakePlans{ids: []string{"P-1"}, years: []int{2025}}, Currencies: fakeCurrencies{}}, measure.NewRegistry())
+
+	frame := frameOf(t, s, url.Values{"year": {"2025"}})
+
+	if diff := cmp.Diff([]int{2025, 2026}, frame.Choices.Years); diff != "" {
+		t.Errorf("2024 has plans Priya may plan but not report on (-want +got):\n%s", diff)
 	}
 }
 

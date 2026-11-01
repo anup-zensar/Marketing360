@@ -48,7 +48,7 @@ func exportService(t *testing.T, report ...measure.Report) *measure.Service {
 	if err := registry.Register(report[0]); err != nil {
 		t.Fatal(err)
 	}
-	return measure.NewService(history.Tools{Tx: fakeTx{}, Now: func() time.Time { return time.Date(2026, 10, 18, 14, 5, 0, 0, time.UTC) }}, measure.Deps{Planning: fakePlanning{nodes: frameNodes()}, Plans: fakePlans{"P-1"},
+	return measure.NewService(history.Tools{Tx: fakeTx{}, Now: func() time.Time { return time.Date(2026, 10, 18, 14, 5, 0, 0, time.UTC) }}, measure.Deps{Planning: fakePlanning{nodes: frameNodes()}, Plans: fakePlans{ids: []string{"P-1"}},
 		Currencies: fakeCurrencies{}}, registry)
 }
 

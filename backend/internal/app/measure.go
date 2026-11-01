@@ -50,6 +50,17 @@ func (p reportPlans) InReportsScope(ctx context.Context) ([]string, error) {
 	return ids, err
 }
 
+func (p reportPlans) YearsInReportsScope(ctx context.Context) ([]int, error) {
+	list, err := p.repo.ListInScope(ctx, authz.PermissionScopeOf(ctx, authz.ReportsView))
+	years := []int{}
+	for _, plan := range list {
+		if !slices.Contains(years, plan.Year) {
+			years = append(years, plan.Year)
+		}
+	}
+	return years, err
+}
+
 type reportCurrencies struct {
 	settings *settings.Service
 }

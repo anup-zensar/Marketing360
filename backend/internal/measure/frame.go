@@ -22,7 +22,7 @@ func (s *Service) Frame(ctx context.Context, a actor.Actor, report string, f Fil
 		if err != nil {
 			return err
 		}
-		years, err := s.deps.Planning.Years(ctx)
+		years, err := s.deps.Plans.YearsInReportsScope(ctx)
 		if err != nil {
 			return err
 		}
