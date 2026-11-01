@@ -52,6 +52,25 @@ type Activity struct {
 	UpdatedByName        string
 }
 
+type ActivityCategory struct {
+	ID            string
+	Name          string
+	IsDefault     bool
+	Active        bool
+	Version       int
+	CreatedAt     time.Time
+	CreatedByID   string
+	CreatedByName string
+	UpdatedAt     time.Time
+	UpdatedByID   string
+	UpdatedByName string
+}
+
+type ActivityCategoryType struct {
+	ActivityTypeID string
+	CategoryID     string
+}
+
 type ActivityExternalNameAlias struct {
 	ID            string
 	ActivityID    string
@@ -533,6 +552,9 @@ type Model struct {
 	UpdatedAt               time.Time
 	UpdatedByID             string
 	UpdatedByName           string
+	InqToMqlVelocityMonths  int
+	MqlToDealVelocityMonths int
+	AllowedGoalStages       []string
 }
 
 type ModelActivityType struct {

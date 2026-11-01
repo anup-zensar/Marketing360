@@ -68,7 +68,7 @@ func (q *Queries) GetActivityType(ctx context.Context, id string) (ActivityType,
 }
 
 const getModel = `-- name: GetModel :one
-SELECT models.id, models.name, models.inq_to_mql_rate_hundredths, models.mql_to_deal_rate_hundredths, models.average_deal_size_minor, models.average_deal_size_currency, models.active, models.version, models.created_at, models.created_by_id, models.created_by_name, models.updated_at, models.updated_by_id, models.updated_by_name,
+SELECT models.id, models.name, models.inq_to_mql_rate_hundredths, models.mql_to_deal_rate_hundredths, models.average_deal_size_minor, models.average_deal_size_currency, models.active, models.version, models.created_at, models.created_by_id, models.created_by_name, models.updated_at, models.updated_by_id, models.updated_by_name, models.inq_to_mql_velocity_months, models.mql_to_deal_velocity_months, models.allowed_goal_stages,
     coalesce((SELECT array_agg(t.activity_type_id ORDER BY t.position) FROM model_activity_types t
         WHERE t.model_id = models.id), '{}')::text[] AS activity_type_ids
 FROM models
@@ -98,6 +98,9 @@ func (q *Queries) GetModel(ctx context.Context, id string) (GetModelRow, error) 
 		&i.Model.UpdatedAt,
 		&i.Model.UpdatedByID,
 		&i.Model.UpdatedByName,
+		&i.Model.InqToMqlVelocityMonths,
+		&i.Model.MqlToDealVelocityMonths,
+		&i.Model.AllowedGoalStages,
 		&i.ActivityTypeIds,
 	)
 	return i, err
@@ -160,7 +163,7 @@ func (q *Queries) ListActivityTypes(ctx context.Context) ([]ActivityType, error)
 }
 
 const listModels = `-- name: ListModels :many
-SELECT models.id, models.name, models.inq_to_mql_rate_hundredths, models.mql_to_deal_rate_hundredths, models.average_deal_size_minor, models.average_deal_size_currency, models.active, models.version, models.created_at, models.created_by_id, models.created_by_name, models.updated_at, models.updated_by_id, models.updated_by_name,
+SELECT models.id, models.name, models.inq_to_mql_rate_hundredths, models.mql_to_deal_rate_hundredths, models.average_deal_size_minor, models.average_deal_size_currency, models.active, models.version, models.created_at, models.created_by_id, models.created_by_name, models.updated_at, models.updated_by_id, models.updated_by_name, models.inq_to_mql_velocity_months, models.mql_to_deal_velocity_months, models.allowed_goal_stages,
     coalesce((SELECT array_agg(t.activity_type_id ORDER BY t.position) FROM model_activity_types t
         WHERE t.model_id = models.id), '{}')::text[] AS activity_type_ids
 FROM models
@@ -196,6 +199,9 @@ func (q *Queries) ListModels(ctx context.Context) ([]ListModelsRow, error) {
 			&i.Model.UpdatedAt,
 			&i.Model.UpdatedByID,
 			&i.Model.UpdatedByName,
+			&i.Model.InqToMqlVelocityMonths,
+			&i.Model.MqlToDealVelocityMonths,
+			&i.Model.AllowedGoalStages,
 			&i.ActivityTypeIds,
 		); err != nil {
 			return nil, err
@@ -265,10 +271,11 @@ func (q *Queries) PutActivityType(ctx context.Context, arg PutActivityTypeParams
 const putModel = `-- name: PutModel :exec
 INSERT INTO models (
     id, name, inq_to_mql_rate_hundredths, mql_to_deal_rate_hundredths, average_deal_size_minor,
-    average_deal_size_currency, active, version, created_at, created_by_id, created_by_name, updated_at,
+    average_deal_size_currency, inq_to_mql_velocity_months, mql_to_deal_velocity_months,
+    allowed_goal_stages, active, version, created_at, created_by_id, created_by_name, updated_at,
     updated_by_id, updated_by_name
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
 )
 ON CONFLICT (id) DO UPDATE SET
     name = excluded.name,
@@ -276,6 +283,9 @@ ON CONFLICT (id) DO UPDATE SET
     mql_to_deal_rate_hundredths = excluded.mql_to_deal_rate_hundredths,
     average_deal_size_minor = excluded.average_deal_size_minor,
     average_deal_size_currency = excluded.average_deal_size_currency,
+    inq_to_mql_velocity_months = excluded.inq_to_mql_velocity_months,
+    mql_to_deal_velocity_months = excluded.mql_to_deal_velocity_months,
+    allowed_goal_stages = excluded.allowed_goal_stages,
     active = excluded.active,
     version = excluded.version,
     created_at = excluded.created_at,
@@ -293,6 +303,9 @@ type PutModelParams struct {
 	MqlToDealRateHundredths int64
 	AverageDealSizeMinor    int64
 	AverageDealSizeCurrency string
+	InqToMqlVelocityMonths  int
+	MqlToDealVelocityMonths int
+	AllowedGoalStages       []string
 	Active                  bool
 	Version                 int
 	CreatedAt               time.Time
@@ -311,6 +324,9 @@ func (q *Queries) PutModel(ctx context.Context, arg PutModelParams) error {
 		arg.MqlToDealRateHundredths,
 		arg.AverageDealSizeMinor,
 		arg.AverageDealSizeCurrency,
+		arg.InqToMqlVelocityMonths,
+		arg.MqlToDealVelocityMonths,
+		arg.AllowedGoalStages,
 		arg.Active,
 		arg.Version,
 		arg.CreatedAt,

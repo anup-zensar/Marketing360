@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
 )
 
@@ -25,12 +26,16 @@ func (s *Service) UseFeed(f Feed) {
 }
 
 type GoalFacts struct {
-	INQ            *int64
-	MQL            *int64
-	Revenue        *money.Money
-	ModelID        string
-	ActivityTypeID string
-	PlanYear       int
+	INQ                  *int64
+	MQL                  *int64
+	Revenue              *money.Money
+	SetLaterStagesMyself bool
+	StartDate            *date.Date
+	EndDate              *date.Date
+	Ongoing              bool
+	ModelID              string
+	ActivityTypeID       string
+	PlanYear             int
 }
 
 // Figures answers the goals as shown, the plan's model, type and year; unset, the panel has no goals.
