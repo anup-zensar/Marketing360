@@ -8,7 +8,7 @@ import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
 import { ReportFrame } from './ReportFrame';
 
-function renderPlain(forbidden = false) {
+function renderPlain(forbidden = false, inView = reportFrame().inView) {
   mockApi([
     reply('GET /api/v1/me', { body: testUser() }),
     reply('GET /api/v1/reports/{report}/views', { body: { items: [], total: 0 } }),
@@ -16,7 +16,7 @@ function renderPlain(forbidden = false) {
       'GET /api/v1/reports/frame',
       forbidden
         ? { status: 403, body: apiError('forbidden', "Changing access isn't part of your role.") }
-        : { body: reportFrame({ report: 'userAccess' }) },
+        : { body: reportFrame({ report: 'userAccess', inView }) },
     ),
   ]);
   return renderWithProviders(
@@ -40,6 +40,13 @@ describe('ReportFrame without the plan filters (045-C1)', () => {
     expect(screen.queryByRole('combobox', { name: 'Currency' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Apply' })).not.toBeInTheDocument();
     await expectNoAxeViolations();
+  });
+
+  it('shows the widgets also when no plan is in view: plan filters do not apply to them', async () => {
+    renderPlain(false, { plans: 0, campaigns: 0, initiatives: 0, activities: 0, lineItems: 0 });
+
+    expect(await screen.findByText('The widgets')).toBeInTheDocument();
+    expect(screen.queryByText(/^No plans you may see/)).not.toBeInTheDocument();
   });
 
   it('shows the standard no-access page when the report is refused', async () => {

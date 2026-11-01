@@ -46,7 +46,7 @@ func (s *Service) Sheets(ctx context.Context, a actor.Actor, f measure.Filter) (
 // peopleTable has the screen's columns; Never is an empty cell.
 func peopleTable(list []Row) [][]sheet.Cell {
 	table := [][]sheet.Cell{{sheet.Bold("Name"), sheet.Bold("E-mail"), sheet.Bold("Job title"), sheet.Bold("Roles"),
-		sheet.Bold("Teams"), sheet.Bold("Status"), sheet.Bold("Last sign-in")}}
+		sheet.Bold("Teams"), sheet.Bold("Status"), sheet.Bold("Last sign-in (UTC)")}}
 	for _, r := range list {
 		table = append(table, []sheet.Cell{sheet.Text(r.Person.Name), sheet.Text(r.Email), sheet.Text(r.Person.JobTitle),
 			sheet.Text(rolesWithScopes(r)), sheet.Text(teamsMarked(r)), sheet.Text(statusWord(r)), signedIn(r)})
@@ -70,7 +70,7 @@ func rolesWithScopes(r Row) string {
 	}
 	parts := make([]string, 0, len(r.Roles))
 	for _, a := range r.Roles {
-		parts = append(parts, a.Role.Name+" ("+a.Scope.Text+")")
+		parts = append(parts, a.Role.Name+" · "+a.Scope.Text)
 	}
 	return strings.Join(parts, "; ")
 }

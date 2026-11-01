@@ -50,7 +50,7 @@ describe('UserAccessReport (045 US1, FR-001, FR-005 – FR-008, FR-012)', () => 
       'href',
       '/settings/people/U-1002',
     );
-    expect(within(table).getByText('Planner (My teams)')).toBeInTheDocument();
+    expect(within(table).getByText('Planner · My teams')).toBeInTheDocument();
     expect(within(table).getByText('Archive (inactive), Lubricants Europe')).toBeInTheDocument();
     expect(within(table).getByText('No role')).toBeInTheDocument();
     expect(within(table).getByText('Never')).toBeInTheDocument();

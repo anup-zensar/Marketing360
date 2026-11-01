@@ -2,7 +2,7 @@ import type { UserAccessRow } from './api';
 
 /** Each role with its scope, as Settings › Roles and access › People shows them (FR-005). */
 export function rolesText(row: UserAccessRow): string[] {
-  return row.roles.map((a) => `${a.role.name} (${a.scope.text})`);
+  return row.roles.map((a) => `${a.role.name} · ${a.scope.text}`);
 }
 
 export function teamsText(row: UserAccessRow): string {

@@ -32,12 +32,12 @@ about hour 16), as lane D's instructions say, although the migration and the aut
 **Primary Dependencies**: none new — 039's `measure` package, `access`, `people`, `auth`, `platform/sheet`, sqlc,
 goose; web: TanStack Query, Zod, MSW, vitest-axe, Playwright, 039's `features/measure/shared`, 036's SVG bars
 
-**Storage**: PostgreSQL. Migration 00029 (one column, no index: the report reads every person). Two new sqlc
-queries in `queries/sign_ins.sql`; existing reads of people, teams, memberships, roles and assignments.
+**Storage**: PostgreSQL. Migration 00029, forward only: `sign_ins` (one row per person) and the one-row
+`sign_in_recording` (research R2 addendum). New sqlc queries in `queries/sign_ins.sql`; existing reads of people,
+teams, memberships, roles and assignments.
 
-**Testing**: Go unit tests of every rule on fakes; auth store tests on PostgreSQL (`testdb`) for `RecordSignIn`
-(only that column changes: version and `updated_*` equal before and after) and `LastSignIns`; auth service tests
-for success, wrong password, inactive and locked; handler and contract tests on
+**Testing**: Go unit tests of every rule on fakes; auth service tests for success, wrong password,
+inactive and locked (no database tests: constitution VI allows only scope isolation there); handler and contract tests on
 `apitest` with personas (administrator; `reports.view` without `access.manage`; no `data.export`); Vitest + MSW +
 vitest-axe per page state; Playwright + axe for US1 (`frontend/e2e/measure-user-access.spec.ts`: sign in as
 two people, then the administrator sees both times)
@@ -66,7 +66,7 @@ package (~8 files); 1 wiring file; 1 web folder (~10 files); 1 e2e spec
 | II Shell language | Roles and scopes in 014's words; "Never"; Active and Inactive | Pass |
 | III Documented design | plan, research R1–R5, contracts/api.md, quickstart | Pass |
 | IV Server is the source of truth | Rows, counts, bands from the API; the web app formats dates in the viewer's format and zone | Pass |
-| V Simplicity | One nullable column; reuses 014's People read; no new table, no dependency | Pass |
+| V Simplicity | Two small tables of auth (R2 addendum); reuses 014's People read; no dependency | Pass (Complexity Tracking) |
 | VI Meaningful tests | A test per rule and page state; PostgreSQL test that sign-in changes only the time; contract tests; e2e for US1 | Pass |
 | VII Security | `access.manage` on the route and again in `Sheets`; refused sign-ins record nothing; the time never reveals whether an e-mail exists (written only after the constant-time check passes) | Pass |
 | VIII Clean construction | Comment budget per file; one concept per file | Pass |
@@ -92,7 +92,7 @@ specs/045-user-access-report/
 ### Source Code (repository root) — only issue #38's "Owns" paths
 
 ```text
-backend/internal/platform/database/migrations/00029_last_sign_in.sql   # Up: ADD COLUMN; Down: DROP COLUMN
+backend/internal/platform/database/migrations/00029_last_sign_in.sql   # sign_ins and sign_in_recording, forward only (B5)
 backend/internal/platform/database/queries/sign_ins.sql                # RecordSignIn, ListLastSignIns (sqlc output generated)
 backend/internal/auth/                     # the sign-in change only
 ├── store.go          # Store += RecordSignIn, LastSignIns
@@ -128,8 +128,8 @@ lay them out, wired through 039's stubs; auth changed only where it starts a ses
 |---|---|---|
 | A successful sign-in records its moment in UTC in the session's step (FR-009) | `auth/service.go` | `TestSignIn_RecordsLastSignIn_FR009` |
 | Wrong password, inactive person, locked attempt record nothing (FR-009) | `auth/service.go` | `TestSignIn_RefusedRecordsNothing_FR009` |
-| Recording changes only `last_signed_in_at`: version and `updated_*` unchanged, no log entry (FR-010) | `auth/store_postgres.go` | `TestRecordSignIn_OnlyTheTime_FR010` (PostgreSQL) |
-| Migration 00029 applies through `database.Migrate` (testdb); existing people read "Never" (FR-011) | migration, `auth/store_postgres.go` | `TestLastSignIns_NoneBeforeFirstSignIn_FR011` (PostgreSQL); the Down step checked by hand once (quickstart) |
+| Recording changes only `last_signed_in_at`: version and `updated_*` unchanged, no log entry (FR-010) | `sign_ins`, a table apart from `people` | By construction: sign-in writes only `sign_ins` (R2 addendum) |
+| Migration 00029 applies through `database.Migrate` (testdb); existing people read "Never" (FR-011) | migration, `auth/store_postgres.go` | `TestSignIn_ShowsInReport_SC002` (Never for who has not signed in); migrations are forward only (B5) |
 | Rows = People tab roles, scopes and teams, plus e-mail, status, last sign-in (FR-003, FR-005, SC-003) | `service.go` | `TestRows_EqualPeopleTab_SC003`, `TestRows_NoRole_FR005`, `TestRows_InactiveTeamMarked_FR005` |
 | Search, Team, Status (default Active), sort ("Never" last), paging 5–500 (FR-006) | `query.go`, `service.go` | `TestQuery_Allowlist_FR006`, `TestFilter_SearchTeamStatus_FR006`, `TestSort_NeverLast_FR006`, `TestPage_FR006` |
 | Cards and bands over the filtered rows, adding up (FR-007) | `bands.go` | `TestBands_Boundaries_FR007` (30, 31, 90, 91 days, never), `TestCards_FR007` |

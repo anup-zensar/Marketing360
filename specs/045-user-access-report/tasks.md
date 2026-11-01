@@ -28,9 +28,8 @@ each story.
 - [X] T003 `backend/internal/platform/database/queries/sign_ins.sql`: `RecordSignIn` (the column only),
   `ListLastSignIns`, `GetSignInsRecordedSince`; `sqlc generate`
 - [X] T004 Tests first: `auth/service_test.go` `TestSignIn_RecordsLastSignIn_FR009`,
-  `TestSignIn_RefusedRecordsNothing_FR009` (wrong password, inactive, locked); `auth/store_postgres_test.go`
-  `TestRecordSignIn_OnlyTheTime_FR010` (version and `updated_*` unchanged, no log entry),
-  `TestLastSignIns_NoneBeforeFirstSignIn_FR011`
+  `TestSignIn_RefusedRecordsNothing_FR009` (wrong password, inactive, locked); the PostgreSQL tests of the
+  query and the migration were removed at review (constitution VI): FR-010 holds by construction (`sign_ins`)
 - [X] T005 `auth.Store` += `RecordSignIn`, `LastSignIns`, `SignInsRecordedSince`: `store_postgres.go`, the fakes
   (`store_fake_test.go`, `authtest/store.go`); `service.go` `startSession` records the time inside its `Write`
 

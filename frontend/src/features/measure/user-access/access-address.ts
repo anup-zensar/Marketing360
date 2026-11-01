@@ -73,7 +73,8 @@ export function useAccessTable() {
     for (const team of next.teams) {
       written.append('team', team);
     }
-    setParams(written);
+    // Typing a search replaces its address, so Back skips the keystrokes.
+    setParams(written, { replace: Object.keys(patch).length === 1 && patch.q !== undefined });
   };
   return { table, change };
 }
