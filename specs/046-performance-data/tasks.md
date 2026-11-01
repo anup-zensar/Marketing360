@@ -267,7 +267,7 @@ to delete it after a fact has used it.
   two `pages.tsx` lines — every Settings-side screen is built and exported). Everything else is done and
   the documents agree with the code; new clarifications 046-C25 (CSV only) and 046-C26 (matching scope)
   recorded in spec.md
-- [ ] T116 Open the pull request into `measure-module` with: the feature-map status change, the three integrator items from [contracts/api.md](./contracts/api.md), the ADR-0019 → ADR-0020 renumber, and the `seed/measure.go` dependency
+- [X] T116 Open the pull request into `measure-module` with: the feature-map status change, the three integrator items from [contracts/api.md](./contracts/api.md), the ADR-0019 → ADR-0020 renumber, and the `seed/measure.go` dependency. Done 2026-11-01: https://github.com/anup-zensar/MAPP/pull/62
 
 ---
 
