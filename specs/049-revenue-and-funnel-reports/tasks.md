@@ -74,7 +74,7 @@ marks tasks that can run in parallel.
 
 - [X] T050 [P] SC-003: a test pinning the statement count constant whatever the number of activities in view
   — `ReportTotals` called exactly once for 5 activities and for 500
-- [ ] T051 [P] Cross-folder asks recorded for feature 039's lane: the export helper's hardcoded sort keys
+- [X] T051 [P] Cross-folder asks recorded for feature 039's lane: the export helper's hardcoded sort keys
   (049-C19), Expand all/Collapse all (FR-068, 049-C19), Compare (FR-067, 049-C7). Also for 040's lane,
   found while writing T052's e2e test: the shared `RankedList`'s "Open X in Plan" row links fail WCAG
   2.2's target-size rule (axe `target-size`) whenever a row's name is short — first caught here because

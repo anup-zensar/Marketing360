@@ -59,3 +59,10 @@ is not served (049-C7).
    projected, Goal per stage, Performance and Conversion rate — a never-edit file for a lane.
 4. **Feature 048** defines Performance's wording and Goal coverage, and **050** defines ROI; this feature
    shows the first and leaves the second stated as unavailable.
+5. **One more ask for 040's lane**, found while writing `frontend/e2e/measure-revenue.spec.ts` (T052):
+   `shared/RankedList.tsx`'s "Open X in Plan" row links fail WCAG 2.2's target-size rule (axe
+   `target-size`) whenever a row's name is short, in both Revenue and Funnel's ranked lists — the first
+   real-browser axe run against that shared component, since no e2e test had exercised it before (not
+   even 040's own Plan budget report). The link needs a larger hit area, for example padding on `.open`
+   in `RankedList.module.css`. T052's own axe check excludes `a[aria-label^="Open "]` so it still proves
+   this feature's own markup without masking a defect it cannot fix in its own files.
