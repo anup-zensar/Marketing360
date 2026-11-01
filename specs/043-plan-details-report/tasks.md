@@ -89,9 +89,9 @@ work).
   columns `completeness` and `inq`, the level `f.Show` (default `activity`), cards, built-in widgets, rows
 - [X] T016 [US1] `sheets.go`: `measure.Report` (`Key` planDetails, `Available`, `Sheets` one `WidgetSheet` per
   widget of `f.Show` in screen order); `TestSheets_EveryValueAndTotal_FR017`, `TestSheets_KeysOfLevel_FR001`
-- [ ] T017 [US1] **⏸ 039 T023** `handler.go`: `GET /api/v1/reports/plan-details` parsing the filter with 039's
+- [X] T017 [US1] **⏸ 039 T023** `handler.go`: `GET /api/v1/reports/plan-details` parsing the filter with 039's
   `measure.ParseFilter`; `TestHandler_ShowDefaultsToActivity_FR001`, 400 for a malformed filter
-- [ ] T018 [US1] **⏸ 039 T022, T025** `backend/internal/app/measure_plandetails.go`: `registerPlanDetails`
+- [X] T018 [US1] **⏸ 039 T022, T025** `backend/internal/app/measure_plandetails.go`: `registerPlanDetails`
   registers the report instead of the stub and mounts the handler; the `Scoped` adapter over the frame's step
   (or `measure.Planning.Year`, `measure.Plans.InReportsScope` and `allwork.Match`); remove
   `GET /api/v1/reports/plan-details` from `notYetServed`; contract tests in `plandetails/handler_test.go`:
