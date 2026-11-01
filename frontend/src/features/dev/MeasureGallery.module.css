@@ -1,0 +1,14 @@
+.chart {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+}
+
+.bar {
+  fill: var(--chart-planned);
+}
+
+.label {
+  fill: var(--ink);
+  font-size: 12px;
+}
