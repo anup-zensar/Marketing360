@@ -4418,6 +4418,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports/purchase-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Purchase requests by status, commitment by vendor and owner per delivery month, and the vendor-to-line-item grid (feature 042)
+         * @description Purchase requests with a line item in the plans the report frame matches, in the person's reports.view scope. Commitment counts Approved and Closed requests by the month of each line's delivery date. Amounts show null for a plan whose financial data the person may not see. Period and show are accepted and ignored. A vendor, requestOwner or status that matches nothing answers 200 with empty figures. The widgets cards, status, byVendor, byOwner and grid are exported through exportReport.
+         */
+        get: operations["getPurchaseRequestsReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reports/gsap-link": {
         parameters: {
             query?: never;
@@ -4719,6 +4739,107 @@ export interface components {
         };
         /** @enum {string} */
         PlanDetailsLevel: "plan" | "campaign" | "initiative" | "activity";
+        /** @description An amount in the display currency, or null where the person may not see the plan's financial data. */
+        PrReportMoney: components["schemas"]["Money"] | null;
+        PrReportSeries: {
+            key: string;
+            name: string;
+            /** @description One value per month of the chart. */
+            values: components["schemas"]["PrReportMoney"][];
+        };
+        PrReportChart: {
+            /** @description Each month between the first and the last as 2026-03, then none for a line without a delivery date. */
+            months: string[];
+            /** @description The ten largest, then Other. */
+            chartSeries: components["schemas"]["PrReportSeries"][];
+            allSeries: components["schemas"]["PrReportSeries"][];
+            totals: components["schemas"]["PrReportMoney"][];
+            committed: components["schemas"]["PrReportMoney"];
+        };
+        PrReportLine: {
+            id: string;
+            lineItem: {
+                id: string;
+                name: string;
+            };
+            activity: string | null;
+            amount: components["schemas"]["PrReportMoney"];
+            /** Format: date */
+            deliveryDate: string | null;
+            /** Format: date */
+            sentOn: string | null;
+            poNumber: string | null;
+            poLine: string | null;
+            poLineStatus: string | null;
+            invoiced: components["schemas"]["PrReportMoney"];
+        };
+        PrReportRequest: {
+            id: string;
+            name: string;
+            status: components["schemas"]["PurchaseRequestStatus"];
+            amount: components["schemas"]["PrReportMoney"];
+            invoiced: components["schemas"]["PrReportMoney"];
+            owner: components["schemas"]["ApprovalsPerson"];
+            /** Format: date */
+            createdOn: string;
+            /** Format: date */
+            sentOn: string | null;
+            /** Format: date */
+            deliveryDate: string | null;
+            poNumber: string | null;
+            workflow: string | null;
+            gsapNumber: string | null;
+            waitingForGsap: boolean;
+            lines: components["schemas"]["PrReportLine"][];
+        };
+        PrReportVendor: {
+            vendor: string;
+            label: string;
+            purchaseRequests: number;
+            lines: number;
+            committed: components["schemas"]["PrReportMoney"];
+            invoiced: components["schemas"]["PrReportMoney"];
+            requests: components["schemas"]["PrReportRequest"][];
+        };
+        PrReportGrid: {
+            vendors: components["schemas"]["PrReportVendor"][];
+            total: number;
+            page: number;
+            pageSize: number;
+            columns: string[];
+            choices: {
+                vendors: string[];
+                owners: components["schemas"]["ApprovalsPerson"][];
+                statuses: string[];
+            };
+        };
+        PurchaseRequestsReport: {
+            cards: {
+                purchaseRequests: number;
+                lines: number;
+                vendors: number;
+                committed: components["schemas"]["PrReportMoney"];
+                invoiced: components["schemas"]["PrReportMoney"];
+            };
+            statusMix: {
+                total: number;
+                totalAmount: components["schemas"]["PrReportMoney"];
+                waitingForGsap: number;
+                items: {
+                    status: components["schemas"]["PurchaseRequestStatus"];
+                    count: number;
+                    amount: components["schemas"]["PrReportMoney"];
+                    sharePercent: number;
+                }[];
+            };
+            byVendor: components["schemas"]["PrReportChart"];
+            byOwner: components["schemas"]["PrReportChart"];
+            grid: components["schemas"]["PrReportGrid"];
+            financeCovers: {
+                plans: number;
+                of: number;
+            };
+        };
         ApprovalsPerson: {
             id: string;
             name: string;
@@ -11129,6 +11250,19 @@ export interface components {
         UserAccessStatus: "active" | "inactive" | "all";
         /** @description name (default), email, jobTitle, roles, teams, status or lastSignedIn, "-" for descending; Never is always last. Ties break by person ID. */
         UserAccessSort: "name" | "-name" | "email" | "-email" | "jobTitle" | "-jobTitle" | "roles" | "-roles" | "teams" | "-teams" | "status" | "-status" | "lastSignedIn" | "-lastSignedIn";
+        /** @description Vendor name as entered, or none for no vendor; repeat for several. A value that matches nothing gives empty figures. */
+        PrReportVendor: string[];
+        /** @description Person ID of the purchase request's owner; repeat for several. */
+        PrReportRequestOwner: string[];
+        /** @description Purchase request status; repeat for several. */
+        PrReportStatus: string[];
+        /** @description The grid column each level is ordered by. */
+        PrReportSort: "name" | "status" | "amount" | "invoiced" | "created" | "delivery";
+        PrReportOrder: "asc" | "desc";
+        /** @description Vendors per page of the grid. */
+        PrReportPageSize: 5 | 10 | 25 | 50 | 100;
+        /** @description The grid's columns, comma-separated, in order. */
+        PrReportColumns: string;
         /** @description The record type of the status widget. A value that matches nothing answers with empty figures. */
         ApprovalsStatusType: string;
         /** @description Grid filter by record type; repeat for several. A value that matches nothing gives an empty grid. */
@@ -19779,6 +19913,75 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PlanDetailsReport"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getPurchaseRequestsReport: {
+        parameters: {
+            query?: {
+                /** @description The plans' year. Default - the current year. */
+                year?: components["parameters"]["AllWorkYear"];
+                /** @description Plan IDs (repeat the parameter for several). */
+                plan?: components["parameters"]["AllWorkPlan"];
+                /** @description Plans of these types (tested on plans). */
+                planType?: components["parameters"]["AllWorkPlanType"];
+                /** @description Team IDs; tested on the plan's teams. */
+                team?: components["parameters"]["AllWorkTeam"];
+                /** @description Person IDs; tested on plans, campaigns, initiatives and activities. */
+                owner?: components["parameters"]["AllWorkOwner"];
+                activityType?: components["parameters"]["AllWorkActivityType"];
+                activityStatus?: components["parameters"]["AllWorkActivityStatus"];
+                /**
+                 * @description A Shell-attribute filter, repeatable: <attributeId>:<value>,<value>… where a value is an option id,
+                 *     yes, no, or none (Not filled in). Tested on the attribute's level (016 FR-039).
+                 * @example [
+                 *       "SA-1022:SO-1301,none"
+                 *     ]
+                 */
+                attr?: components["parameters"]["AllWorkAttr"];
+                /** @description Time widgets by month (default) or quarter of the plan year. */
+                period?: components["parameters"]["ReportPeriod"];
+                /** @description The level a report that ranks records shows. */
+                show?: components["parameters"]["ReportShow"];
+                /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
+                currency?: components["parameters"]["ReportCurrency"];
+                /** @description Keys of the widgets shown as a table instead of a chart. */
+                table?: components["parameters"]["ReportTable"];
+                /** @description Vendor name as entered, or none for no vendor; repeat for several. A value that matches nothing gives empty figures. */
+                vendor?: components["parameters"]["PrReportVendor"];
+                /** @description Person ID of the purchase request's owner; repeat for several. */
+                requestOwner?: components["parameters"]["PrReportRequestOwner"];
+                /** @description Purchase request status; repeat for several. */
+                status?: components["parameters"]["PrReportStatus"];
+                q?: components["parameters"]["RankedSearch"];
+                /** @description The grid column each level is ordered by. */
+                sort?: components["parameters"]["PrReportSort"];
+                order?: components["parameters"]["PrReportOrder"];
+                /** @description The page of the report's table, from 1. */
+                page?: components["parameters"]["ReportPage"];
+                /** @description Vendors per page of the grid. */
+                pageSize?: components["parameters"]["PrReportPageSize"];
+                /** @description The grid's columns, comma-separated, in order. */
+                columns?: components["parameters"]["PrReportColumns"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The cards, the status mix, the two commitment charts and one page of the grid. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseRequestsReport"];
                 };
             };
             400: components["responses"]["BadRequest"];

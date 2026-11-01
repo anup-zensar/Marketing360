@@ -8149,6 +8149,56 @@ paths:
           $ref: "#/components/responses/Forbidden"
         default:
           $ref: "#/components/responses/Error"
+  # Feature 042 Purchase requests report (wave A contract)
+  /api/v1/reports/purchase-requests:
+    get:
+      tags:
+        - Reports
+      operationId: getPurchaseRequestsReport
+      summary: Purchase requests by status, commitment by vendor and owner per delivery month, and the vendor-to-line-item grid (feature 042)
+      description: >-
+        Purchase requests with a line item in the plans the report frame matches, in the person's reports.view scope.
+        Commitment counts Approved and Closed requests by the month of each line's delivery date. Amounts show null
+        for a plan whose financial data the person may not see. Period and show are accepted and ignored. A vendor,
+        requestOwner or status that matches nothing answers 200 with empty figures. The widgets cards, status,
+        byVendor, byOwner and grid are exported through exportReport.
+      parameters:
+        - $ref: "#/components/parameters/AllWorkYear"
+        - $ref: "#/components/parameters/AllWorkPlan"
+        - $ref: "#/components/parameters/AllWorkPlanType"
+        - $ref: "#/components/parameters/AllWorkTeam"
+        - $ref: "#/components/parameters/AllWorkOwner"
+        - $ref: "#/components/parameters/AllWorkActivityType"
+        - $ref: "#/components/parameters/AllWorkActivityStatus"
+        - $ref: "#/components/parameters/AllWorkAttr"
+        - $ref: "#/components/parameters/ReportPeriod"
+        - $ref: "#/components/parameters/ReportShow"
+        - $ref: "#/components/parameters/ReportCurrency"
+        - $ref: "#/components/parameters/ReportTable"
+        - $ref: "#/components/parameters/PrReportVendor"
+        - $ref: "#/components/parameters/PrReportRequestOwner"
+        - $ref: "#/components/parameters/PrReportStatus"
+        - $ref: "#/components/parameters/RankedSearch"
+        - $ref: "#/components/parameters/PrReportSort"
+        - $ref: "#/components/parameters/PrReportOrder"
+        - $ref: "#/components/parameters/ReportPage"
+        - $ref: "#/components/parameters/PrReportPageSize"
+        - $ref: "#/components/parameters/PrReportColumns"
+      responses:
+        "200":
+          description: The cards, the status mix, the two commitment charts and one page of the grid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseRequestsReport"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
   # Feature 044 GSAP link reports (wave A contract)
   /api/v1/reports/gsap-link:
     get:
@@ -8494,6 +8544,67 @@ components:
           - lastSignedIn
           - -lastSignedIn
         default: name
+    # Feature 042 Purchase requests report
+    PrReportVendor:
+      name: vendor
+      in: query
+      description: Vendor name as entered, or none for no vendor; repeat for several. A value that matches nothing gives empty figures.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+    PrReportRequestOwner:
+      name: requestOwner
+      in: query
+      description: Person ID of the purchase request's owner; repeat for several.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+    PrReportStatus:
+      name: status
+      in: query
+      description: Purchase request status; repeat for several.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+    PrReportSort:
+      name: sort
+      in: query
+      description: The grid column each level is ordered by.
+      schema:
+        type: string
+        enum: [name, status, amount, invoiced, created, delivery]
+        default: name
+    PrReportOrder:
+      name: order
+      in: query
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: asc
+    PrReportPageSize:
+      name: pageSize
+      in: query
+      description: Vendors per page of the grid.
+      schema:
+        type: integer
+        enum: [5, 10, 25, 50, 100]
+        default: 25
+    PrReportColumns:
+      name: columns
+      in: query
+      description: The grid's columns, comma-separated, in order.
+      schema:
+        type: string
+        maxLength: 200
     # Feature 041 Approvals report
     ApprovalsStatusType:
       name: statusType
@@ -10055,6 +10166,256 @@ components:
     PlanDetailsLevel:
       type: string
       enum: [plan, campaign, initiative, activity]
+    PrReportMoney:
+      description: An amount in the display currency, or null where the person may not see the plan's financial data.
+      oneOf:
+        - $ref: "#/components/schemas/Money"
+        - type: "null"
+    PrReportSeries:
+      type: object
+      additionalProperties: false
+      required: [key, name, values]
+      properties:
+        key:
+          type: string
+        name:
+          type: string
+        values:
+          type: array
+          description: One value per month of the chart.
+          items:
+            $ref: "#/components/schemas/PrReportMoney"
+    PrReportChart:
+      type: object
+      additionalProperties: false
+      required: [months, chartSeries, allSeries, totals, committed]
+      properties:
+        months:
+          type: array
+          description: Each month between the first and the last as 2026-03, then none for a line without a delivery date.
+          items:
+            type: string
+        chartSeries:
+          type: array
+          description: The ten largest, then Other.
+          items:
+            $ref: "#/components/schemas/PrReportSeries"
+        allSeries:
+          type: array
+          items:
+            $ref: "#/components/schemas/PrReportSeries"
+        totals:
+          type: array
+          items:
+            $ref: "#/components/schemas/PrReportMoney"
+        committed:
+          $ref: "#/components/schemas/PrReportMoney"
+    PrReportLine:
+      type: object
+      additionalProperties: false
+      required: [id, lineItem, activity, amount, deliveryDate, sentOn, poNumber, poLine, poLineStatus, invoiced]
+      properties:
+        id:
+          type: string
+        lineItem:
+          type: object
+          additionalProperties: false
+          required: [id, name]
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+        activity:
+          type: [string, "null"]
+        amount:
+          $ref: "#/components/schemas/PrReportMoney"
+        deliveryDate:
+          type: [string, "null"]
+          format: date
+        sentOn:
+          type: [string, "null"]
+          format: date
+        poNumber:
+          type: [string, "null"]
+        poLine:
+          type: [string, "null"]
+        poLineStatus:
+          type: [string, "null"]
+        invoiced:
+          $ref: "#/components/schemas/PrReportMoney"
+    PrReportRequest:
+      type: object
+      additionalProperties: false
+      required: [id, name, status, amount, invoiced, owner, createdOn, sentOn, deliveryDate, poNumber, workflow, gsapNumber, waitingForGsap, lines]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        status:
+          $ref: "#/components/schemas/PurchaseRequestStatus"
+        amount:
+          $ref: "#/components/schemas/PrReportMoney"
+        invoiced:
+          $ref: "#/components/schemas/PrReportMoney"
+        owner:
+          $ref: "#/components/schemas/ApprovalsPerson"
+        createdOn:
+          type: string
+          format: date
+        sentOn:
+          type: [string, "null"]
+          format: date
+        deliveryDate:
+          type: [string, "null"]
+          format: date
+        poNumber:
+          type: [string, "null"]
+        workflow:
+          type: [string, "null"]
+        gsapNumber:
+          type: [string, "null"]
+        waitingForGsap:
+          type: boolean
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/PrReportLine"
+    PrReportVendor:
+      type: object
+      additionalProperties: false
+      required: [vendor, label, purchaseRequests, lines, committed, invoiced, requests]
+      properties:
+        vendor:
+          type: string
+        label:
+          type: string
+        purchaseRequests:
+          type: integer
+          minimum: 0
+        lines:
+          type: integer
+          minimum: 0
+        committed:
+          $ref: "#/components/schemas/PrReportMoney"
+        invoiced:
+          $ref: "#/components/schemas/PrReportMoney"
+        requests:
+          type: array
+          items:
+            $ref: "#/components/schemas/PrReportRequest"
+    PrReportGrid:
+      type: object
+      additionalProperties: false
+      required: [vendors, total, page, pageSize, columns, choices]
+      properties:
+        vendors:
+          type: array
+          items:
+            $ref: "#/components/schemas/PrReportVendor"
+        total:
+          type: integer
+          minimum: 0
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+        columns:
+          type: array
+          items:
+            type: string
+        choices:
+          type: object
+          additionalProperties: false
+          required: [vendors, owners, statuses]
+          properties:
+            vendors:
+              type: array
+              items:
+                type: string
+            owners:
+              type: array
+              items:
+                $ref: "#/components/schemas/ApprovalsPerson"
+            statuses:
+              type: array
+              items:
+                type: string
+    PurchaseRequestsReport:
+      type: object
+      additionalProperties: false
+      required: [purchaseSupport, cards, statusMix, byVendor, byOwner, grid, financeCovers]
+      properties:
+        purchaseSupport:
+          type: boolean
+        cards:
+          type: object
+          additionalProperties: false
+          required: [purchaseRequests, lines, vendors, committed, invoiced]
+          properties:
+            purchaseRequests:
+              type: integer
+              minimum: 0
+            lines:
+              type: integer
+              minimum: 0
+            vendors:
+              type: integer
+              minimum: 0
+            committed:
+              $ref: "#/components/schemas/PrReportMoney"
+            invoiced:
+              $ref: "#/components/schemas/PrReportMoney"
+        statusMix:
+          type: object
+          additionalProperties: false
+          required: [total, totalAmount, waitingForGsap, items]
+          properties:
+            total:
+              type: integer
+              minimum: 0
+            totalAmount:
+              $ref: "#/components/schemas/PrReportMoney"
+            waitingForGsap:
+              type: integer
+              minimum: 0
+            items:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [status, count, amount, sharePercent]
+                properties:
+                  status:
+                    $ref: "#/components/schemas/PurchaseRequestStatus"
+                  count:
+                    type: integer
+                    minimum: 0
+                  amount:
+                    $ref: "#/components/schemas/PrReportMoney"
+                  sharePercent:
+                    type: integer
+                    minimum: 0
+                    maximum: 100
+        byVendor:
+          $ref: "#/components/schemas/PrReportChart"
+        byOwner:
+          $ref: "#/components/schemas/PrReportChart"
+        grid:
+          $ref: "#/components/schemas/PrReportGrid"
+        financeCovers:
+          type: object
+          additionalProperties: false
+          required: [plans, of]
+          properties:
+            plans:
+              type: integer
+              minimum: 0
+            of:
+              type: integer
+              minimum: 0
     ApprovalsPerson:
       type: object
       additionalProperties: false
