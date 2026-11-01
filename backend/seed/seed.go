@@ -81,6 +81,7 @@ func Load(ctx context.Context, set stores.Set, now clock.Clock, opts ...Option) 
 		if !o.withoutHistory {
 			steps = append(steps, d.addHistory)
 		}
+		steps = append(steps, d.addMeasure) // the Measure demo data (#48), additive, after the demo story
 		if o.showcase {
 			steps = append(steps, d.addShowcase)
 		}
