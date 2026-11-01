@@ -19,6 +19,7 @@ const (
 	demoDataset        = "DS-1001"
 	plannedCostField   = "plannedCost"
 	barChart           = "bar"
+	campaignField      = "campaign"
 )
 
 func (d *demo) addDashboards(ctx context.Context) error {
@@ -44,9 +45,9 @@ func (d *demo) addDashboards(ctx context.Context) error {
 func demoWidgets() []customdashboard.Widget {
 	byType := grouped("activities", "activityType", nil, sumOf(plannedCostField))
 	byMonth := grouped("plannedByMonth", "month", ptrTo("month"), sumOf(plannedCostField))
-	byMonth.Series = &customdashboard.GroupBy{Field: "campaign"}
+	byMonth.Series = &customdashboard.GroupBy{Field: campaignField}
 	byMonth.Sort = inTimeOrder()
-	budgets := grouped("campaigns", "campaign", nil, sumOf("budget"), sumOf(plannedCostField))
+	budgets := grouped("campaigns", campaignField, nil, sumOf("budget"), sumOf(plannedCostField))
 	budgets.Sort = inTimeOrder()
 	total := grouped("plans", "", nil, sumOf("budget"))
 	total.Dimension = nil
