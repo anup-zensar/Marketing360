@@ -23,8 +23,9 @@ cd frontend; pnpm run dev
 | Compare **Planned cost by Country / OU** with All work › Breakdown by Country / OU, same filters | Equal value for value; Not filled in + Does not apply = Breakdown's Not filled in |
 | Look at a Lubricants-only attribute (Product launch) | Mobility activities under Does not apply, outside the filled-in per cent |
 | Select **Not filled in** on Activities by Company code | All work opens with "Company code: Not filled in" |
-| Switch to Campaign, press Back | Back returns to Activity; the address holds `level` |
-| Choose a team with no plans this year | "The filters exclude everything" with a reset |
+| Switch Show to Campaign, press Back | Back returns to Activity; the address holds `show` |
+| Choose a team with no plans this year | "Your filters exclude everything" with **Reset filters** |
+| Press the report's **Export** | One sheet per widget of the level shown, then In view and About this export |
 | Sign in as a Viewer without "Export data"; then as a person without "See reports" | No export action; Plan details not offered |
 | Export Planned cost by Country / OU as CSV and Excel | Every value, Not filled in, Does not apply, total; equals the table view |
 

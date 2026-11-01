@@ -37,7 +37,8 @@
 - "Page address", "All work" and the 039 frame controls are product behaviour shared with features 010, 016 and
   039, not implementation detail.
 - The 039 frame (filters, Period, Show, Currency, saved views, widget table and export, empty-state wording) is
-  referenced, never restated (FR-015). Its spec was not yet published when this spec was written; check FR-015,
-  FR-016 and US1 scenarios 12, 13, 15 and 18 against it once lane A pushes it.
+  referenced, never restated (FR-015). Checked 2026-11-01 against 039 as pushed (`feature/039-measure-hub`):
+  the level is 039's Show (FR-001), the state wording is 039's ui.md (FR-016, US1 13 and 18), the export is
+  039's one endpoint (US3 5), Not filled in is 039's filter value `none`; all items still pass.
 - Re-validated 2026-10-31 after `/speckit-clarify` (043-C1–043-C4): all items still pass. "Other" after ten
   values stays a stated assumption.

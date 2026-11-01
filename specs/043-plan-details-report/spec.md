@@ -113,7 +113,7 @@ land in All work with the matching filter.
 12. **Given** the person may see plans for the year but none has an activity, **Then** the Activity tab shows
     039's "No data yet" state saying activities create this report's data, and links to the plans.
 13. **Given** no plans in scope for the chosen year, **Then** the tab shows 039's "No plans you may see for
-    the year" state.
+    <year>" state.
 14. **Given** no active activity-level Shell attribute in Settings, **Then** the built-in section shows as
     usual and the attribute section says "No activity attributes are set up in Settings."
 
@@ -133,7 +133,7 @@ land in All work with the matching filter.
 *Filters exclude everything*
 
 18. **Given** filters that match no activity (for example a team with no plans this year), **Then** every
-    widget shows 039's "The filters exclude everything" state with its one-click reset, and the cards show 0.
+    widget shows 039's "Your filters exclude everything" state with **Reset filters**, and the cards show 0.
 
 ---
 
@@ -161,11 +161,11 @@ the tab.
    equalling Breakdown's Not filled in (016 FR-040, 043-C2).
 3. **Given** the Plan tab, **Then** the built-in section shows plans by status (Draft, Published); on the
    Campaign and Initiative tabs it shows records by Approval progress and by Timing (domain model §2.2).
-4. **Given** the planner switches from Activity to Initiative, **Then** the tab is in the page address, so Back
-   returns to Activity and a saved view or shared link opens on Initiative.
+4. **Given** the planner switches Show from Activity to Initiative, **Then** the level is in the page address,
+   so Back returns to Activity and a saved view or shared link opens on Initiative.
 5. **Given** a level with records in scope but no active Shell attribute, **Then** the tab says "No
    <level> attributes are set up in Settings" below its built-in section.
-6. **Given** filters that match no record at the chosen level, **Then** the tab shows 039's "The filters
+6. **Given** filters that match no record at the chosen level, **Then** the tab shows 039's "Your filters
    exclude everything" state; the other tabs apply the same filters to their own level.
 7. **Given** a person who may see one of two plans, **Then** the Plan tab counts one plan and the other tabs
    count only what lies below it.
@@ -191,6 +191,8 @@ as Excel and compare each with its table view.
 2. **Given** a chart that gathers small values into "Other", **Then** its export still lists every value.
 3. **Given** a person without "Export data", **Then** the export action is not offered (039).
 4. **Given** a widget in an empty or filtered-to-nothing state, **Then** no export is offered for it.
+5. **Given** the report's **Export** (039), **Then** the Excel file holds one sheet per widget of the level
+   shown, in screen order, then 039's In view and About this export sheets.
 
 ---
 
@@ -226,9 +228,10 @@ as Excel and compare each with its table view.
 
 **Report and access**
 
-- **FR-001**: The Reports area MUST offer **Plan details** inside 039's report frame, with level tabs
-  **Plan · Campaign · Initiative · Activity**, Activity first and the default. The tab MUST live in the page
-  address with the frame's filters and be kept by saved views. *(client 019 US2; FA §E3.9.1; D-368)*
+- **FR-001**: The Reports area MUST offer **Plan details** inside 039's report frame, its levels **Plan ·
+  Campaign · Initiative · Activity** (the "tabs" of this spec) chosen with 039's **Show** control, Activity the
+  default for this report. The level MUST live in the page address as 039's `show` with the frame's filters and
+  be kept by saved views. *(client 019 US2; FA §E3.9.1; 039 FR-017; D-368)*
 - **FR-002**: Plan details MUST be read-only: nothing on it changes a record. *(client 019 FR-022; D-366)*
 - **FR-003**: Plan details MUST need "See reports" and MUST count only records of plans in the person's scope;
   a plan outside the scope MUST NOT count or be named anywhere, export included. *(D-367; constitution VII)*
@@ -268,20 +271,22 @@ as Excel and compare each with its table view.
   Does not apply together MUST equal All work's Breakdown Not filled in group. *(016 FR-039; FA §E3.0.1.1;
   domain model §3; 043-C2)*
 - **FR-013**: A record's planned cost MUST be its planned cost as every other screen shows it (domain model
-  §4.2), converted to the display currency at the current rate, each amount with its currency.
-  *(measure-metrics §1 Planned cost; D-303; client 019 FR-018)*
+  §4.2), converted to the currency of 039's **Currency** control (default the person's display currency) at the
+  current rate, each amount with its currency. *(measure-metrics §1 Planned cost; D-303; client 019 FR-018; 039
+  FR-018)*
 - **FR-014**: The value widgets of a Shell attribute, activity type and status MUST let the person open the
   records behind a value — Not filled in included — in All work with the matching filter and the frame's other
-  filters. *(016 FR-039, FR-040; client 019 FR-015)*
+  filters. **Does not apply** opens nothing: All work's filter has no such value and counts those records as Not
+  filled in (016 FR-039). *(016 FR-039, FR-040; client 019 FR-015)*
 
 **Frame, states and export (039)**
 
 - **FR-015**: The report MUST use 039's filters, Period, Show, Currency, saved views, "as of" line, widget table
-  view and widget export as 039 defines them, and MUST NOT add filters or controls of its own other than the
-  level tabs. *(D-368)*
-- **FR-016**: Each widget MUST render one of 039's states: data; no plans you may see for the year; no data yet,
-  naming what creates it (activities, or attributes in Settings); filters exclude everything, with the reset.
-  *(D-368; client 019 FR-020)*
+  view and widget export as 039 defines them, and MUST NOT add filters or controls of its own. *(D-368)*
+- **FR-016**: Each widget MUST render one of 039's states: data; "No plans you may see for <year>"; "No data
+  yet", naming what creates it (activities, or attributes in Settings); "Your filters exclude everything", with
+  **Reset filters**. The state follows the frame's **In view** count for the level and the widget's total; the
+  report adds no state of its own. *(D-368; client 019 FR-020; 039 contracts/ui.md)*
 - **FR-017**: Every widget's table view and export MUST list every value, Not filled in, Does not apply and a
   total row,
   equal to the chart; a chart MAY gather all but its ten largest values into "Other". *(client 019 FR-012,
@@ -325,3 +330,4 @@ as Excel and compare each with its table view.
   invoiced or actual figure.
 - **"Other" after ten values** is this report's chart rule; 039 does not define one.
 - 039's frame, its route rules and its export are in place before 043's web part is built (build guide §3).
+  Names follow 039's contract as pushed on `feature/039-measure-hub` (checked 2026-11-01).

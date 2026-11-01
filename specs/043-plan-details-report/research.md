@@ -4,9 +4,9 @@ Only the real choices are recorded here (build guide §8). Each states the decis
 
 ## R1 — Read the year through All work, not a new query
 
-**Decision**: `plandetails` reads one year through a `Planning` port with All work's `Year`, `Attributes` and
-`Choices` (`allwork.Source`), adapted in `app/measure_plandetails.go` exactly as 036's
-`dashboardPlanning` does. It asks for the columns `completeness` and `inq`, so the year carries every record's
+**Decision**: `plandetails` reads one year through All work's `Year` and `Attributes` (`allwork.Source`), as
+039's `measure.Planning` port exposes them and 036's `dashboardPlanning` adapts them, narrowed and matched as
+the frame does (R4). It asks for the columns `completeness` and `inq`, so the year carries every record's
 `Missing` count and the activities' goals. No `queries/measure_plandetails.sql` is written.
 
 **Rationale**: `allwork.Source.Year` already returns every plan, campaign, initiative and activity of the year in
@@ -44,29 +44,41 @@ it — no behaviour change), as 036 exported `allwork.PlannedByActivity`. If the
 **Decision**: worked out in `plandetails` from exported data: an attribute applies to a record when
 `Attribute.Condition` is empty or shares an option with its plan's `BusinessUnitIDs` (the rule of
 `allwork.Attribute.shownFor`, 002 FR-022). A record where it does not apply goes to `doesNotApply` before the
-value is read; otherwise an absent or empty value goes to `notFilledIn`. All work's reader turns an empty
+value is read; otherwise an absent or empty value goes to Not filled in (key `none`). All work's reader turns an empty
 yes/no into No, so a yes/no attribute is never Not filled in: it is Yes, No or, where hidden, Does not apply.
 
 **Rationale**: `allwork.valueOf` folds hidden into not filled in, which is right for the Breakdown and wrong for
 043-C2; the condition and the units are exported fields, so no `allwork` change is needed.
 
-## R4 — Filters, period and export come from 039
+## R4 — Filters, level, period, currency and export come from 039
 
-**Decision**: the handler parses 039's `measure.Filter` and `measure.Periods` once from the query string and
-adds only `level`; the service applies the filter to the year's nodes with what 039 provides and never reads the
-request. The report implements 039's `measure.Report`; its `Sheets` method turns each widget into one
-`platform/sheet` table, which 039's shared export writes as CSV or Excel.
+**Decision** (aligned on 2026-11-01 with 039 as pushed on `feature/039-measure-hub`): the handler parses 039's
+`measure.Filter` (`Query allwork.Query`, `Period`, `Show`, `Currency`, `Tables`) with 039's parser and adds
+nothing. The level is `Show` (default `activity` for this report), not a parameter of 043's own. The records are
+the year's nodes narrowed to the `reports.view` scope and matched by `allwork.Match` — the frame's own steps
+(039 R1, R2) — so the cards equal the frame's **In view**. The report implements `measure.Report` (`Key`,
+`Available`, `Sheets(ctx, actor.Actor, Filter) ([]WidgetSheet, error)`) in place of 039's stub in
+`app/measure_plandetails.go`; 039's single `GET /api/v1/reports/{report}/export` writes the sheets, so 043 has
+no export operation. The empty states are 039's, rendered from In view and each widget's total, so the
+response has no `state`. Not filled in uses 039's filter value `none`, so a value opens All work with
+`attr=<attributeId>:<key>` unchanged.
 
-**Rationale**: build guide §5–§6 and D-368; 043 must not redefine the frame (spec FR-015).
+**Rationale**: build guide §5–§6 and D-368; 043 must not redefine the frame (spec FR-015); one matching
+implementation keeps the report equal to All work and to the frame (039 SC-001).
 
-**Open until 039 is pushed**: the exact names (`measure.Filter`, its node-matching function, `measure.Report`,
-`Sheets`' signature, the shared widget and state schemas). `contracts/api.md` names them as 039's convention
-describes them; the integrator aligns them when writing the wave A contract.
+**Hand-off**: the frame's narrow-and-match step lives in 039's `measure/frame.go` and is not exported. Lane A is
+asked to export it once (for example `measure.Matched(ctx, a, f, columns)` returning the nodes, the matched IDs
+and the resolved currency) so 040–045 do not repeat it. Until then `app/measure_plandetails.go` composes the
+same three calls from 039's ports (`Planning.Year`, `Plans.InReportsScope`, `allwork.Match`); the
+`Scoped` port of `contracts/api.md` hides which.
+
+**Rejected**: a `level` parameter of 043's own (039's Show already carries the level and is kept by saved
+views); a `state` field (would decide the empty states twice, once in the frame and once here).
 
 ## R5 — Benchmark inside the package
 
 **Decision**: `BenchmarkPlanDetails_SC001` in `plandetails` runs the service over an in-memory year at the 028
-volume (50 plans, 5,000 activities, 20,000 line items, 30 active attributes) through a fake `Planning`; the
+volume (50 plans, 5,000 activities, 20,000 line items, 30 active attributes) through a fake `Scoped`; the
 year read itself is already measured by 036's `BenchmarkDashboards` and 028.
 
 **Rationale**: `internal/platform/apibench` is not a lane D path. Target: the calculation adds under 300 ms to
