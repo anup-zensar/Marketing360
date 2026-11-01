@@ -166,3 +166,16 @@ func TestRunImport_SummaryAndBreakdownAreStored_FR022_046C18(t *testing.T) {
 		t.Errorf("review rows = %d (%v), want the rejected row waiting for review (FR-023)", len(rows), err)
 	}
 }
+
+func TestRunImport_AnIdenticalFileAddsNoSecondReviewRow_FR013(t *testing.T) {
+	t.Parallel()
+	f, src := newImportFixture(t)
+
+	f.runImport(t, src.ID, map[string]string{"r1": "oops"})
+	f.runImport(t, src.ID, map[string]string{"r1": "oops"})
+
+	rows, err := f.store.ListReviewRows(t.Context(), "open", src.ID, 10)
+	if err != nil || len(rows) != 1 {
+		t.Fatalf("open review rows = %d (%v), want 1: the identical row is already waiting (SC-004)", len(rows), err)
+	}
+}

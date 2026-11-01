@@ -17,7 +17,11 @@ func (s *Service) persist(ctx context.Context, a actor.Actor, run Import, result
 	if err != nil {
 		return err
 	}
-	writer := factWriter{s: s, a: a, run: run, current: current}
+	waiting, err := s.openReviewRaws(ctx, run.SourceID)
+	if err != nil {
+		return err
+	}
+	writer := factWriter{s: s, a: a, run: run, current: current, waiting: waiting}
 	for _, result := range results {
 		switch result.Outcome {
 		case OutcomeMatched, OutcomeHeld, OutcomeUnattributed:
@@ -25,12 +29,26 @@ func (s *Service) persist(ctx context.Context, a actor.Actor, run Import, result
 				return err
 			}
 		case OutcomeRejected, OutcomeUnmatched:
-			if err := s.writeReviewRow(ctx, a, run, result); err != nil {
+			if err := writer.review(ctx, result); err != nil {
 				return err
 			}
 		}
 	}
 	return nil
+}
+
+// openReviewRaws keys the open review rows by their raw content, so re-loading an identical file leaves the
+// row already waiting rather than queueing it twice (SC-004).
+func (s *Service) openReviewRaws(ctx context.Context, sourceID string) (map[string]bool, error) {
+	rows, err := s.repo.ListReviewRows(ctx, string(ReviewOpen), sourceID, maxRows)
+	if err != nil {
+		return nil, err
+	}
+	waiting := make(map[string]bool, len(rows))
+	for _, row := range rows {
+		waiting[string(row.Raw)] = true
+	}
+	return waiting, nil
 }
 
 // factWriter carries one load's write state, as 015's runner does, keeping each step within the limits.
@@ -39,6 +57,7 @@ type factWriter struct {
 	a       actor.Actor
 	run     Import
 	current map[identity]Fact
+	waiting map[string]bool
 }
 
 type identity struct {
@@ -111,19 +130,22 @@ func unchanged(stored, next Fact) bool {
 		stored.FactDate.Equal(next.FactDate) && sameCount && sameAmount
 }
 
-func (s *Service) writeReviewRow(ctx context.Context, a actor.Actor, run Import, result RowResult) error {
-	id, err := s.ids.Next(ctx, ids.PrefixPerformanceReviewRow)
-	if err != nil {
-		return err
-	}
+func (w factWriter) review(ctx context.Context, result RowResult) error {
 	raw, err := json.Marshal(rawOf(result.Row))
 	if err != nil {
 		return err
 	}
-	return s.repo.PutReviewRow(ctx, ReviewRow{
-		ID: id, ImportID: run.ID, SourceID: run.SourceID, Raw: raw,
+	if w.waiting[string(raw)] {
+		return nil
+	}
+	id, err := w.s.ids.Next(ctx, ids.PrefixPerformanceReviewRow)
+	if err != nil {
+		return err
+	}
+	return w.s.repo.PutReviewRow(ctx, ReviewRow{
+		ID: id, ImportID: w.run.ID, SourceID: w.run.SourceID, Raw: raw,
 		Reason: result.Reason, Faults: result.Faults, Candidates: result.Candidates,
-		Status: ReviewOpen, Meta: record.NewMeta(a, s.now()),
+		Status: ReviewOpen, Meta: record.NewMeta(w.a, w.s.now()),
 	})
 }
 

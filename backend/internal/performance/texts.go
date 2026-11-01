@@ -41,6 +41,7 @@ const (
 	msgImportNotFound = "This upload doesn't exist or you can't see it."
 	msgNotUndoable    = "Not undone - %s is not a completed upload."
 	msgFileUnreadable = "This file can't be read. Save it as a .csv file in UTF-8 and try again."
+	msgNoPull         = "Not pulled - %s does not deliver by simulated feed. Change its delivery route first."
 )
 
 func codeText(code int64) string {

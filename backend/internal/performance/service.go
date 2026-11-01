@@ -23,6 +23,7 @@ type Service struct {
 	history   *history.Service
 	now       clock.Clock
 	approvals Approvals
+	feed      Feed
 }
 
 func NewService(tools history.Tools, repo Store) *Service {

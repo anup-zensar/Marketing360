@@ -24,7 +24,7 @@ Every test name mentions the requirement ID it proves.
 
 - [X] T001 Create `backend/internal/performance/` with `model.go`, `store.go`, `service.go`, `handler.go`, `ports.go` as empty-but-compiling files following the area pattern of `backend/internal/bulk/`
 - [X] T002 [P] Create `backend/internal/performance/performancetest/store.go` as the area's fake, in the shape of `backend/internal/bulk/bulktest/`
-- [ ] T003 [P] Create `backend/internal/performance/simulatedfeed/` with its port defined in the parent's `ports.go` (research R1)
+- [X] T003 [P] Create `backend/internal/performance/simulatedfeed/` with its port defined in the parent's `ports.go` (research R1)
 - [ ] T004 [P] Create `frontend/src/features/performance/` with `api.ts`, `schemas.ts` and an `index.ts` exporting nothing yet
 
 **Checkpoint**: the package compiles and is importable; no behaviour yet.
@@ -42,7 +42,7 @@ Every test name mentions the requirement ID it proves.
 - [X] T009 [P] Write `backend/internal/performance/model.go`: the eight entities of [data-model.md](./data-model.md), each embedding `record.Meta`, with money as integer minor units plus currency (FR-014), never a float
 - [X] T010 [P] Write `backend/internal/performance/store.go` declaring the small `Store` the service calls and its `Transactor`, then `store_postgres.go` implementing it
 - [X] T011 Register the `history.Kind` values for data source, fact, import, review row and media code so every change writes one activity-log entry inside the same `Write` transaction
-- [ ] T012 [P] Write `backend/internal/app/performance.go` wiring the service, stores and handler — **deferred to US1**: `app.go` holds the call and no lane edits it, so the function would be unused and fail the linter (integrator item 4). The store is already registered in `stores.Set`
+- [X] T012 [P] Write `backend/internal/app/performance.go` wiring the service, stores and handler — **deferred to US1**: `app.go` holds the call and no lane edits it, so the function would be unused and fail the linter (integrator item 4). The store is already registered in `stores.Set`
 - [X] T013 [P] Write `backend/internal/performance/performancetest/store.go` fully, and add the new `Store` methods to the in-memory set in `backend/internal/stores/`
 - [X] T014 Write the scope-isolation test file `backend/internal/performance/store_postgres_scope_test.go` covering every scoped read in T008 on a fresh PostgreSQL database per test (FR-044): a record outside scope answers as missing, never as a refusal
 - [X] T015 Write `backend/internal/performance/authz_test.go`: every operation refuses without its permission and **fails closed** — `performance.import` for loading, configuration and review actions, `performance.link` for external names, integration IDs and media codes (FR-043). A record outside the actor's scope answers as **missing**, while `forbidden` refuses only an action on a record the actor can see (constitution non-negotiable 7)

@@ -24,6 +24,7 @@ type uploadBody struct {
 
 func (h *Handler) registerImportRoutes(r gin.IRoutes) {
 	r.POST("/performance/sources/:sourceId/uploads", h.upload)
+	r.POST("/performance/sources/:sourceId/pull", h.pull)
 	r.GET("/performance/imports", h.imports)
 	r.GET("/performance/imports/:importId", h.importByID)
 	r.POST("/performance/imports/:importId/undo", h.undoImport)
@@ -56,6 +57,17 @@ func (h *Handler) upload(c *gin.Context) {
 		SourceID: sourceID, FileName: body.FileName, Origin: OriginUpload,
 		Headings: file.Headings, Rows: file.Rows,
 	})
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
+	view, err := h.service.ImportByID(c.Request.Context(), a, run.ID)
+	h.answerImport(c, http.StatusCreated, view, err)
+}
+
+func (h *Handler) pull(c *gin.Context) {
+	a, _ := actor.From(c.Request.Context())
+	run, err := h.service.PullFeed(c.Request.Context(), a, c.Param("sourceId"))
 	if err != nil {
 		web.RespondError(c, err)
 		return
