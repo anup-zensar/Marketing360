@@ -10,6 +10,10 @@ import (
 )
 
 const (
+	paramRecordType = "recordType"
+	paramApprover   = "approver"
+	paramOutcome    = "outcome"
+
 	msgChooseListed = "Choose one of the listed values."
 	msgPage         = "Choose a page from 1."
 )
@@ -28,12 +32,7 @@ type Query struct {
 }
 
 func Params() []string {
-	return []string{"statusType", "recordType", "approver", "outcome", "q", "sort", "order", "page", "pageSize"}
-}
-
-func sortKeys() []string {
-	return []string{"itemId", "itemName", "recordType", "approver", "decidedOn", "outcome", "submittedOn", "level",
-		"purchaseOrder", "amount", "owner", "comments"}
+	return []string{"statusType", paramRecordType, paramApprover, paramOutcome, "q", "sort", "order", "page", "pageSize"}
 }
 
 func pageSizes() []int {
@@ -43,33 +42,38 @@ func pageSizes() []int {
 // ParseQuery reads the report's own parameters; a malformed sort, order, page or page size is a problem.
 func ParseQuery(own url.Values) (Query, error) {
 	var problems errs.Problems
-	q := Query{StatusType: RecordType(own.Get("statusType")), Approvers: own["approver"],
+	q := Query{StatusType: RecordType(own.Get("statusType")), Approvers: own[paramApprover],
 		Search: strings.TrimSpace(own.Get("q")), Sort: own.Get("sort"), Order: own.Get("order")}
-	for _, t := range own["recordType"] {
+	for _, t := range own[paramRecordType] {
 		q.RecordTypes = append(q.RecordTypes, RecordType(t))
 	}
-	for _, o := range own["outcome"] {
+	for _, o := range own[paramOutcome] {
 		q.Outcomes = append(q.Outcomes, Outcome(o))
 	}
 	if q.Sort != "" && !slices.Contains(sortKeys(), q.Sort) {
 		problems.Add("sort", msgChooseListed)
 	}
-	if q.Order != "" && q.Order != "asc" && q.Order != "desc" {
+	if q.Order != "" && q.Order != orderAsc && q.Order != orderDesc {
 		problems.Add("order", msgChooseListed)
 	}
-	q.Page = number(own, "page", msgPage, func(n int) bool { return n >= 1 }, &problems)
-	q.PageSize = number(own, "pageSize", msgChooseListed, func(n int) bool { return slices.Contains(pageSizes(), n) }, &problems)
+	q.Page = number(own, numberRule{"page", msgPage, func(n int) bool { return n >= 1 }}, &problems)
+	q.PageSize = number(own, numberRule{"pageSize", msgChooseListed, func(n int) bool { return slices.Contains(pageSizes(), n) }}, &problems)
 	return q, problems.Err()
 }
 
-func number(own url.Values, name, message string, valid func(int) bool, problems *errs.Problems) int {
-	raw := own.Get(name)
+type numberRule struct {
+	name, message string
+	valid         func(int) bool
+}
+
+func number(own url.Values, rule numberRule, problems *errs.Problems) int {
+	raw := own.Get(rule.name)
 	if raw == "" {
 		return 0
 	}
 	n, err := strconv.Atoi(raw)
-	if err != nil || !valid(n) {
-		problems.Add(name, message)
+	if err != nil || !rule.valid(n) {
+		problems.Add(rule.name, rule.message)
 		return 0
 	}
 	return n

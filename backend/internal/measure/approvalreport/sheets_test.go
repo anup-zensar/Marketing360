@@ -15,7 +15,7 @@ func TestSheets_041_FR023(t *testing.T) {
 	f := approvalreporttest.New(t)
 	report := approvalreport.NewReport(approvalreport.NewService(f.DB, f.Deps))
 
-	sheets, err := report.Sheets(t.Context(), approvalreporttest.Alice, measure.Filter{})
+	sheets, err := report.Sheets(t.Context(), approvalreporttest.Alice(), measure.Filter{})
 	if err != nil {
 		t.Fatalf("Sheets() error: %v", err)
 	}
@@ -55,12 +55,24 @@ func equalRows(a, b []sheet.Cell) bool {
 	return true
 }
 
+func headingsMatch(row []sheet.Cell, want []string) bool {
+	if len(row) != len(want) {
+		return false
+	}
+	for i, h := range want {
+		if row[i] != sheet.Bold(h) {
+			return false
+		}
+	}
+	return true
+}
+
 func TestSheets_Grid_041_FR023(t *testing.T) {
 	t.Parallel()
 	f := approvalreporttest.New(t)
 	report := approvalreport.NewReport(approvalreport.NewService(f.DB, f.Deps))
 
-	sheets, err := report.Sheets(t.Context(), approvalreporttest.Alice, measure.Filter{Own: url.Values{"pageSize": {"5"}, "outcome": {"waiting"}}})
+	sheets, err := report.Sheets(t.Context(), approvalreporttest.Alice(), measure.Filter{Own: url.Values{"pageSize": {"5"}, "outcome": {"waiting"}}})
 	if err != nil {
 		t.Fatalf("Sheets() error: %v", err)
 	}
@@ -71,10 +83,8 @@ func TestSheets_Grid_041_FR023(t *testing.T) {
 	rows := sheets[2].Sheet.Rows
 	wantHead := []string{"Item ID", "Name", "Record type", "Approver", "Decided on", "Status", "Submitted on", "Level",
 		"Purchase order", "Amount (USD)", "Owner", "Comments"}
-	for i, h := range wantHead {
-		if rows[0][i] != sheet.Bold(h) {
-			t.Errorf("heading %d = %v, want %q", i, rows[0][i], h)
-		}
+	if !headingsMatch(rows[0], wantHead) {
+		t.Errorf("headings = %v, want %v", rows[0], wantHead)
 	}
 	if len(rows) != 3 {
 		t.Errorf("rows = %d, want the heading and every one of the 2 waiting rows, whatever the page size", len(rows))
@@ -86,7 +96,7 @@ func TestSheets_BadQuery_041_C10(t *testing.T) {
 	f := approvalreporttest.New(t)
 	report := approvalreport.NewReport(approvalreport.NewService(f.DB, f.Deps))
 
-	_, err := report.Sheets(t.Context(), approvalreporttest.Alice, measure.Filter{Own: url.Values{"sort": {"nope"}}})
+	_, err := report.Sheets(t.Context(), approvalreporttest.Alice(), measure.Filter{Own: url.Values{"sort": {"nope"}}})
 
 	if err == nil {
 		t.Error("Sheets() with a malformed sort = nil error, want a problem")

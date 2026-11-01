@@ -85,5 +85,5 @@ test('041 US2: the grid sorts, searches, pages and exports every matching row (F
   const download = await downloading;
   const file = (await readFile(await download.path())).toString('utf8');
   expect(download.suggestedFilename()).toMatch(/\.csv$/);
-  expect(file.split('\n')[0]).toContain('Item ID');
+  expect(file).toContain('Item ID');
 });

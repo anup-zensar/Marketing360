@@ -4,14 +4,12 @@ import (
 	"cmp"
 	"slices"
 	"strings"
-
-	"mapp/internal/platform/date"
 )
 
 // matching applies the grid's filters and search to all rows, then orders them; paging is left to the caller.
 func matching(rows []Row, q Query) []Row {
 	kept := slices.DeleteFunc(slices.Clone(rows), func(r Row) bool { return !wanted(r, q) })
-	key, order := cmp.Or(q.Sort, "submittedOn"), cmp.Or(q.Order, "desc")
+	key, order := cmp.Or(q.Sort, sortSubmittedOn), cmp.Or(q.Order, orderDesc)
 	slices.SortStableFunc(kept, func(a, b Row) int { return compareRows(a, b, key, order) })
 	return kept
 }
@@ -42,66 +40,6 @@ func searchText(r Row) string {
 		parts = append(parts, *r.PurchaseOrderNumber)
 	}
 	return strings.Join(parts, "\n")
-}
-
-// compareRows orders by the chosen column, a missing value last in either order, ties by item then level.
-func compareRows(a, b Row, key, order string) int {
-	missingA, missingB := isMissing(a, key), isMissing(b, key)
-	if missingA != missingB {
-		if missingA {
-			return 1
-		}
-		return -1
-	}
-	by := compareBy(a, b, key)
-	if order == "desc" {
-		by = -by
-	}
-	return cmp.Or(by, strings.Compare(a.ItemID, b.ItemID), cmp.Compare(a.Level, b.Level))
-}
-
-func isMissing(r Row, key string) bool {
-	switch key {
-	case "approver":
-		return r.Approver == nil
-	case "decidedOn":
-		return r.DecidedOn == nil
-	case "purchaseOrder":
-		return r.PurchaseOrderNumber == nil
-	case "amount":
-		return r.Amount == nil
-	}
-	return false
-}
-
-func compareBy(a, b Row, key string) int {
-	switch key {
-	case "itemId":
-		return strings.Compare(a.ItemID, b.ItemID)
-	case "itemName":
-		return strings.Compare(strings.ToLower(a.ItemName), strings.ToLower(b.ItemName))
-	case "recordType":
-		return strings.Compare(recordTypeLabel(a.RecordType), recordTypeLabel(b.RecordType))
-	case "approver":
-		return strings.Compare(strings.ToLower(a.Approver.Name), strings.ToLower(b.Approver.Name))
-	case "decidedOn":
-		return a.DecidedOn.Compare(*b.DecidedOn)
-	case "outcome":
-		return strings.Compare(outcomeLabel(a.Outcome), outcomeLabel(b.Outcome))
-	case "submittedOn":
-		return date.Date.Compare(a.SubmittedOn, b.SubmittedOn)
-	case "level":
-		return cmp.Compare(a.Level, b.Level)
-	case "purchaseOrder":
-		return strings.Compare(*a.PurchaseOrderNumber, *b.PurchaseOrderNumber)
-	case "amount":
-		return a.Amount.Amount.Cmp(b.Amount.Amount)
-	case "owner":
-		return strings.Compare(strings.ToLower(a.Owner.Name), strings.ToLower(b.Owner.Name))
-	case "comments":
-		return strings.Compare(strings.ToLower(a.Comments), strings.ToLower(b.Comments))
-	}
-	return 0
 }
 
 // pageOf cuts the page the person asked for out of the ordered rows.

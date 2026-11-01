@@ -152,26 +152,45 @@ func undecidedOutcome(e entry, level approval.RoundLevel, levelDecided bool) Out
 // assign gives each decision to the approver it was made by, then as their delegate or on their behalf, then to
 // any approver left without one (a backup), so a decision is never shown twice.
 func assign(approvers []actor.Actor, decisions []approval.Action) []*approval.Action {
-	slots := make([]*approval.Action, len(approvers))
-	used := make([]bool, len(decisions))
-	take := func(matches func(approval.Action, actor.Actor) bool) {
-		for i, approver := range approvers {
-			if slots[i] != nil {
-				continue
-			}
-			if j := slices.IndexFunc(decisions, func(d approval.Action) bool { return matches(d, approver) }); j >= 0 && !used[j] {
-				slots[i], used[j] = &decisions[j], true
-			}
+	s := assignment{slots: make([]*approval.Action, len(approvers)), used: make([]bool, len(decisions))}
+	s.take(approvers, decisions, madeBy)
+	s.take(approvers, decisions, madeFor)
+	s.fill(decisions)
+	return s.slots
+}
+
+type assignment struct {
+	slots []*approval.Action
+	used  []bool
+}
+
+func (s *assignment) take(approvers []actor.Actor, decisions []approval.Action, matches func(approval.Action, actor.Actor) bool) {
+	for i, approver := range approvers {
+		if s.slots[i] != nil {
+			continue
+		}
+		j := slices.IndexFunc(decisions, func(d approval.Action) bool { return matches(d, approver) })
+		if j >= 0 && !s.used[j] {
+			s.slots[i], s.used[j] = &decisions[j], true
 		}
 	}
-	take(func(d approval.Action, a actor.Actor) bool { return d.Actor.ID == a.ID })
-	take(func(d approval.Action, a actor.Actor) bool {
-		return (d.AsDelegateOf != nil && d.AsDelegateOf.ID == a.ID) || slices.ContainsFunc(d.OnBehalfOf, func(b actor.Actor) bool { return b.ID == a.ID })
-	})
+}
+
+func (s *assignment) fill(decisions []approval.Action) {
 	for j := range decisions {
-		if i := slices.Index(slots, nil); !used[j] && i >= 0 {
-			slots[i], used[j] = &decisions[j], true
+		if i := slices.Index(s.slots, nil); !s.used[j] && i >= 0 {
+			s.slots[i], s.used[j] = &decisions[j], true
 		}
 	}
-	return slots
+}
+
+func madeBy(d approval.Action, a actor.Actor) bool {
+	return d.Actor.ID == a.ID
+}
+
+func madeFor(d approval.Action, a actor.Actor) bool {
+	if d.AsDelegateOf != nil && d.AsDelegateOf.ID == a.ID {
+		return true
+	}
+	return slices.ContainsFunc(d.OnBehalfOf, func(b actor.Actor) bool { return b.ID == a.ID })
 }

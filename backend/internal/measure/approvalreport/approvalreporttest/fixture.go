@@ -32,13 +32,11 @@ const (
 	RequestWaiting       = "pr-waiting"
 )
 
-var (
-	Alice = actor.Actor{ID: "p-alice", Name: "Alice Ng"}
-	Bob   = actor.Actor{ID: "p-bob", Name: "Bob Ruiz"}
-	Carol = actor.Actor{ID: "p-carol", Name: "Carol Dev"}
-	Dan   = actor.Actor{ID: "p-dan", Name: "Dan Ito"}
-	Erin  = actor.Actor{ID: "p-erin", Name: "Erin Poe"}
-)
+func Alice() actor.Actor { return actor.Actor{ID: "p-alice", Name: "Alice Ng"} }
+func Bob() actor.Actor   { return actor.Actor{ID: "p-bob", Name: "Bob Ruiz"} }
+func Carol() actor.Actor { return actor.Actor{ID: "p-carol", Name: "Carol Dev"} }
+func Dan() actor.Actor   { return actor.Actor{ID: "p-dan", Name: "Dan Ito"} }
+func Erin() actor.Actor  { return actor.Actor{ID: "p-erin", Name: "Erin Poe"} }
 
 // Fixture is every port of the report on one in-memory database; Now is the fixed clock.
 type Fixture struct {
@@ -50,18 +48,18 @@ type Fixture struct {
 
 // New builds the fixture: plan-1 shows its costs, plan-2 has none to show (no finance.view), and every
 // round outcome, approver mode, automatic level and skipped level appears once.
-func New(t testing.TB) Fixture {
-	t.Helper()
+func New(tb testing.TB) Fixture {
+	tb.Helper()
 	db, now := fake.NewDB(), time.Date(2026, 3, 20, 9, 0, 0, 0, time.UTC)
 	rounds := approvaltest.NewStore(db)
 	for _, r := range roundsAt(now) {
-		if err := rounds.PutRound(t.Context(), r); err != nil {
-			t.Fatalf("PutRound(%s) error: %v", r.ID, err)
+		if err := rounds.PutRound(tb.Context(), r); err != nil {
+			tb.Fatalf("PutRound(%s) error: %v", r.ID, err)
 		}
 	}
 	for _, a := range actionsAt(now) {
-		if err := rounds.PutAction(t.Context(), a); err != nil {
-			t.Fatalf("PutAction(%s) error: %v", a.ID, err)
+		if err := rounds.PutAction(tb.Context(), a); err != nil {
+			tb.Fatalf("PutAction(%s) error: %v", a.ID, err)
 		}
 	}
 	return Fixture{DB: db, Now: now, Scope: scope(), Deps: approvalreport.Deps{
@@ -74,7 +72,7 @@ func New(t testing.TB) Fixture {
 func WaitingRequest() Entry {
 	return Entry{
 		PurchaseRequest: approvalreport.PurchaseRequest{ID: RequestWaiting, Name: "Event stand", PlanID: PlanWithFinance,
-			OwnerID: Erin.ID, Amount: money.FromCents(250000), PurchaseOrders: []string{"4500001", "4500002"}},
+			OwnerID: Erin().ID, Amount: money.FromCents(250000), PurchaseOrders: []string{"4500001", "4500002"}},
 		LineItemIDs: []string{"li-" + ActivityWaiting},
 	}
 }
@@ -89,6 +87,7 @@ func scope() measure.Scope {
 			matched.Activities = append(matched.Activities, n.ID)
 		case allwork.LevelLineItem:
 			matched.LineItems = append(matched.LineItems, n.ID)
+		case allwork.LevelPlan, allwork.LevelCampaign, allwork.LevelInitiative, allwork.LevelUnassigned:
 		}
 	}
 	return measure.Scope{Year: Year, Nodes: list, Matched: matched,
@@ -113,12 +112,12 @@ func nodes() []allwork.Node {
 
 func activityNode(id, planID string, cost *money.Amount) allwork.Node {
 	return allwork.Node{Level: allwork.LevelActivity, ID: id, PlanID: planID, Name: "Activity " + id,
-		Owner: &allwork.Owner{ID: Alice.ID, Name: Alice.Name}, PlannedCost: cost}
+		Owner: &allwork.Owner{ID: Alice().ID, Name: Alice().Name}, PlannedCost: cost}
 }
 
 func people() []allwork.Option {
 	list := []allwork.Option{}
-	for _, p := range []actor.Actor{Alice, Bob, Carol, Dan, Erin} {
+	for _, p := range []actor.Actor{Alice(), Bob(), Carol(), Dan(), Erin()} {
 		list = append(list, allwork.Option{ID: p.ID, Label: p.Name})
 	}
 	return list

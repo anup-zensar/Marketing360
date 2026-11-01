@@ -53,30 +53,49 @@ func TestRows_041_FR012_C2_C3(t *testing.T) {
 	}
 }
 
-func TestRows_Details_041_FR012_FR019(t *testing.T) {
-	t.Parallel()
+func rowsByKey(t *testing.T) map[string]approvalreport.Row {
+	t.Helper()
 	byKey := map[string]approvalreport.Row{}
 	for _, r := range allRows(t, approvalreporttest.New(t), approvalreport.Query{}) {
 		byKey[keyOf(r)] = r
 	}
+	return byKey
+}
 
-	approved := byKey["act-approved-any|p-bob|approved|1"]
+func TestRows_DecidedRow_041_FR012(t *testing.T) {
+	t.Parallel()
+
+	approved := rowsByKey(t)["act-approved-any|p-bob|approved|1"]
+
 	if approved.DecidedOn == nil || approved.DecidedOn.String() != "2026-03-12" || approved.Comments != "Fine by me" {
 		t.Errorf("decided row = %+v, want decided on 2026-03-12 with its comment", approved)
 	}
 	if approved.SubmittedOn.String() != "2026-03-10" || approved.LevelName != "Level 1" {
 		t.Errorf("SubmittedOn, LevelName = %s, %s", approved.SubmittedOn, approved.LevelName)
 	}
+}
+
+func TestRows_NoDecision_041_FR019(t *testing.T) {
+	t.Parallel()
+	byKey := rowsByKey(t)
+
 	for _, key := range []string{"act-waiting|p-alice|waiting|1", "act-approved-any|p-carol|notNeeded|1"} {
 		if byKey[key].DecidedOn != nil {
 			t.Errorf("%s decided on %v, want none: shown as a dash, never a date", key, byKey[key].DecidedOn)
 		}
 	}
+}
+
+func TestRows_AutomaticAndDeclined_041_C2_C3(t *testing.T) {
+	t.Parallel()
+	byKey := rowsByKey(t)
+
 	automatic := byKey["act-automatic|-|autoApproved|1"]
+	declined := byKey["act-declined-all|p-erin|declined|1"]
+
 	if automatic.Approver != nil || automatic.DecidedOn == nil || automatic.DecidedOn.String() != "2026-03-16" {
 		t.Errorf("automatic row = %+v, want no approver, decided on the submission date", automatic)
 	}
-	declined := byKey["act-declined-all|p-erin|declined|1"]
 	if declined.Comments != "Out of budget" {
 		t.Errorf("declined row comments = %q, want the full comment of the decider", declined.Comments)
 	}

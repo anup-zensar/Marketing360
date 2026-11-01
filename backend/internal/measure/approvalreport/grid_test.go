@@ -125,25 +125,42 @@ func TestSort_TiesByItemThenLevel_041_FR015(t *testing.T) {
 	}
 }
 
-func TestPaging_041_FR015(t *testing.T) {
-	t.Parallel()
-	f := approvalreporttest.New(t)
+func pageOfIDs(t *testing.T, q approvalreport.Query) approvalreport.Grid {
+	t.Helper()
+	q.Sort, q.Order = "itemId", "asc"
+	return reportOf(t, approvalreporttest.New(t), q).Grid
+}
 
-	first := reportOf(t, f, approvalreport.Query{PageSize: 5, Sort: "itemId", Order: "asc"}).Grid
-	third := reportOf(t, f, approvalreport.Query{PageSize: 5, Page: 3, Sort: "itemId", Order: "asc"}).Grid
-	beyond := reportOf(t, f, approvalreport.Query{PageSize: 5, Page: 9}).Grid
-	defaults := reportOf(t, f, approvalreport.Query{}).Grid
+func TestPaging_FirstPage_041_FR015(t *testing.T) {
+	t.Parallel()
+
+	first := pageOfIDs(t, approvalreport.Query{PageSize: 5})
 
 	if first.Total != 11 || len(first.Items) != 5 || first.Page != 1 || first.PageSize != 5 {
 		t.Errorf("first page = total %d, %d rows, page %d of size %d, want 11, 5, 1, 5",
 			first.Total, len(first.Items), first.Page, first.PageSize)
 	}
+}
+
+func TestPaging_LastPageAndBeyond_041_FR015(t *testing.T) {
+	t.Parallel()
+
+	third := pageOfIDs(t, approvalreport.Query{PageSize: 5, Page: 3})
+	beyond := pageOfIDs(t, approvalreport.Query{PageSize: 5, Page: 9})
+
 	if len(third.Items) != 1 || third.Items[0].ItemID != "pr-waiting" {
 		t.Errorf("third page = %v, want the last row alone", ids(third.Items))
 	}
 	if len(beyond.Items) != 0 || beyond.Total != 11 {
 		t.Errorf("a page past the end = %d rows of %d, want none of 11", len(beyond.Items), beyond.Total)
 	}
+}
+
+func TestPaging_Defaults_041_FR015(t *testing.T) {
+	t.Parallel()
+
+	defaults := reportOf(t, approvalreporttest.New(t), approvalreport.Query{}).Grid
+
 	if defaults.PageSize != 50 || defaults.Page != 1 {
 		t.Errorf("defaults = page %d of size %d, want 1 of 50", defaults.Page, defaults.PageSize)
 	}

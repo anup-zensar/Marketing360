@@ -76,33 +76,52 @@ type executive struct {
 	} `json:"approvals"`
 }
 
+func waitingAcrossTypes(t *testing.T, c *apitest.Client) (int, *time.Time) {
+	t.Helper()
+	waiting, oldest := 0, (*time.Time)(nil)
+	for _, kind := range []approvalreport.RecordType{approvalreport.RecordActivity, approvalreport.RecordPurchaseRequest,
+		approvalreport.RecordModifiedPurchaseRequest} {
+		var view approvalreport.View
+		get(t, c, reportURL+"?year=2026&statusType="+string(kind), http.StatusOK).Decode(t, &view)
+		waiting += view.StatusMix.Waiting.Count
+		if since := view.StatusMix.Waiting.OldestSince; since != nil && (oldest == nil || since.Before(*oldest)) {
+			oldest = since
+		}
+	}
+	return waiting, oldest
+}
+
+func sameTime(a, b *time.Time) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	return a.Equal(*b)
+}
+
+func sameText(a, b *string) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	return *a == *b
+}
+
 func TestApprovalsReport_EqualsDashboard_041_SC002(t *testing.T) {
 	t.Parallel()
 	alex := apitest.New(t).SignIn(t, alexEmail)
 	var board executive
 	get(t, alex, "/api/v1/dashboards/executive?year=2026", http.StatusOK).Decode(t, &board)
 
-	waiting, oldest := 0, (*time.Time)(nil)
-	for _, kind := range []approvalreport.RecordType{approvalreport.RecordActivity, approvalreport.RecordPurchaseRequest,
-		approvalreport.RecordModifiedPurchaseRequest} {
-		var view approvalreport.View
-		get(t, alex, reportURL+"?year=2026&statusType="+string(kind), http.StatusOK).Decode(t, &view)
-		waiting += view.StatusMix.Waiting.Count
-		if since := view.StatusMix.Waiting.OldestSince; since != nil && (oldest == nil || since.Before(*oldest)) {
-			oldest = since
-		}
-	}
+	waiting, oldest := waitingAcrossTypes(t, alex)
 	var view approvalreport.View
 	get(t, alex, reportURL+"?year=2026", http.StatusOK).Decode(t, &view)
 
 	if waiting != board.Approvals.Waiting {
 		t.Errorf("waiting over the three types = %d, want the dashboard's %d", waiting, board.Approvals.Waiting)
 	}
-	if (oldest == nil) != (board.Approvals.OldestWaitingSince == nil) ||
-		(oldest != nil && !oldest.Equal(*board.Approvals.OldestWaitingSince)) {
+	if !sameTime(oldest, board.Approvals.OldestWaitingSince) {
 		t.Errorf("oldest waiting = %v, want the dashboard's %v", oldest, board.Approvals.OldestWaitingSince)
 	}
-	if got, want := view.Average.Days, board.Approvals.AverageDecisionDays; (got == nil) != (want == nil) || (got != nil && *got != *want) {
-		t.Errorf("average days = %v, want the dashboard's %v", got, want)
+	if !sameText(view.Average.Days, board.Approvals.AverageDecisionDays) {
+		t.Errorf("average days = %v, want the dashboard's %v", view.Average.Days, board.Approvals.AverageDecisionDays)
 	}
 }

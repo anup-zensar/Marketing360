@@ -17,7 +17,7 @@ import (
 
 func reportOf(t *testing.T, f approvalreporttest.Fixture, q approvalreport.Query) approvalreport.View {
 	t.Helper()
-	view, err := approvalreport.NewService(f.DB, f.Deps).Report(t.Context(), approvalreporttest.Alice, measure.Filter{}, q)
+	view, err := approvalreport.NewService(f.DB, f.Deps).Report(t.Context(), approvalreporttest.Alice(), measure.Filter{}, q)
 	if err != nil {
 		t.Fatalf("Report() error: %v", err)
 	}
