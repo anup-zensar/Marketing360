@@ -47,7 +47,7 @@ func (s *Service) storedModel(ctx context.Context, id string) (Model, error) {
 	if !found {
 		return Model{}, errs.NotFound(modelGoneMessage)
 	}
-	return m, nil
+	return m.Normalised(), nil
 }
 
 // modelView returns the model m as the API answers it.
@@ -76,6 +76,7 @@ func (s *Service) modelViews(ctx context.Context, models []Model) ([]ModelView, 
 	}
 	views := make([]ModelView, 0, len(models))
 	for _, m := range models {
+		m = m.Normalised()
 		refs := []SettingRef{}
 		for _, id := range m.ActivityTypeIDs {
 			if t, found := typesByID[id]; found {
@@ -85,7 +86,11 @@ func (s *Service) modelViews(ctx context.Context, models []Model) ([]ModelView, 
 		slices.SortStableFunc(refs, func(x, y SettingRef) int { return compareNames(x.Name, y.Name) })
 		views = append(views, ModelView{
 			ID: m.ID, Name: m.Name, InqToMqlRate: m.InqToMqlRate, MqlToDealRate: m.MqlToDealRate,
-			AverageDealSize: m.AverageDealSize, ActivityTypes: refs, Active: m.Active, Usage: u.model(m.ID), Meta: m.Meta,
+			AverageDealSize: m.AverageDealSize, ActivityTypes: refs,
+			InqToMqlVelocityMonths:  m.InqToMqlVelocityMonths,
+			MqlToDealVelocityMonths: m.MqlToDealVelocityMonths,
+			AllowedGoalStages:       slices.Clone(m.AllowedGoalStages),
+			Active:                  m.Active, Usage: u.model(m.ID), Meta: m.Meta,
 		})
 	}
 	return views, nil

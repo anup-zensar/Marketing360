@@ -22,9 +22,10 @@ func TestCreateModel_ListedActive_FR009(t *testing.T) {
 
 	want := ModelView{
 		ID: "MOD-1001", Name: "Lubricants 2.0", InqToMqlRate: money.PercentFromHundredths(200), MqlToDealRate: money.PercentFromHundredths(500),
-		AverageDealSize: money.USD(money.FromCents(1_000_000)),
-		ActivityTypes:   []SettingRef{{ID: digital.ID, Name: "Digital media", Active: true}, {ID: event.ID, Name: "Event", Active: true}},
-		Active:          true, Usage: Usage{Summary: "Not used yet", Parts: []UsagePart{}, Records: []history.RecordRef{}},
+		AverageDealSize:   money.USD(money.FromCents(1_000_000)),
+		ActivityTypes:     []SettingRef{{ID: digital.ID, Name: "Digital media", Active: true}, {ID: event.ID, Name: "Event", Active: true}},
+		AllowedGoalStages: allGoalStages(),
+		Active:            true, Usage: Usage{Summary: "Not used yet", Parts: []UsagePart{}, Records: []history.RecordRef{}},
 		Meta: record.NewMeta(alex, start),
 	}
 	if !reflect.DeepEqual(created, want) {

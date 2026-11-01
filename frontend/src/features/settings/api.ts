@@ -16,6 +16,7 @@ export type AttributeLevel = components['schemas']['AttributeLevel'];
 export const SETTINGS_KEYS = {
   models: ['models'] as const,
   activityTypes: ['activity-types'] as const,
+  activityCategories: ['activity-categories'] as const,
   shellAttributes: (level: AttributeLevel) => ['shell-attributes', level] as const,
   shellAttribute: (id: string) => ['shell-attribute', id] as const,
   shellAttributeOptions: (id: string, params: object) =>
@@ -39,6 +40,14 @@ export function useActivityTypes() {
   return useQuery({
     queryKey: SETTINGS_KEYS.activityTypes,
     queryFn: () => call(api.GET('/api/v1/activity-types')),
+  });
+}
+
+/** Every activity category, active and inactive, by name (FR-018, FR-022). */
+export function useActivityCategories() {
+  return useQuery({
+    queryKey: SETTINGS_KEYS.activityCategories,
+    queryFn: () => call(api.GET('/api/v1/settings/activity-categories')),
   });
 }
 

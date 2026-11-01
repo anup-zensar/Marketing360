@@ -188,6 +188,7 @@ func planReferences(svc *plan.Service) settings.ReferenceSource {
 			refs = append(refs, settings.Reference{
 				Record: history.RecordRef{Type: "plan", ID: p.PlanID, Name: p.Name}, InBin: p.InRecycleBin,
 				Level: settings.LevelPlan, PlanID: p.PlanID, Attributes: p.Attributes, ModelID: p.ModelID,
+				GoalStage:       string(p.GoalStage),
 				FinanceBudgetID: p.DefaultFinanceBudgetID, Currency: p.Currency, Budget: p.Budget, // 016 FR-005, FR-010
 			})
 		}

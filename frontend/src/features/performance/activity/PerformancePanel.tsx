@@ -63,6 +63,7 @@ function PanelBody({ panel }: { panel: Panel }) {
   return (
     <div className={styles.stack}>
       <StageTable stages={panel.stages} revenue={panel.revenue} />
+      {panel.projection && <ProjectionNote stamp={panel.projection} />}
       {panel.webMetrics.length > 0 && <WebMetrics metrics={panel.webMetrics} />}
       {panel.sources.length > 0 && <Sources sources={panel.sources} />}
     </div>
@@ -77,6 +78,7 @@ function StageTable({ stages, revenue }: { stages: StageFigure[]; revenue: Reven
           <th scope="col">Stage</th>
           <th scope="col">Goal</th>
           <th scope="col">Actual</th>
+          <th scope="col">Projected</th>
           <th scope="col">Conversion</th>
         </tr>
       </thead>
@@ -85,7 +87,7 @@ function StageTable({ stages, revenue }: { stages: StageFigure[]; revenue: Reven
           <tr key={stage.stage}>
             <th scope="row">{STAGE_WORDS[stage.stage] ?? stage.stage}</th>
             {stage.reason ? (
-              <td colSpan={3} className={styles.reason}>
+              <td colSpan={4} className={styles.reason}>
                 {REASON_WORDS[stage.reason] ?? stage.reason}
               </td>
             ) : (
@@ -95,6 +97,11 @@ function StageTable({ stages, revenue }: { stages: StageFigure[]; revenue: Reven
                 </td>
                 <td className={styles.numeric}>
                   {stage.actual === null ? '—' : formatWhole(stage.actual)}
+                </td>
+                <td className={styles.numeric}>
+                  {stage.projected === null
+                    ? (REASON_WORDS[stage.projectedReason] ?? '—')
+                    : formatWhole(stage.projected)}
                 </td>
                 <td className={styles.numeric}>
                   {stage.conversion === null ? '—' : `${stage.conversion.toFixed(1)} %`}
@@ -115,7 +122,7 @@ function RevenueRow({ revenue }: { revenue: RevenueFigure }) {
     return (
       <tr>
         <th scope="row">Revenue</th>
-        <td colSpan={3} className={styles.reason}>
+        <td colSpan={4} className={styles.reason}>
           {REASON_WORDS[revenue.reason] ?? revenue.reason}
         </td>
       </tr>
@@ -131,8 +138,23 @@ function RevenueRow({ revenue }: { revenue: RevenueFigure }) {
           <span className={styles.reason}> · {revenue.excludedCount} excluded without a rate</span>
         )}
       </td>
+      <td className={styles.numeric}>
+        {revenue.projected
+          ? money(revenue.projected)
+          : (REASON_WORDS[revenue.projectedReason] ?? '—')}
+      </td>
       <td className={styles.numeric}>—</td>
     </tr>
+  );
+}
+
+/** Every projected figure names the model behind it and when its parameters last changed (047 FR-012). */
+function ProjectionNote({ stamp }: { stamp: NonNullable<Panel['projection']> }) {
+  const { date } = useFormatters();
+  return (
+    <p className={styles.notice}>
+      Projected from {stamp.modelName}, last changed {date(stamp.modelChangedAt)}.
+    </p>
   );
 }
 

@@ -104,6 +104,8 @@ export function ModelDetails({ model, actions, onClose }: ModelDetailsProps) {
           inqToMqlRate={model.inqToMqlRate}
           mqlToDealRate={model.mqlToDealRate}
           averageDealSize={model.averageDealSize.amount}
+          inqToMqlVelocityMonths={model.inqToMqlVelocityMonths}
+          mqlToDealVelocityMonths={model.mqlToDealVelocityMonths}
         />
         <MetaLine record={model} />
       </div>

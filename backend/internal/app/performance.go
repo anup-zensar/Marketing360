@@ -10,6 +10,7 @@ import (
 	"mapp/internal/plan"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/money"
+	"mapp/internal/projection"
 	"mapp/internal/settings"
 	"mapp/internal/stores"
 )
@@ -84,7 +85,16 @@ func (p performanceFigures) GoalFacts(ctx context.Context, activityID string) (p
 		return performance.GoalFacts{}, false, err
 	}
 	facts := performance.GoalFacts{INQ: act.INQ, ModelID: owning.ModelID,
-		ActivityTypeID: act.ActivityTypeID, PlanYear: owning.Year}
+		ActivityTypeID: act.ActivityTypeID, PlanYear: owning.Year,
+		SetLaterStagesMyself: act.SetLaterStagesMyself,
+		StartDate:            act.StartDate, EndDate: act.EndDate, Ongoing: act.Ongoing}
+	model, found, err := p.settings.Model(ctx, facts.ModelID)
+	if err != nil {
+		return facts, false, err
+	}
+	if found {
+		facts.Model = projectionModel(model)
+	}
 	if act.SetLaterStagesMyself {
 		facts.MQL, facts.Revenue = act.MQL, act.Revenue
 		return facts, true, nil
@@ -109,6 +119,15 @@ func (p performanceFigures) calculated(ctx context.Context, facts performance.Go
 	usd := money.USD(goals.Revenue)
 	facts.MQL, facts.Revenue = &goals.MQL, &usd
 	return facts, true, nil
+}
+
+func projectionModel(m settings.Model) projection.Model {
+	return projection.Model{
+		Name: m.Name, InqToMqlRate: m.InqToMqlRate, MqlToDealRate: m.MqlToDealRate,
+		AverageDealSize:        m.AverageDealSize,
+		InqToMqlVelocityMonths: m.InqToMqlVelocityMonths, MqlToDealVelocityMonths: m.MqlToDealVelocityMonths,
+		ModelChangedAt: m.UpdatedAt,
+	}
 }
 
 func (p performanceFigures) planOf(ctx context.Context, initiativeID string) (plan.Plan, bool, error) {

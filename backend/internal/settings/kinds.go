@@ -12,6 +12,7 @@ import (
 const (
 	modelKind        = "model"
 	activityTypeKind = "activityType"
+	categoryKind     = "activityCategory"
 	attributeKind    = "shellAttribute"
 	optionKind       = "shellAttributeOption"
 	currencyKind     = "currency"
@@ -34,6 +35,11 @@ func (s *Service) Kinds() []history.Kind {
 			Name: activityTypeKind, Singular: activityTypeNoun, Plural: "activity types",
 			Snapshot: s.activityTypeSnapshot, Remove: s.repo.DeleteActivityType, Put: putRecord(s.repo.PutActivityType),
 			Describe: describeActivityType, PrepareRestore: s.prepareActivityTypeRestore,
+		},
+		{
+			Name: categoryKind, Singular: categoryNoun, Plural: "activity categories",
+			Snapshot: s.activityCategorySnapshot, Remove: s.repo.DeleteActivityCategory, Put: putRecord(s.repo.PutActivityCategory),
+			Describe: s.describeActivityCategory, PrepareRestore: s.prepareActivityCategoryRestore,
 		},
 		{
 			Name: attributeKind, Singular: attributeNoun, Plural: "Shell attributes",
@@ -115,6 +121,12 @@ func (s *Service) describeModel(ctx context.Context, field string, value any) (s
 			return t.Name, found, err
 		})
 		return "Allowed activity types", text, err
+	case "inqToMqlVelocityMonths":
+		return "INQ→MQL velocity", monthsText(value), nil
+	case "mqlToDealVelocityMonths":
+		return "MQL→deal velocity", monthsText(value), nil
+	case "allowedGoalStages":
+		return "Allowed goal stages", stagesText(value), nil
 	case "active":
 		return "Status", statusText(value), nil
 	}

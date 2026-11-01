@@ -16,19 +16,41 @@ function panel(overrides: Partial<Panel> = {}): Panel {
   return {
     state: 'ok',
     stages: [
-      { stage: 'inq', goal: 100, actual: 80, conversion: null, reason: '' },
-      { stage: 'mql', goal: 10, actual: 8, conversion: 10.0, reason: '' },
+      {
+        stage: 'inq',
+        goal: 100,
+        actual: 80,
+        conversion: null,
+        reason: '',
+        projected: null,
+        projectedReason: '',
+        months: [],
+      },
+      {
+        stage: 'mql',
+        goal: 10,
+        actual: 8,
+        conversion: 10.0,
+        reason: '',
+        projected: null,
+        projectedReason: '',
+        months: [],
+      },
     ],
     revenue: {
       goal: { amount: '5000.00', currency: 'USD' },
       actual: { amount: '1000.00', currency: 'USD' },
       excludedCount: 1,
       reason: '',
+      projected: null,
+      projectedReason: '',
+      months: [],
     },
     webMetrics: [{ metric: 'sessions', months: [{ month: '2026-02', value: 1200 }] }],
     sources: [
       { sourceId: 'PS-1001', sourceName: 'Eloqua', freshness: 'stale', dataThrough: '2026-02-01' },
     ],
+    projection: null,
     ...overrides,
   };
 }
@@ -38,12 +60,39 @@ function emptyStages(
 ): Partial<Panel> {
   return {
     stages: [
-      { stage: 'inq', goal: null, actual: null, conversion: null, reason },
-      { stage: 'mql', goal: null, actual: null, conversion: null, reason },
+      {
+        stage: 'inq',
+        goal: null,
+        actual: null,
+        conversion: null,
+        reason,
+        projected: null,
+        projectedReason: '',
+        months: [],
+      },
+      {
+        stage: 'mql',
+        goal: null,
+        actual: null,
+        conversion: null,
+        reason,
+        projected: null,
+        projectedReason: '',
+        months: [],
+      },
     ],
-    revenue: { goal: null, actual: null, excludedCount: 0, reason },
+    revenue: {
+      goal: null,
+      actual: null,
+      excludedCount: 0,
+      reason,
+      projected: null,
+      projectedReason: '',
+      months: [],
+    },
     webMetrics: [],
     sources: [],
+    projection: null,
   };
 }
 
@@ -62,14 +111,16 @@ describe('PerformancePanel', () => {
     renderPanel(panel());
 
     expect(await screen.findByRole('row', { name: /INQ 100 80/ })).toBeInTheDocument();
-    expect(screen.getByRole('row', { name: /MQL 10 8 10\.0 %/ })).toBeInTheDocument();
+    expect(screen.getByRole('row', { name: /MQL 10 8 — 10\.0 %/ })).toBeInTheDocument();
     expect(screen.getByText(/1 excluded without a rate/)).toBeInTheDocument();
     expect(screen.getByText('stale')).toBeInTheDocument();
     await expectNoAxeViolations();
   });
 
   it('046 FR-027 gates a non-approved activity with the stated message and no figures', async () => {
-    renderPanel(panel({ state: 'notApproved', stages: [], webMetrics: [], sources: [] }));
+    renderPanel(
+      panel({ state: 'notApproved', stages: [], webMetrics: [], sources: [], projection: null }),
+    );
 
     expect(
       await screen.findByText('Approve the activity to see performance data.'),
@@ -114,4 +165,68 @@ describe('PerformancePanel', () => {
     expect((await screen.findAllByText('The last load failed.')).length).toBeGreaterThan(0);
     expectNoSampleFigure();
   });
+});
+
+describe('projected figures (047)', () => {
+  it('shows each stage projected and names the model behind it (047 FR-012, FR-016)', async () => {
+    renderPanel(
+      panel({
+        stages: [
+          {
+            stage: 'inq',
+            goal: 100,
+            actual: 80,
+            projected: 120,
+            conversion: null,
+            reason: '',
+            projectedReason: '',
+            months: [],
+          },
+          {
+            stage: 'mql',
+            goal: 10,
+            actual: 8,
+            projected: 12,
+            conversion: 10.0,
+            reason: '',
+            projectedReason: '',
+            months: [],
+          },
+        ],
+        projection: { modelName: 'Lubricants 1.0', modelChangedAt: '2026-01-02T09:00:00Z' },
+      }),
+    );
+
+    expect(await screen.findByText('120')).toBeInTheDocument();
+    expect(screen.getByText(/Projected from Lubricants 1\.0/)).toBeInTheDocument();
+  });
+
+  it('shows an em dash where nothing projects, never a zero (047 FR-013)', async () => {
+    renderPanel(panel());
+
+    expect(await screen.findAllByText('—')).not.toHaveLength(0);
+    expect(screen.queryByText(/Projected from/)).not.toBeInTheDocument();
+  });
+});
+
+it('047 FR-013 says why nothing projects even when the stage has an actual', async () => {
+  renderPanel(
+    panel({
+      stages: [
+        {
+          stage: 'inq',
+          goal: null,
+          actual: 40,
+          projected: null,
+          conversion: null,
+          reason: '',
+          projectedReason: 'noGoal',
+          months: [],
+        },
+      ],
+    }),
+  );
+
+  expect(await screen.findByText('40')).toBeInTheDocument();
+  expect(screen.getByText('No goal is set for this figure.')).toBeInTheDocument();
 });

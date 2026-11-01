@@ -80,7 +80,7 @@ func webinarBody(modelIDs ...string) map[string]any {
 // allowing it (JSON objects, comma separated) and its usage, created by Alex.
 func webinarAnswer(version int, models, usage string) string {
 	return `{"id":"AT-1007","name":"Webinar","defaultPlannedCost":{"amount":"5000.00","currency":"USD"},"models":[` + models +
-		`],"active":true,"usage":` + usage + `,"version":` + itoa(version) + `,` + alexAtStart + `}`
+		`],"category":null,"active":true,"usage":` + usage + `,"version":` + itoa(version) + `,` + alexAtStart + `}`
 }
 
 // A save from an out-of-date copy is refused with who changed the activity type and when (FR-007).
@@ -97,7 +97,7 @@ func TestActivityTypesAPI_UpdateConflict_FR007(t *testing.T) {
 	alexs := alex.Do(t, http.MethodPatch, "/api/v1/activity-types/AT-1007", map[string]any{"name": "Webinars", "version": 1})
 	gone := alex.Do(t, http.MethodPatch, "/api/v1/activity-types/AT-9999", map[string]any{"name": "X", "version": 1})
 
-	assertAnswer(t, daniels, http.StatusOK, `{"id":"AT-1007","name":"Webinar","defaultPlannedCost":null,"models":[],"active":true,"usage":`+
+	assertAnswer(t, daniels, http.StatusOK, `{"id":"AT-1007","name":"Webinar","defaultPlannedCost":null,"models":[],"category":null,"active":true,"usage":`+
 		unusedBody+`,"version":2,"createdAt":"2026-03-12T09:00:00Z","createdBy":{"id":"U-1001","name":"Alex Morgan"},`+
 		`"updatedAt":"2026-03-12T10:30:00Z","updatedBy":{"id":"U-1003","name":"Daniel Okoro"}}`)
 	assertAnswer(t, alexs, http.StatusConflict, `{"error":{"code":"version_conflict","message":"Not saved — Daniel Okoro changed this activity type",`+

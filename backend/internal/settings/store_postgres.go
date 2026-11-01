@@ -44,11 +44,16 @@ func (s *PostgresStore) ListModels(ctx context.Context) ([]Model, error) {
 }
 
 func (s *PostgresStore) PutModel(ctx context.Context, m Model) error {
+	m = m.Normalised() // a model built before 047 — a fixture, a bin snapshot — still fills the new columns
 	q := s.change(ctx)
 	err := q.PutModel(ctx, sqlcdb.PutModelParams{
 		ID: m.ID, Name: m.Name, InqToMqlRateHundredths: m.InqToMqlRate.Hundredths(),
 		MqlToDealRateHundredths: m.MqlToDealRate.Hundredths(), AverageDealSizeMinor: m.AverageDealSize.Amount.Cents(),
-		AverageDealSizeCurrency: m.AverageDealSize.Currency, Active: m.Active, Version: m.Version,
+		AverageDealSizeCurrency: m.AverageDealSize.Currency,
+		InqToMqlVelocityMonths:  m.InqToMqlVelocityMonths,
+		MqlToDealVelocityMonths: m.MqlToDealVelocityMonths,
+		AllowedGoalStages:       m.AllowedGoalStages,
+		Active:                  m.Active, Version: m.Version,
 		CreatedAt: m.CreatedAt, CreatedByID: m.CreatedBy.ID, CreatedByName: m.CreatedBy.Name,
 		UpdatedAt: m.UpdatedAt, UpdatedByID: m.UpdatedBy.ID, UpdatedByName: m.UpdatedBy.Name,
 	})
@@ -121,7 +126,11 @@ func modelFromRow(row sqlcdb.Model, activityTypeIDs []string) Model {
 		MqlToDealRate: money.PercentFromHundredths(row.MqlToDealRateHundredths),
 		AverageDealSize: money.Money{Amount: money.FromCents(row.AverageDealSizeMinor),
 			Currency: row.AverageDealSizeCurrency},
-		ActivityTypeIDs: slices.Clone(activityTypeIDs), Active: row.Active,
+		ActivityTypeIDs:         slices.Clone(activityTypeIDs),
+		InqToMqlVelocityMonths:  row.InqToMqlVelocityMonths,
+		MqlToDealVelocityMonths: row.MqlToDealVelocityMonths,
+		AllowedGoalStages:       slices.Clone(row.AllowedGoalStages),
+		Active:                  row.Active,
 		Meta: record.Meta{
 			Version:   row.Version,
 			CreatedAt: row.CreatedAt,

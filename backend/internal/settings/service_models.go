@@ -45,9 +45,16 @@ const (
 // 100,000,000.00, and at least one active activity type. Every problem is reported at once (US1-5).
 func (s *Service) CreateModel(ctx context.Context, a actor.Actor, input ModelInput) (ModelView, error) {
 	typeIDs := input.ActivityTypeIDs
+	stages := input.AllowedGoalStages
+	if stages == nil {
+		stages = allGoalStages()
+	}
 	all := ModelUpdate{
 		Name: &input.Name, InqToMqlRate: &input.InqToMqlRate, MqlToDealRate: &input.MqlToDealRate,
 		AverageDealSize: OptionalMoney{Set: true, Value: input.AverageDealSize}, ActivityTypeIDs: &typeIDs,
+		InqToMqlVelocityMonths:  valueOrZero(input.InqToMqlVelocityMonths),
+		MqlToDealVelocityMonths: valueOrZero(input.MqlToDealVelocityMonths),
+		AllowedGoalStages:       &stages,
 	}
 	var view ModelView
 	err := s.tx.Write(ctx, func(ctx context.Context) error {
@@ -163,7 +170,7 @@ func (s *Service) applyModel(ctx context.Context, m Model, update ModelUpdate, p
 		}
 		m.ActivityTypeIDs = typeIDs
 	}
-	return m, nil
+	return applyProjectionFields(m, update, problems), nil
 }
 
 // parseModelRate reads a conversion rate: a percentage above 0 and at most 100.00 with at most two

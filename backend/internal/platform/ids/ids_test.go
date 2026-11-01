@@ -107,7 +107,7 @@ func TestPrefixes_UniquePerRecordType_FR027(t *testing.T) {
 	seen := map[string]bool{}
 	for _, prefix := range ids.Prefixes {
 		if !prefixForm.MatchString(prefix) {
-			t.Errorf("prefix %q is not 1 to 3 capital letters", prefix)
+			t.Errorf("prefix %q is not 1 to 4 capital letters", prefix)
 		}
 		if seen[prefix] {
 			t.Errorf("prefix %q is listed twice", prefix)

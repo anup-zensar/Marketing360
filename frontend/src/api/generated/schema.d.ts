@@ -412,6 +412,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/settings/activity-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every activity category (active and inactive), sorted by name ignoring letter case (FR-018, FR-022) */
+        get: operations["listActivityCategories"];
+        put?: never;
+        /** Create an activity category grouping activity types (FR-018) */
+        post: operations["createActivityCategory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settings/activity-categories/{categoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example CAT-1001 */
+                categoryId: components["parameters"]["ActivityCategoryId"];
+            };
+            cookie?: never;
+        };
+        /** One activity category with the activity types it groups */
+        get: operations["getActivityCategory"];
+        put?: never;
+        post?: never;
+        /** Delete an activity category; its activity types become Uncategorised (FR-021) */
+        delete: operations["deleteActivityCategory"];
+        options?: never;
+        head?: never;
+        /** Change an activity category and the activity types it groups (FR-018, FR-019, FR-020) */
+        patch: operations["updateActivityCategory"];
+        trace?: never;
+    };
     "/api/v1/activity-types": {
         parameters: {
             query?: never;
@@ -5289,24 +5329,58 @@ export interface components {
         PerformanceFactList: {
             items: components["schemas"]["PerformanceFact"][];
         };
+        /** @description One month split at today (047 FR-010); the month in progress carries both figures. */
+        SplitMonth: {
+            /** @example 2026-02 */
+            month: string;
+            actual: number | null;
+            projected: number | null;
+            inProgress: boolean;
+        };
+        SplitMoneyMonth: {
+            /** @example 2026-02 */
+            month: string;
+            actual: components["schemas"]["Money"] | null;
+            projected: components["schemas"]["Money"] | null;
+            inProgress: boolean;
+        };
+        /** @description The model behind the projected figures and when its parameters last changed (047 FR-012). */
+        ProjectionStamp: {
+            modelName: string;
+            /** Format: date-time */
+            modelChangedAt: string;
+        };
         StageFigure: {
             /** @enum {string} */
             stage: "inq" | "mql";
             goal: number | null;
             actual: number | null;
+            /** @description The plan-year figure: actual to the end of the last whole month before today plus projected from today, so a closed year equals the actual (047 FR-010). Null with projectedReason when nothing projects. Never add this to actual — they overlap. */
+            projected: number | null;
             /** @description Actual over the previous stage's actual, one decimal; null where it cannot be worked out. */
             conversion: number | null;
             /** @enum {string} */
             reason: "" | "noSource" | "noGoal" | "failed" | "stale" | "noData";
+            /**
+             * @description Why nothing projects, which reason cannot say when the stage has an actual (047 FR-013).
+             * @enum {string}
+             */
+            projectedReason: "" | "noGoal";
+            months: components["schemas"]["SplitMonth"][];
         };
         RevenueFigure: {
             goal: components["schemas"]["Money"] | null;
             /** @description One USD total at the current rate (046-C7). */
             actual: components["schemas"]["Money"] | null;
+            /** @description The plan-year figure, as StageFigure.projected, with the deals from today priced at the model's average deal size (047 FR-007, FR-010). */
+            projected: components["schemas"]["Money"] | null;
             /** @description Facts left out because their currency has no rate (SC-010). */
             excludedCount: number;
             /** @enum {string} */
             reason: "" | "notApproved" | "noSource" | "noGoal" | "failed" | "stale" | "noData";
+            /** @enum {string} */
+            projectedReason: "" | "noGoal";
+            months: components["schemas"]["SplitMoneyMonth"][];
         };
         MetricFigure: {
             /** @enum {string} */
@@ -5332,6 +5406,7 @@ export interface components {
             revenue: components["schemas"]["RevenueFigure"];
             webMetrics: components["schemas"]["MetricFigure"][];
             sources: components["schemas"]["PanelSource"][];
+            projection: components["schemas"]["ProjectionStamp"] | null;
         };
         CodeAttribute: {
             name: string;
@@ -6558,10 +6633,10 @@ export interface components {
         };
         UsagePart: {
             /**
-             * @description What uses the record (the purchase request levels since 032).
+             * @description What uses the record (the purchase request levels since 032, activity types since 047).
              * @enum {string}
              */
-            kind: "plan" | "campaign" | "initiative" | "activity" | "lineItem" | "purchaseRequest" | "purchaseRequestLine" | "person" | "model" | "dependentAttribute" | "condition" | "linkedOption";
+            kind: "plan" | "campaign" | "initiative" | "activity" | "lineItem" | "purchaseRequest" | "purchaseRequestLine" | "person" | "model" | "dependentAttribute" | "condition" | "linkedOption" | "activityType";
             /** @description The part as people read it, for example Used by 12 activities (1 in the recycle bin). */
             text: string;
             /** @description Records using it, those in the recycle bin included. */
@@ -6626,6 +6701,11 @@ export interface components {
             averageDealSize: components["schemas"]["Money"];
             /** @description The allowed activity types, sorted by name. */
             activityTypes: components["schemas"]["SettingRef"][];
+            /** @description Whole months a conversion takes (047-C1). */
+            inqToMqlVelocityMonths: number;
+            mqlToDealVelocityMonths: number;
+            /** @description The stages a goal may be set against, in funnel order (047-C2). */
+            allowedGoalStages: ("inq" | "mql" | "revenue")[];
             active: boolean;
             usage: components["schemas"]["Usage"];
             version: number;
@@ -6652,14 +6732,61 @@ export interface components {
             /** @description USD; null when not filled in. */
             averageDealSize: components["schemas"]["MoneyInput"] | null;
             activityTypeIds: string[];
+            /** @description Whole months; 0 when left out (047-C2). */
+            inqToMqlVelocityMonths?: number;
+            mqlToDealVelocityMonths?: number;
+            /** @description Every stage when left out (047-C2). */
+            allowedGoalStages?: ("inq" | "mql" | "revenue")[];
         };
         /** @description Only the fields to change, and the version. Also the body of the impact check. */
         ModelUpdate: {
             name?: string;
             inqToMqlRate?: string;
             mqlToDealRate?: string;
+            inqToMqlVelocityMonths?: number;
+            mqlToDealVelocityMonths?: number;
+            allowedGoalStages?: ("inq" | "mql" | "revenue")[];
             averageDealSize?: components["schemas"]["MoneyInput"] | null;
             activityTypeIds?: string[];
+            version: number;
+        };
+        /** @description A group of activity types; a type belongs to at most one category (047-C7). */
+        ActivityCategory: {
+            /** @example CAT-1001 */
+            id: string;
+            /** @example Digital */
+            name: string;
+            /** @description At most one category is the default the reports open on. */
+            isDefault: boolean;
+            /** @description The activity types in this category, sorted by name. */
+            activityTypes: components["schemas"]["SettingRef"][];
+            active: boolean;
+            usage: components["schemas"]["Usage"];
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        ActivityCategoryPage: {
+            items: components["schemas"]["ActivityCategory"][];
+            total: number;
+        };
+        ActivityCategoryCreate: {
+            name: string;
+            /** @description True takes the default away from the category that had it. */
+            isDefault: boolean;
+            /** @description The activity types to put in the new category; each leaves the category it was in. */
+            activityTypeIds: string[];
+        };
+        /** @description Only the fields to change, and the version. activityTypeIds is the complete new list of activity types in the category: a type listed here leaves the category it was in, one left out becomes Uncategorised. */
+        ActivityCategoryUpdate: {
+            name?: string;
+            isDefault?: boolean;
+            activityTypeIds?: string[];
+            active?: boolean;
             version: number;
         };
         ActivityType: {
@@ -6671,6 +6798,8 @@ export interface components {
             defaultPlannedCost: components["schemas"]["Money"] | null;
             /** @description The models that allow this type, sorted by name. */
             models: components["schemas"]["SettingRef"][];
+            /** @description The activity category grouping this type; null when it is uncategorised (047 FR-022). */
+            category: components["schemas"]["SettingRef"] | null;
             active: boolean;
             usage: components["schemas"]["Usage"];
             version: number;
@@ -11936,6 +12065,8 @@ export interface components {
         ModelId: string;
         /** @example AT-1001 */
         ActivityTypeId: string;
+        /** @example CAT-1001 */
+        ActivityCategoryId: string;
         /** @example SA-1001 */
         AttributeId: string;
         /** @example SO-1001 */
@@ -12849,6 +12980,144 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Model"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listActivityCategories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The activity categories with the activity types they group. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityCategoryPage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    createActivityCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityCategoryCreate"];
+            };
+        };
+        responses: {
+            /** @description Created, active. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityCategory"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getActivityCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example CAT-1001 */
+                categoryId: components["parameters"]["ActivityCategoryId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The activity category. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityCategory"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteActivityCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example CAT-1001 */
+                categoryId: components["parameters"]["ActivityCategoryId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Moved to the recycle bin. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    updateActivityCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example CAT-1001 */
+                categoryId: components["parameters"]["ActivityCategoryId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityCategoryUpdate"];
+            };
+        };
+        responses: {
+            /** @description The activity category after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityCategory"];
                 };
             };
             400: components["responses"]["BadRequest"];

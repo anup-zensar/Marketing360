@@ -15,6 +15,7 @@ import styles from '@/ui/settings-table.module.css';
 import { ImpactDialog } from '../ImpactDialog';
 import { saveFailureOf } from '../save-failure';
 import { ActivityTypesField } from './ActivityTypesField';
+import { GoalStagesField } from './GoalStagesField';
 import { checkModelImpact, fetchModel, useCreateModel, useUpdateModel } from './api';
 import type { ChangeImpact, Model, ModelUpdate } from './api';
 import { affectsOthers, changedFields, createBody, startValues } from './model-values';
@@ -29,6 +30,9 @@ const FIELDS = [
   'mqlToDealRate',
   'averageDealSize',
   'activityTypeIds',
+  'inqToMqlVelocityMonths',
+  'mqlToDealVelocityMonths',
+  'allowedGoalStages',
 ] as const;
 
 export interface ModelFormProps {
@@ -50,6 +54,12 @@ interface PendingImpact {
  * once; a change that affects plans or activities is confirmed first; a conflict keeps what was
  * typed and names who saved first.
  */
+/** A typed velocity, or null while it is not a whole number — the example then shows no lag. */
+function wholeMonths(typed: string): number | null {
+  const months = Number.parseInt(typed.trim(), 10);
+  return Number.isInteger(months) && months >= 0 ? months : null;
+}
+
 export function ModelForm({ mode, onView, onClose }: ModelFormProps) {
   const { show } = useToast();
   const { dateFormat } = useFormatters();
@@ -68,9 +78,15 @@ export function ModelForm({ mode, onView, onClose }: ModelFormProps) {
   const [saving, setSaving] = useState(false);
   const [failure, setFailure] = useState<SaveFailure | null>(null);
   const [pendingImpact, setPendingImpact] = useState<PendingImpact | null>(null);
-  const [inqToMqlRate, mqlToDealRate, averageDealSize] = useWatch({
+  const [inqToMqlRate, mqlToDealRate, averageDealSize, inqVelocity, mqlVelocity] = useWatch({
     control: form.control,
-    name: ['inqToMqlRate', 'mqlToDealRate', 'averageDealSize'],
+    name: [
+      'inqToMqlRate',
+      'mqlToDealRate',
+      'averageDealSize',
+      'inqToMqlVelocityMonths',
+      'mqlToDealVelocityMonths',
+    ],
   });
 
   async function save(values: ModelValues) {
@@ -198,6 +214,31 @@ export function ModelForm({ mode, onView, onClose }: ModelFormProps) {
           />
           <FormField
             control={form.control}
+            name="inqToMqlVelocityMonths"
+            render={(field) => (
+              <DecimalField
+                label="INQ→MQL velocity"
+                decimals={0}
+                suffix="months"
+                note="How long a conversion takes, so a projection lands in the right month."
+                {...field}
+              />
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="mqlToDealVelocityMonths"
+            render={(field) => (
+              <DecimalField label="MQL→deal velocity" decimals={0} suffix="months" {...field} />
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="allowedGoalStages"
+            render={(field) => <GoalStagesField {...field} />}
+          />
+          <FormField
+            control={form.control}
             name="activityTypeIds"
             render={(field) => <ActivityTypesField model={editing} {...field} />}
           />
@@ -205,6 +246,8 @@ export function ModelForm({ mode, onView, onClose }: ModelFormProps) {
             inqToMqlRate={parseDecimalInput(inqToMqlRate, 2)}
             mqlToDealRate={parseDecimalInput(mqlToDealRate, 2)}
             averageDealSize={parseMoneyInput(averageDealSize)?.amount ?? null}
+            inqToMqlVelocityMonths={wholeMonths(inqVelocity)}
+            mqlToDealVelocityMonths={wholeMonths(mqlVelocity)}
           />
         </div>
       </FormPanel>

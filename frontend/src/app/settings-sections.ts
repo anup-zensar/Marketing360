@@ -13,6 +13,7 @@ export async function loadSettingsSections(): Promise<SettingsSection[]> {
     ]);
   return [
     ...settings.SETTINGS_OWN_SECTIONS,
+    ...settings.ACTIVITY_CATEGORY_SETTINGS_SECTIONS,
     ...settings.FIELD_HELP_SETTINGS_SECTIONS,
     ...people.PEOPLE_SETTINGS_SECTIONS,
     ...approvalWorkflows.APPROVAL_WORKFLOW_SETTINGS_SECTIONS,

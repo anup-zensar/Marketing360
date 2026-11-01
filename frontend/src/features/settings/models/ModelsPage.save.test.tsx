@@ -34,6 +34,9 @@ describe('ModelsPage: create and edit (US1 scenarios 1, 4, 5, 6)', () => {
         mqlToDealRate: '5.00',
         averageDealSize: { amount: '10000.00', currency: 'USD' },
         activityTypeIds: ['AT-1002', 'AT-1005'],
+        inqToMqlVelocityMonths: 0,
+        mqlToDealVelocityMonths: 0,
+        allowedGoalStages: ['inq', 'mql', 'revenue'],
       },
     ]);
     expect(screen.queryByRole('dialog', { name: 'New model' })).not.toBeInTheDocument();
@@ -251,5 +254,30 @@ describe('ModelsPage: create and edit (US1 scenarios 1, 4, 5, 6)', () => {
     expect(
       await screen.findByRole('alertdialog', { name: 'Discard changes?' }),
     ).toBeInTheDocument();
+  });
+
+  it('047 FR-004 sends the velocities and the allowed goal stages people set', async () => {
+    const created = { ...MOBILITY, id: 'MOD-1004', name: 'Fuels 1.0', usage: LUBRICANTS.usage };
+    const { user, api } = renderModelsPage([
+      reply('POST /api/v1/models', { status: 201, body: created }),
+    ]);
+
+    await user.click(screen.getByRole('button', { name: 'New model' }));
+    const form = await screen.findByRole('dialog', { name: 'New model' });
+    await user.type(within(form).getByRole('textbox', { name: /^Name/ }), 'Fuels 1.0');
+    await user.type(within(form).getByRole('textbox', { name: /^INQ→MQL rate/ }), '2');
+    await user.type(within(form).getByRole('textbox', { name: /^MQL→deal rate/ }), '5');
+    await user.type(within(form).getByRole('textbox', { name: /^Average deal size/ }), '10,000');
+    await user.clear(within(form).getByRole('textbox', { name: /^INQ→MQL velocity/ }));
+    await user.type(within(form).getByRole('textbox', { name: /^INQ→MQL velocity/ }), '1');
+    await user.click(await within(form).findByRole('checkbox', { name: 'Event' }));
+    await user.click(within(form).getByRole('checkbox', { name: 'MQL' }));
+    await user.click(within(form).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(api.bodiesOf('POST /api/v1/models')).toHaveLength(1));
+    expect(api.bodiesOf('POST /api/v1/models')[0]).toMatchObject({
+      inqToMqlVelocityMonths: 1,
+      allowedGoalStages: ['inq', 'revenue'],
+    });
   });
 });

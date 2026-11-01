@@ -43,6 +43,15 @@ func (s *Service) activityTypeSnapshot(ctx context.Context, id string) (history.
 	return snapshot(t, t.ID, t.Name, "")
 }
 
+// The snapshot of a category carries its activity types, so an Undo or a Restore assigns them back (FR-021).
+func (s *Service) activityCategorySnapshot(ctx context.Context, id string) (history.Snapshot, bool, error) {
+	c, found, err := s.repo.GetActivityCategory(ctx, id)
+	if err != nil || !found {
+		return history.Snapshot{}, false, err
+	}
+	return snapshot(c, c.ID, c.Name, "")
+}
+
 func (s *Service) attributeSnapshot(ctx context.Context, id string) (history.Snapshot, bool, error) {
 	a, found, err := s.repo.GetAttribute(ctx, id)
 	if err != nil || !found {
