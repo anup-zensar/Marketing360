@@ -36,7 +36,7 @@ var priyaBody = `{"id":"U-1002","name":"Priya Raman","firstName":"Priya","email"
 	`"access":{"roles":[{"id":"RA-1005","role":{"id":"RL-1003","name":"Planner","builtIn":"planner"},` +
 	`"scope":{"type":"myTeams","teams":[` + lubricantsEurope + `],"text":"My teams"},"scopeEmpty":false}],` +
 	`"permissions":[` + inLubricantsEurope("plans.view", "plans.create", "plans.edit", "plans.publish", "campaigns.edit",
-	"campaigns.delete", "activities.edit", "activities.delete", "activities.submit", "data.export", "finance.view",
+	"campaigns.delete", "activities.edit", "activities.delete", "activities.submit", "data.export", "reports.view", "finance.view",
 	"purchaseRequests.edit", "purchaseRequests.delete", "purchaseRequests.submit") + `],` +
 	`"administrators":[{"id":"U-1001","name":"Alex Morgan","initials":"AM","jobTitle":"Marketing administrator","active":true}],` +
 	`"noSelfApproval":true}}`

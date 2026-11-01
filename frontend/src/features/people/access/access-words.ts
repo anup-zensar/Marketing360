@@ -37,6 +37,7 @@ export const PERMISSIONS: PermissionWords[] = [
     scoped: true,
   },
   { key: 'data.export', label: 'Export from All work', scoped: true },
+  { key: 'reports.view', label: 'See reports', scoped: true },
   { key: 'finance.view', label: 'See financial data', scoped: true },
   { key: 'finance.link', label: 'Link financial transactions to line items', scoped: true },
   { key: 'finance.import', label: 'Import GSAP extracts', scoped: false },

@@ -60,6 +60,8 @@ const (
 
 	PrefixBulkAction = "BLK"
 	PrefixPlanImport = "IMP"
+
+	PrefixReportView = "RV"
 )
 
 var Prefixes = []string{
