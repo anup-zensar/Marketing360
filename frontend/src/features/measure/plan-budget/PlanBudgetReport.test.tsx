@@ -93,6 +93,23 @@ describe('PlanBudgetReport (040 US1)', () => {
     expect(within(table).getByText('Total')).toBeInTheDocument();
   });
 
+  it('names planned cost without dates and in other years under the chart (FR-005)', async () => {
+    const usd = (amount: string) => ({ amount, currency: 'USD' });
+    const notes = {
+      notPhased: null,
+      noDates: usd('70.00'),
+      otherYears: usd('40.00'),
+      actualOtherYears: null,
+    };
+    renderPage({ body: planBudgetReport({ notes }) });
+
+    expect(
+      await screen.findByText(
+        'Planned cost without dates: $70.00. Planned cost in other years: $40.00.',
+      ),
+    ).toBeInTheDocument();
+  });
+
   it('asks for quarters when the period changes (FR-004)', async () => {
     const { user, api } = renderPage();
 

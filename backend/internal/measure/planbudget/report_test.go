@@ -2,6 +2,7 @@ package planbudget_test
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -93,6 +94,26 @@ func TestPeriods_FR004_FR007(t *testing.T) {
 	if len(quarters) != 4 || quarters[3].Key != "2026-Q4" || quarters[3].State != planbudget.StateInProgress ||
 		shown(quarters[3].Actual) != "80.00" {
 		t.Errorf("quarters = %+v, want four with Q4 in progress and its actual so far", quarters)
+	}
+}
+
+func TestPeriods_UndatedAndOtherYearsNamed_FR005(t *testing.T) {
+	t.Parallel()
+	sc := scope(everything, true)
+	sc.Nodes = append(sc.Nodes,
+		allwork.Node{Level: allwork.LevelActivity, ID: "A-3", ParentID: "I-2", PlanID: "P-1", PlannedCost: dollars(110)},
+		allwork.Node{Level: allwork.LevelLineItem, ID: "L-3", ParentID: "A-3", PlanID: "P-1", PlannedCost: dollars(70),
+			UnspreadUSD: *dollars(70)},
+		allwork.Node{Level: allwork.LevelLineItem, ID: "L-4", ParentID: "A-3", PlanID: "P-1", PlannedCost: dollars(40),
+			MonthsUSD: []allwork.MonthAmount{month("2027-01", 40)}})
+	sc.Matched.Activities = slices.Concat(everything.Activities, []string{"A-3"})
+	sc.Matched.LineItems = slices.Concat(everything.LineItems, []string{"L-3", "L-4"})
+
+	r := report(t, sc, measure.Filter{})
+
+	if shown(r.Notes.NoDates) != "70.00" || shown(r.Notes.OtherYears) != "40.00" {
+		t.Errorf("notes = no dates %s, other years %s; want 70.00 and 40.00", shown(r.Notes.NoDates),
+			shown(r.Notes.OtherYears))
 	}
 }
 
