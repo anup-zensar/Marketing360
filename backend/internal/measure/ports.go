@@ -44,4 +44,5 @@ type Deps struct {
 	Planning   Planning
 	Plans      Plans
 	Currencies Currencies
+	Views      Store
 }

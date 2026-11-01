@@ -153,7 +153,7 @@ views as one person; another person never sees them.
 
 ### Tests (first)
 
-- [ ] T032 [P] [US2] `TestViews_FR024_FR029` in `backend/internal/measure/views_test.go` on fakes: name trimmed,
+- [X] T032 [P] [US2] `TestViews_FR024_FR029` in `backend/internal/measure/views_test.go` on fakes: name trimmed,
   "Enter a name for the view.", "Use 60 characters or fewer.", "You already have a view called '%s'." per person
   and report ignoring case; the same name allowed on another report; query validated ("The view can't be saved —
   reload the page and try again.") and canonicalised, at most 4,000 characters; starring unstars the other view
@@ -161,9 +161,9 @@ views as one person; another person never sees them.
   report the person may no longer open stays theirs (edge case); `TestViews_VersionAndLog_FR028`: a stale
   version refused with 409 `version_conflict` and "This view was changed in another tab — reload it to see the
   latest", one log entry of kind `reportView` per create, update, star and delete, in the same write
-- [ ] T033 [P] [US2] `TestPostgresStoreReportViewsPersonIsolation_039_FR025` in
+- [X] T033 [P] [US2] `TestPostgresStoreReportViewsPersonIsolation_039_FR025` in
   `backend/internal/measure/store_postgres_test.go` (`TEST_DATABASE_URL`; skipped with `-short`)
-- [ ] T034 [P] [US2] Contract tests of the four view operations in `backend/internal/measure/handler_test.go`
+- [X] T034 [P] [US2] Contract tests of the four view operations in `backend/internal/measure/handler_test.go`
 - [ ] T035 [P] [US2] `frontend/src/features/measure/shared/SavedViewsMenu.test.tsx` with vitest-axe: list with
   star and active mark, Save current filters, replace-name confirmation, "Modified" with Update view (confirm)
   and Save as new view, star moves, rename, delete with the Undo toast re-creating the view, default applied when
@@ -172,16 +172,16 @@ views as one person; another person never sees them.
 
 ### Implementation
 
-- [ ] T036 [US2] `backend/internal/measure/store.go` (`Store`: `ListViews(person, report)`, `GetView`,
+- [X] T036 [US2] `backend/internal/measure/store.go` (`Store`: `ListViews(person, report)`, `GetView`,
   `PutView`, `DeleteView`), `store_postgres.go` over the T005 queries, the fake in
   `store_fake_test.go` and `backend/internal/measure/measuretest/`; add the store to `internal/stores`; the view
   embeds `record.Meta`
-- [ ] T037 [US2] `backend/internal/measure/views.go`: list, create, update, delete as 010's `allwork/views.go`,
+- [X] T037 [US2] `backend/internal/measure/views.go`: list, create, update, delete as 010's `allwork/views.go`,
   per report, with `record.CheckVersion` and `Touch` on update and one `history.Log` per change in the same
   `Write`; register `history.Kind` "reportView" ("saved report view") in `backend/internal/app/measure.go`; in
   `backend/internal/app/history_access.go` show `reportView` entries to their actor and to `activityLog.viewAll`,
   test first `TestHistoryAccess_ReportView_039_FR028` in `history_access_test.go`
-- [ ] T038 [US2] Handler operations for views; remove them from `notYetServed`
+- [X] T038 [US2] Handler operations for views; remove them from `notYetServed`
 - [ ] T039 [US2] `frontend/src/features/measure/shared/api.ts` view hooks and mutations;
   `shared/SavedViewsMenu.tsx`; `ReportFrame` applies the default view when the address has no filters
 - [ ] T040 [US2] `frontend/e2e/measure.spec.ts` US2: save, star, reopen on the default, modify and update,

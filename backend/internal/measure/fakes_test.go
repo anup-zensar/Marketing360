@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"mapp/internal/allwork"
+	"mapp/internal/history"
 	"mapp/internal/measure"
 	"mapp/internal/platform/date"
 	"mapp/internal/platform/money"
@@ -125,6 +126,5 @@ func frameService(planning fakePlanning) *measure.Service {
 	if planning.nodes == nil {
 		planning.nodes = frameNodes()
 	}
-	return measure.NewService(fakeTx{}, measure.Deps{Planning: planning, Plans: fakePlans{"P-1"}, Currencies: fakeCurrencies{}},
-		measure.NewRegistry(), func() time.Time { return time.Date(2026, 10, 18, 14, 5, 0, 0, time.UTC) })
+	return measure.NewService(history.Tools{Tx: fakeTx{}, Now: func() time.Time { return time.Date(2026, 10, 18, 14, 5, 0, 0, time.UTC) }}, measure.Deps{Planning: planning, Plans: fakePlans{"P-1"}, Currencies: fakeCurrencies{}}, measure.NewRegistry())
 }

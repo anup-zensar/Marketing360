@@ -23,6 +23,10 @@ func (h *Handler) RegisterRoutes(r gin.IRoutes) {
 	r.GET("/reports", h.catalogue)
 	r.GET("/reports/frame", h.frame)
 	r.GET("/reports/:report/export", h.export)
+	r.GET("/reports/:report/views", h.listViews)
+	r.POST("/reports/:report/views", h.createView)
+	r.PATCH("/reports/:report/views/:viewId", h.updateView)
+	r.DELETE("/reports/:report/views/:viewId", h.deleteView)
 }
 
 func (h *Handler) export(c *gin.Context) {

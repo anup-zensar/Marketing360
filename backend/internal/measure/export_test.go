@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
+	"mapp/internal/history"
 	"mapp/internal/measure"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
@@ -37,8 +38,8 @@ func exportService(t *testing.T) *measure.Service {
 	if err := registry.Register(sheetsReport{key: measure.KeyPlanDetails}); err != nil {
 		t.Fatal(err)
 	}
-	return measure.NewService(fakeTx{}, measure.Deps{Planning: fakePlanning{nodes: frameNodes()}, Plans: fakePlans{"P-1"},
-		Currencies: fakeCurrencies{}}, registry, func() time.Time { return time.Date(2026, 10, 18, 14, 5, 0, 0, time.UTC) })
+	return measure.NewService(history.Tools{Tx: fakeTx{}, Now: func() time.Time { return time.Date(2026, 10, 18, 14, 5, 0, 0, time.UTC) }}, measure.Deps{Planning: fakePlanning{nodes: frameNodes()}, Plans: fakePlans{"P-1"},
+		Currencies: fakeCurrencies{}}, registry)
 }
 
 // exportOf exports report for the address values with req's format and widget.
