@@ -36,6 +36,7 @@ function activityType(id: string, name: string, active = true): ActivityType {
     name,
     defaultPlannedCost: null,
     models: [],
+    category: null,
     active,
     usage: NOT_USED,
     version: 1,

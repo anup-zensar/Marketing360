@@ -6791,6 +6791,8 @@ export interface components {
             defaultPlannedCost: components["schemas"]["Money"] | null;
             /** @description The models that allow this type, sorted by name. */
             models: components["schemas"]["SettingRef"][];
+            /** @description The activity category grouping this type; null when it is uncategorised (047 FR-022). */
+            category: components["schemas"]["SettingRef"] | null;
             active: boolean;
             usage: components["schemas"]["Usage"];
             version: number;

@@ -13522,6 +13522,7 @@ components:
         - name
         - defaultPlannedCost
         - models
+        - category
         - active
         - usage
         - version
@@ -13546,6 +13547,11 @@ components:
           description: The models that allow this type, sorted by name.
           items:
             $ref: "#/components/schemas/SettingRef"
+        category:
+          description: The activity category grouping this type; null when it is uncategorised (047 FR-022).
+          oneOf:
+            - $ref: "#/components/schemas/SettingRef"
+            - type: "null"
         active:
           type: boolean
         usage:

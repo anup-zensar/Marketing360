@@ -64,13 +64,17 @@ marks tasks that can run in parallel. The migrations are the truth the documents
   panel form with type assignment and default toggle, view-only notice; tests per state; the Settings hub
   card in `settings-sections.ts` (additive shared edit, as 046's)
 - [X] T045 Serve each type's category for the reports and the activity-type page (FR-022) with its test
-- [ ] T046 Gate: lint, tests, budgets
+- [X] T046 Gate: lint, tests, budgets
 
 ## Phase 5 — Cross-cutting and close-out
 
 - [X] T050 [P] Cross-folder ask recorded for the Plan module: enforce allowed stages at goal entry (FR-005)
   — written up in [contracts/api.md](./contracts/api.md) under "Cross-feature notes for the integrator"
-- [ ] T051 Check every FR against a passing test named with it; comment budgets; file sizes
+- [X] T051 Check every FR against a passing test named with it; comment budgets; file sizes. Done: every FR
+  has a named test except FR-005 (a cross-folder ask, nothing to test here) and FR-024, which the shared
+  access-matrix test `TestAccessMatrix_EveryOperationRefusesWhomItsRuleExcludes_SC001` proves for every
+  operation in the contract, the five new ones included. FR-022 was found unserved during the audit and
+  implemented: an activity type now names its category, as it already names the models that allow it
 - [ ] T052 Run `/speckit-analyze`; fix every CRITICAL before done
 - [ ] T053 Run `/speckit-converge`; record remaining or "clean"
 - [ ] T054 Open the PR into `measure-module` (note: branch stacked on 046's; retarget/rebase once PR #62

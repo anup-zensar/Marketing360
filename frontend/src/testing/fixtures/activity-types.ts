@@ -12,6 +12,7 @@ export const EVENT: ActivityType = {
     { id: LUBRICANTS.id, name: LUBRICANTS.name, active: true },
     { id: RETAIL.id, name: RETAIL.name, active: false },
   ],
+  category: null,
   active: true,
   usage: {
     inUse: true,
@@ -33,6 +34,7 @@ export const PODCAST: ActivityType = {
   name: 'Podcast',
   defaultPlannedCost: null,
   models: [],
+  category: null,
   usage: NOT_USED,
   version: 1,
 };

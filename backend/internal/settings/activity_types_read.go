@@ -72,6 +72,10 @@ func (s *Service) activityTypeViews(ctx context.Context, types []ActivityType) (
 	if err != nil {
 		return nil, err
 	}
+	grouping, err := s.categoryOfType(ctx)
+	if err != nil {
+		return nil, err
+	}
 	views := make([]ActivityTypeView, 0, len(types))
 	for _, t := range types {
 		allowedIn := []SettingRef{}
@@ -81,9 +85,26 @@ func (s *Service) activityTypeViews(ctx context.Context, types []ActivityType) (
 			}
 		}
 		views = append(views, ActivityTypeView{
-			ID: t.ID, Name: t.Name, DefaultPlannedCost: t.DefaultPlannedCost, Models: allowedIn, Active: t.Active,
-			Usage: u.activityType(t.ID), Meta: t.Meta,
+			ID: t.ID, Name: t.Name, DefaultPlannedCost: t.DefaultPlannedCost, Models: allowedIn,
+			Category: grouping[t.ID], Active: t.Active, Usage: u.activityType(t.ID), Meta: t.Meta,
 		})
 	}
 	return views, nil
+}
+
+// categoryOfType inverts the grouping so a type names its category, as it already names the models that
+// allow it (047 FR-022). A type in no category is Uncategorised, which is an absent reference, not a row.
+func (s *Service) categoryOfType(ctx context.Context) (map[string]*SettingRef, error) {
+	categories, err := s.repo.ListActivityCategories(ctx)
+	if err != nil {
+		return nil, err
+	}
+	of := map[string]*SettingRef{}
+	for _, c := range categories {
+		ref := SettingRef{ID: c.ID, Name: c.Name, Active: c.Active}
+		for _, typeID := range c.ActivityTypeIDs {
+			of[typeID] = &ref
+		}
+	}
+	return of, nil
 }

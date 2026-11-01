@@ -214,3 +214,32 @@ func TestDeleteActivityCategory_UndoRestoresTypes_FR021(t *testing.T) {
 	_, deletedTwice := f.service.DeleteActivityCategory(t.Context(), alex, "CAT-9999")
 	assertError(t, deletedTwice, errs.NotFound(activityCategoryGoneMessage))
 }
+
+func TestActivityTypes_EachTypeNamesItsCategory_FR022(t *testing.T) {
+	t.Parallel()
+	f := newTestService(t)
+	event := f.addType(t, "Event", true)
+	webinar := f.addType(t, "Webinar", true)
+	if _, err := f.service.CreateActivityCategory(t.Context(), alex, ActivityCategoryInput{
+		Name: "Asset", ActivityTypeIDs: []string{event.ID},
+	}); err != nil {
+		t.Fatalf("CreateActivityCategory: %v", err)
+	}
+
+	types, err := f.service.ListActivityTypes(t.Context(), alex)
+	if err != nil {
+		t.Fatalf("ListActivityTypes: %v", err)
+	}
+
+	byID := map[string]ActivityTypeView{}
+	for _, view := range types {
+		byID[view.ID] = view
+	}
+	if grouped := byID[event.ID].Category; grouped == nil || grouped.Name != "Asset" {
+		t.Errorf("Event's category = %+v, want the Asset category the reports group by", grouped)
+	}
+	if byID[webinar.ID].Category != nil {
+		t.Errorf("Webinar's category = %+v, want none: a type in no category is Uncategorised",
+			byID[webinar.ID].Category)
+	}
+}

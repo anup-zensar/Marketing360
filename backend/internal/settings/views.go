@@ -176,6 +176,7 @@ type ActivityTypeView struct {
 	Name               string       `json:"name"`
 	DefaultPlannedCost *money.Money `json:"defaultPlannedCost"` // USD; null when none
 	Models             []SettingRef `json:"models"`             // the models that allow it, by name
+	Category           *SettingRef  `json:"category"`           // the category grouping it; null when none (047 FR-022)
 	Active             bool         `json:"active"`
 	Usage              Usage        `json:"usage"`
 	record.Meta
