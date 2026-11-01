@@ -18,7 +18,7 @@ case-insensitive unique name) stand as feature 002 built them.
 
 | Column | Type | Rules |
 |---|---|---|
-| `id` | text | PK, CHECK `^ACAT-[0-9]+$` |
+| `id` | text | PK, CHECK `^CAT-[0-9]+$` (three letters, like every other prefix) |
 | `name` | text | NOT NULL, 1–80; unique ignoring case: `activity_categories_name_key` on `lower(name COLLATE "C")` |
 | `is_default` | boolean | NOT NULL; partial unique index `activity_categories_default_key` ON (is_default) WHERE is_default — at most one default |
 | `active` | boolean | NOT NULL |
@@ -35,7 +35,8 @@ Deletes go through the recycle bin (history.MoveToBin with a registered kind), n
 
 The CASCADE serves the bin flow: binning a category snapshots its assignments into the bin record, the
 delete releases the types, and restore re-inserts the snapshot (same pattern as 046's bin children). A
-type never named here is *Uncategorised* — a report bucket, not a row.
+type never named here is *Uncategorised* — a report bucket, not a row. Because the key is the type, moving
+one between categories is a single upsert, and the category losing it is not versioned (047-C13).
 
 ## Projection (derived, not stored)
 

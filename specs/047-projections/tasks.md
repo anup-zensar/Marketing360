@@ -52,18 +52,18 @@ marks tasks that can run in parallel. The migrations are the truth the documents
 
 ## Phase 4 — US3 activity categories (P2)
 
-- [ ] T040 Tests first, per outcome: name 1–80 unique ci (FR-018), one default (FR-020), type moves between
+- [X] T040 Tests first, per outcome: name 1–80 unique ci (FR-018), one default (FR-020), type moves between
   categories (FR-019), bin + restore with assignments and in-use warning (FR-021), version_conflict, one
   log entry per change, view-only refusals (FR-023)
-- [ ] T041 `settings` category record: model/service/read/handler files, kind registered, bin via
+- [X] T041 `settings` category record: model/service/read/handler files, kind registered, bin via
   `history.MoveToBin`; store (postgres + fakes)
-- [ ] T042 Route rules in `internal/access/routes_activity_categories.go` — signedIn reads,
+- [X] T042 Route rules in `internal/access/routes_activity_categories.go` — signedIn reads,
   settings.manage writes, fail closed (FR-024)
-- [ ] T043 [P] Contract: the five operations in openapi.yaml + api:types; contract tests
+- [X] T043 [P] Contract: the five operations in openapi.yaml + api:types; contract tests
 - [ ] T044 [P] Frontend `settings/activity-categories/`: list (template A, status filter, counts), side
   panel form with type assignment and default toggle, view-only notice; tests per state; the Settings hub
   card in `settings-sections.ts` (additive shared edit, as 046's)
-- [ ] T045 Serve each type's category for the reports and the activity-type page (FR-022) with its test
+- [X] T045 Serve each type's category for the reports and the activity-type page (FR-022) with its test
 - [ ] T046 Gate: lint, tests, budgets
 
 ## Phase 5 — Cross-cutting and close-out

@@ -81,6 +81,26 @@ US7, client 016 FR-033–FR-039, FA §E3.2.6 and §E7.5.1, MA §5–§6, domain 
   figures on 046's activity panel (whose contract reserved `projected` for 047), and the Go port the
   reports call — no new report route.
 
+- **047-C12** — Q: Can a category be deleted while it groups activity types? → A: **Yes, and it is never
+  refused.** FR-021 says deleting releases its types, so unlike an activity type there is no `in_use`
+  refusal: the category's usage line states what it groups before the delete, and Undo brings both the
+  category and its assignments back. A type released this way is *Uncategorised*, which is a bucket the
+  reports can select, not a gap (047-C7).
+
+- **047-C13** — Q: Moving a type between categories changes two categories — does the one losing it get a
+  version bump and a log entry? → A: **No.** The assignment lives in its own table keyed by the type, so
+  the losing category's list is derived on read; only the category being edited is versioned and logged.
+  One change, one entry (constitution, every new record type).
+
+- **047-C14** — Q: What happens when a category that was the default is restored while another is the
+  default now? → A: **It returns not the default, with a note saying so.** The schema allows one default
+  and the record in hand is the newer decision; silently moving the mark would undo a choice nobody made
+  here. The same rule covers Undo and Restore.
+
+- **047-C15** — Q: Does a category need its own activate/deactivate operation, as activity types have? →
+  A: **No.** `active` is a field of the category's PATCH, so the five CRUD operations are the whole
+  surface; nothing else in Settings needs a sixth.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Velocity and allowed goal stages on the model (Priority: P1)
