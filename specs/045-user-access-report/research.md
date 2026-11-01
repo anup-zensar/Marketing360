@@ -65,3 +65,20 @@ counts the cards and bands over the filtered rows, sorts and pages. Bands use wh
 roles and 4,000 assignments through fakes. Target: under 100 ms, keeping SC-001's 2 s with the three reads.
 
 **Rationale**: `internal/platform/apibench` is not a lane D path (043 R5).
+
+## R2 addendum (implementation) — when recording started
+
+**Decision**: migration 00029 also creates `sign_in_recording`, one row stamped with the moment the migration runs;
+`GetSignInsRecordedSince` reads it for the contract's `recordedSince` ("Never" means "not since this date").
+
+**Rationale**: the true start is when 00029 ran in that database. goose's own version table is outside the schema
+sqlc reads, and the earliest stored sign-in moves forward as people sign in again.
+
+**Rejected**: a date in code (wrong for every later environment); the earliest `last_signed_in_at` (moves).
+
+## R3 answered by lane A (2026-11-01)
+
+`measure.Parameterised` carries `q`, `team`, `status` and `sort` to saved views and, through `Filter.Own`, to
+`Sheets`, which checks them. `access.manage` is checked once, in 039's `openable`, for the frame and the export, so
+045 adds no check of its own. `ReportFrame` gains an optional prop that hides the filter panel, In view, chips and
+Currency (045 adds it, with a test, after pinging lane A).

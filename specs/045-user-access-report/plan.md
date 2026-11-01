@@ -156,4 +156,6 @@ Benchmark result: _recorded here after implementation_.
 
 ## Complexity Tracking
 
-No violations.
+| Violation | Why needed | Simpler alternative rejected because |
+|---|---|---|
+| A one-row `sign_in_recording` table besides the column (research R2 addendum) | The contract's `recordedSince` is when recording started in this database | goose's version table is outside sqlc's schema; a date in code is wrong for later environments |
