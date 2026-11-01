@@ -69,11 +69,11 @@ Write each test first and see it fail.
 
 ## Phase 4: User Story 2 — Waiting for GSAP (P2)
 
-- [ ] T017 [P] [US2] `requests_test.go`: `TestWaiting_Row_FR008`, `TestWaiting_ResendDoesNotRestart_FR009`,
+- [X] T017 [P] [US2] `requests_test.go`: `TestWaiting_Row_FR008`, `TestWaiting_ResendDoesNotRestart_FR009`,
   `TestWaiting_Modification_FR008`, `TestWaiting_AmountOnlyWithFinanceView_FR004` (amount null and "Covers N of M"),
   `TestWaiting_Cards_FR010`
-- [ ] T018 [US2] `requests.go` and the tab in `service.go`
-- [ ] T019 [US2] Web: `WaitingTab.tsx` (a row opens its purchase request, FR-016) and its test; e2e US2 step in
+- [X] T018 [US2] `requests.go` and the tab in `service.go`
+- [X] T019 [US2] Web: `WaitingTab.tsx` (a row opens its purchase request, FR-016) and its test; e2e US2 step in
   `measure-gsap-link.spec.ts`
 
 ## Phase 5: User Story 3 — Purchase orders per line item (P2)

@@ -1,4 +1,4 @@
-import type { GsapPath } from './api';
+import type { GsapLinkReport, GsapPath, GsapWaitingRow } from './api';
 import type { GsapTab } from './gsap-address';
 
 export const TAB_LABELS: Record<GsapTab, string> = {
@@ -18,6 +18,22 @@ export function waitingText(hours: number): string {
 export function workingDaysText(days: number): string {
   return days === 1 ? '1 working day' : `${days} working days`;
 }
+
+/** Which plans the amounts cover (044 FR-004): nothing to say when they cover every plan in view. */
+export function coverageText(finance: GsapLinkReport['finance']): string | undefined {
+  if (!finance || finance.plans === finance.of) {
+    return undefined;
+  }
+  if (finance.plans === 0) {
+    return "You can't see financial data";
+  }
+  return `Covers ${finance.plans} of ${finance.of} plans`;
+}
+
+export const ROUTING_LABELS: Record<GsapWaitingRow['routing'], string> = {
+  original: 'Original',
+  modification: 'Modification',
+};
 
 /** Plan › campaign › initiative › activity, leaving out a level the record has not. */
 export function pathText(path: GsapPath): string {

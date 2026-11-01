@@ -6,17 +6,15 @@ import { testUser } from '@/testing/fixtures/users';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { apiError, reply } from '@/testing/replies';
-import type { GsapLinkReport as Report } from './api';
+import type { Answer } from '@/testing/replies';
 import { swbsReport } from './gsap-link-fixture';
 import { GsapLinkReport } from './GsapLinkReport';
 
 const EMPTY = { plans: 0, campaigns: 0, initiatives: 0, activities: 0, lineItems: 0 };
 const PATH = '/api/v1/reports/gsap-link';
 
-type Answer = { body: Report } | { status: number; body: unknown };
-
 function renderReport(
-  answer: Answer = { body: swbsReport() },
+  answer: Answer<'GET /api/v1/reports/gsap-link'> = { body: swbsReport() },
   frame = reportFrame({ report: 'gsapLink' }),
   route = '/reports/gsap-link',
 ) {

@@ -9,6 +9,7 @@ import { GSAP_TABS, useGsapTable } from './gsap-address';
 import type { GsapTable } from './gsap-address';
 import { TAB_LABELS } from './gsap-text';
 import { SwbsTab } from './SwbsTab';
+import { WaitingTab } from './WaitingTab';
 
 /** GSAP link (feature 044): SWBS not received, Waiting for GSAP and Purchase orders, in 039's frame. */
 export function GsapLinkReport() {
@@ -51,6 +52,17 @@ interface TabBodyProps {
 function TabBody({ report, table, onChange }: TabBodyProps) {
   if (report.swbs) {
     return <SwbsTab tab={report.swbs} total={report.total} table={table} onChange={onChange} />;
+  }
+  if (report.waiting) {
+    return (
+      <WaitingTab
+        tab={report.waiting}
+        finance={report.finance}
+        total={report.total}
+        table={table}
+        onChange={onChange}
+      />
+    );
   }
   return null;
 }

@@ -19,6 +19,8 @@ export interface PagedColumn<R> {
   numeric?: boolean;
   /** Waiting, dates and amounts sort largest first on the first click. */
   largestFirst?: boolean;
+  /** False for a column the contract does not sort by: a plain heading. */
+  sortable?: boolean;
   cell: (row: R) => ReactNode;
 }
 
@@ -124,6 +126,13 @@ interface SortHeadingProps<R> {
 
 /** A heading that sorts by its column; a second click turns the order round. */
 function SortHeading<R>({ column, sort, onSort }: SortHeadingProps<R>) {
+  if (column.sortable === false) {
+    return (
+      <th scope="col" className={cx(column.numeric && styles.numeric)}>
+        {column.label}
+      </th>
+    );
+  }
   const current = sort.replace(/^-/, '') === column.key;
   const descending = sort.startsWith('-');
   const Icon = !current ? ArrowUpDown : descending ? ArrowDown : ArrowUp;

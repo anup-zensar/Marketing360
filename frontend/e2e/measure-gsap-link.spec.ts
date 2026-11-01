@@ -30,3 +30,21 @@ test('044 US1: line items waiting for an SWBS code, sorted in the address, and o
   await table.getByRole('link', { name: 'Stand build' }).click();
   await expect(page).toHaveURL(/\/line-items\/L-\d+$/);
 });
+
+test('044 US2: the Waiting for GSAP tab in the address, with its cards (FR-001, FR-008 – FR-010)', async ({
+  page,
+}) => {
+  await signInAs(page, PRIYA);
+  await page.goto('/reports/gsap-link');
+
+  await page.getByRole('tab', { name: 'Waiting for GSAP' }).click();
+  await expect(page).toHaveURL(/tab=waiting/);
+  const summary = page.getByLabel('Summary');
+  await expect(summary.getByText('Amount waiting')).toBeVisible();
+  await expect(summary.getByText('Over 2 working days')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Waiting for GSAP' })).toBeVisible();
+  await expectNoAxeViolations(page);
+
+  await page.goBack();
+  await expect(page.getByRole('tab', { name: 'SWBS not received', selected: true })).toBeVisible();
+});
