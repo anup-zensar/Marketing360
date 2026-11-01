@@ -57,16 +57,16 @@ each story.
   Settings › People), `access-text.ts`
 - [X] T014 [US1] Web tests with vitest-axe: `UserAccessReport.test.tsx` (the states of FR-012, the address),
   `AccessTable.test.tsx`
-- [ ] T015 [US1] `frontend/e2e/measure-user-access.spec.ts`: two people sign in, the administrator sees both times;
+- [X] T015 [US1] `frontend/e2e/measure-user-access.spec.ts`: two people sign in, the administrator sees both times;
   axe
 
 ## Phase 4: User Story 2 — Export (P2)
 
-- [ ] T016 [P] [US2] `sheets_test.go`: `TestSheets_EveryRow_FR013` (both widgets, every matching row in the sort,
+- [X] T016 [P] [US2] `sheets_test.go`: `TestSheets_EveryRow_FR013` (both widgets, every matching row in the sort,
   Never empty), `TestSheets_EqualTable_SC005`, `TestSheets_RejectsUnknownParameters`
-- [ ] T017 [US2] `sheets.go`: `measure.Report` and `measure.Parameterised` (`q`, `team`, `status`, `sort`), reading
+- [X] T017 [US2] `sheets.go`: `measure.Report` and `measure.Parameterised` (`q`, `team`, `status`, `sort`), reading
   and checking them from `Filter.Own`
-- [ ] T018 [US2] e2e US2 step: the table as CSV and Excel, the report's Export
+- [X] T018 [US2] e2e US2 step: the table as CSV and Excel, the report's Export
 
 ## Phase 5: Polish
 
