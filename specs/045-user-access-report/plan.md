@@ -22,8 +22,8 @@
 4. **Web** (`features/measure/user-access/`): the page, cards, the last sign-in band widget with its table, the
    paged and sortable table, rows linking to Settings › People.
 
-The migration and the auth change may land before 039 merges (they do not depend on it); the report's backend
-and web code wait for 039's hub on `measure-module` (build guide §3, about hour 16).
+All code, the migration and the auth change included, waits for 039's hub on `measure-module` (build guide §3,
+about hour 16), as lane D's instructions say, although the migration and the auth change do not depend on it.
 
 ## Technical Context
 
