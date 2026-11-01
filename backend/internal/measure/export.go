@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -65,7 +66,11 @@ func (s *Service) Export(ctx context.Context, a actor.Actor, report string, req 
 	if err != nil {
 		return File{}, err
 	}
-	notes := append(s.notes(a, name, req.Filter, sc), rateNotes(rates)...)
+	own, err := s.ownNotes(ctx, a, report, req.Filter.Own)
+	if err != nil {
+		return File{}, err
+	}
+	notes := append(afterFilters(s.notes(a, name, req.Filter, sc), own), rateNotes(rates)...)
 	stamp := strconv.Itoa(sc.Year) + " – " + date.Format(date.Today(s.now()))
 	file := File{Name: fileName(name, sheets, req, stamp)}
 	return write(file, sheets, notes, inViewRows(inViewOf(sc.Matched)))
@@ -98,6 +103,14 @@ func (s *Service) sheetsOf(ctx context.Context, a actor.Actor, report string, re
 		}
 	}
 	return nil, errs.Validation(errs.FieldError{Field: fieldWidget, Message: msgChooseWidget})
+}
+
+func (s *Service) ownNotes(ctx context.Context, a actor.Actor, report string, own url.Values) ([][2]string, error) {
+	r, _ := s.registry.Get(report)
+	if described, ok := r.(Described); ok {
+		return described.Describe(ctx, a, own)
+	}
+	return nil, nil
 }
 
 func write(file File, sheets []WidgetSheet, notes [][2]string, inView [][]sheet.Cell) (File, error) {

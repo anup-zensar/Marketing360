@@ -14,10 +14,16 @@ import (
 // in words, the period, the currency, and who exported it and when; the rates used follow.
 func (s *Service) notes(a actor.Actor, report string, f Filter, sc Scope) [][2]string {
 	now := s.now().UTC()
-	return [][2]string{{"Report", report}, {"Year", strconv.Itoa(sc.Year)}, {"Filters", filterWords(f, sc)},
+	return [][2]string{{"Report", report}, {"Year", strconv.Itoa(sc.Year)}, {labelFilters, filterWords(f, sc)},
 		{"Period", map[string]string{PeriodMonth: "Months", PeriodQuarter: "Quarters"}[f.Period]},
 		{"Currency", sc.Currency.Code}, {"Exported by", a.Name},
 		{"Exported at", date.Format(date.Today(now)) + " " + now.Format("15:04") + " UTC"}}
+}
+
+// afterFilters puts a report's own parameters in words right after the frame's filters.
+func afterFilters(notes, own [][2]string) [][2]string {
+	at := slices.IndexFunc(notes, func(n [2]string) bool { return n[0] == labelFilters }) + 1
+	return slices.Insert(notes, at, own...)
 }
 
 func rateNotes(rates []string) [][2]string {
