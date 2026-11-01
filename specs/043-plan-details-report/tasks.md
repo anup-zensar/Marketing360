@@ -17,21 +17,21 @@ work).
 
 ## Phase 1: Setup
 
-- [ ] T001 Branch `feature/043-plan-details-report` has `measure-module` with 039's hub (PR #56) and the wave A
+- [X] T001 Branch `feature/043-plan-details-report` has `measure-module` with 039's hub (PR #56) and the wave A
   contract (PR #57) merged; the backend builds and `go test -short ./internal/measure/...` passes
 
 ## Phase 2: Foundational (blocking for every story)
 
-- [ ] T002 [P] `backend/internal/measure/plandetails/model.go`: the API types exactly as `openapi.yaml`'s
+- [X] T002 [P] `backend/internal/measure/plandetails/model.go`: the API types exactly as `openapi.yaml`'s
   `PlanDetailsReport`, `PlanDetailsCards`, `PlanDetailsAttributeRow`, `PlanDetailsWidget`, `PlanDetailsValue`
   (JSON names as the schema; nullable fields as pointers; `plannedCost` as `money` API amounts as other packages
   answer them), plus the level and measure constants
-- [ ] T003 [P] `backend/internal/measure/plandetails/ports.go`: `Transactor` (Read); `Scoped` with
+- [X] T003 [P] `backend/internal/measure/plandetails/ports.go`: `Transactor` (Read); `Scoped` with
   `Matched(ctx, actor.Actor, measure.Filter, columns []string) (Matching, error)` and `Attributes(ctx)`;
   `Matching{Nodes []allwork.Node; Matched map[string]bool (IDs of the matching records of every level);
-  ActivityTypes []allwork.Option; Currency allwork.Currency}` — 043's own matched set, so nothing here waits for
+  ActivityTypes []allwork.Option; Currency allwork.Currency; Year int}` (the plan year, for start periods) — 043's own matched set, so nothing here waits for
   `allwork.Matched` (039 T022)
-- [ ] T004 `backend/internal/measure/plandetails/year_test.go`: an in-memory year builder for the tests (plans with
+- [X] T004 `backend/internal/measure/plandetails/year_test.go`: an in-memory year builder for the tests (plans with
   Business unit options, campaigns, initiatives, activities with planned cost, dates, status, type, goals,
   `Missing`, `Attrs`; line items) and a fake `Scoped` returning it with a matched set and a currency
 
@@ -44,50 +44,50 @@ work).
 
 ### Tests (first)
 
-- [ ] T005 [P] [US1] `attribution_test.go`: `TestAttribution_Split_FR011` (10,000.00 split 60/40 → 6,000.00 and
+- [X] T005 [P] [US1] `attribution_test.go`: `TestAttribution_Split_FR011` (10,000.00 split 60/40 → 6,000.00 and
   4,000.00; 3 shares of 33.33 % → half up, the rest on the last value), `TestAttribution_CountsInEach_FR011`,
   `TestAttribution_ZeroShare_FR011` (a 0 % share neither counts the record nor gets an amount),
   `TestAttribution_DoesNotApply_FR012` (hidden by the Business unit condition → doesNotApply, not none)
-- [ ] T006 [P] [US1] `profile_test.go`: `TestRows_ActiveInDisplayOrder_FR008`, `TestRows_InactiveOption_FR008`
+- [X] T006 [P] [US1] `profile_test.go`: `TestRows_ActiveInDisplayOrder_FR008`, `TestRows_InactiveOption_FR008`
   ("(inactive)", `inactive` true), `TestRows_WidgetsByType_FR009_FR010` (three widgets for single, multiple,
   % split and yes/no; filledIn only for text, long text, number), `TestRows_NotFilledIn_FR012` (US1 scenario 3:
   GB01 12, CN04 10, none 6, 79 %), `TestFilledInPercent_LeavesOutDoesNotApply_FR012` (US1 scenario 11: 15 · 5 ·
   8 → 75 %), `TestRows_NoAttributesSetUp_FR016` (`attributesSetUp` false)
-- [ ] T007 [P] [US1] `builtin_test.go`: `TestBuiltIn_Activity_FR006` (by type count and planned cost, by
+- [X] T007 [P] [US1] `builtin_test.go`: `TestBuiltIn_Activity_FR006` (by type count and planned cost, by
   status with every status that has activities), `TestStartPeriods_MonthsQuarters_FR006` (period month or quarter
   of the plan year, `noDates`, `outsideYear`, adding up to the count), `TestPlannedCostEntered_FR006` (above zero
   → Yes; US1 scenario 1: 26 · 2), `TestGoalEntered_FR006` (any of INQ, MQL, revenue goal above zero)
-- [ ] T008 [P] [US1] `level_test.go`: `TestCards_FR005` (records, planned cost, all filled in = `Missing` 0,
+- [X] T008 [P] [US1] `level_test.go`: `TestCards_FR005` (records, planned cost, all filled in = `Missing` 0,
   per cent half up, null with no record), `TestLevel_OnlyMatchedRecords_FR003` (an unmatched or out-of-scope
   node never counts or is named), `TestEmpty_FR016` (no matching record: cards 0, `builtIn` empty, rows with
   total 0, no state of its own)
-- [ ] T009 [P] [US1] `widget_test.go`: `TestValues_LargestFirstThenNoneAndDoesNotApply_FR009`,
+- [X] T009 [P] [US1] `widget_test.go`: `TestValues_LargestFirstThenNoneAndDoesNotApply_FR009`,
   `TestOther_AfterTenLargest_FR017` (`other` sums the rest; `values` still holds every value),
   `TestPlannedCost_InReportCurrency_FR013` (summed in USD, converted once at the currency's rate; CNY plan, EUR
   report), `TestKeys_ReportWidgetPattern` (`attr12Count` … match `^[a-z][A-Za-z0-9]{0,39}$`),
   `TestValues_LinkableAndFilterParam_FR014` (`none` linkable, `doesNotApply`, `other`, `total` not)
-- [ ] T010 [US1] `breakdown_test.go`: `TestAttribution_EqualsAllWorkBreakdown_SC002` — `allwork.NewService` over
+- [X] T010 [US1] `breakdown_test.go`: `TestAttribution_EqualsAllWorkBreakdown_SC002` — `allwork.NewService` over
   an in-memory `allwork.Source` with the same year; for every active choice and yes/no **activity** attribute,
   each value's planned cost equals `Service.Breakdown` by that attribute to the cent, and none + doesNotApply
   equals Breakdown's Not filled in
 
 ### Implementation
 
-- [ ] T011 [US1] `attribution.go`: 016 FR-041 for one record and one amount — values carried, % split half up
+- [X] T011 [US1] `attribution.go`: 016 FR-041 for one record and one amount — values carried, % split half up
   with the remainder on the last value, several values without shares each get the whole amount (counts in each),
   0 % shares dropped; Does not apply from `Attribute.Condition` and the plan's `BusinessUnitIDs` before the value
   is read (research R2, R3); about 40 lines
-- [ ] T012 [US1] `widget.go`: values ordered largest first (count, or planned cost for plannedCost widgets), then
+- [X] T012 [US1] `widget.go`: values ordered largest first (count, or planned cost for plannedCost widgets), then
   `none` and `doesNotApply`; `other` after the ten largest; `total` counting each record once; filled in per cent
   half up; keys as T009; USD sums converted once to `Matching.Currency`
-- [ ] T013 [US1] `profile.go`: one row per active attribute of the level in Settings' order; the planned cost
+- [X] T013 [US1] `profile.go`: one row per active attribute of the level in Settings' order; the planned cost
   attributed **per matching activity** (the activity's own value at the activity level), so the amounts equal the
   Breakdown's rounding (T010); records counted once per value
-- [ ] T014 [US1] `builtin.go`: the Activity section of T007 with labels from `Matching.ActivityTypes` and the
+- [X] T014 [US1] `builtin.go`: the Activity section of T007 with labels from `Matching.ActivityTypes` and the
   status words of domain model §2.3
-- [ ] T015 [US1] `level.go` and `service.go`: `Report(ctx, a, f)` in one `Read` — `Scoped.Matched` with the
+- [X] T015 [US1] `level.go` and `service.go`: `Report(ctx, a, f)` in one `Read` — `Scoped.Matched` with the
   columns `completeness` and `inq`, the level `f.Show` (default `activity`), cards, built-in widgets, rows
-- [ ] T016 [US1] `sheets.go`: `measure.Report` (`Key` planDetails, `Available`, `Sheets` one `WidgetSheet` per
+- [X] T016 [US1] `sheets.go`: `measure.Report` (`Key` planDetails, `Available`, `Sheets` one `WidgetSheet` per
   widget of `f.Show` in screen order); `TestSheets_EveryValueAndTotal_FR017`, `TestSheets_KeysOfLevel_FR001`
 - [ ] T017 [US1] **⏸ 039 T023** `handler.go`: `GET /api/v1/reports/plan-details` parsing the filter with 039's
   `measure.ParseFilter`; `TestHandler_ShowDefaultsToActivity_FR001`, 400 for a malformed filter
