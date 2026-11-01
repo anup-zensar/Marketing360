@@ -61,7 +61,7 @@ export function WidgetView({
   const isChart = widgetTypeInfo(widget.type).group === 'charts';
   const notes = data && !result.isError ? notesOf(data) : [];
   const height = chartHeight(widget, notes.length);
-  const hasRows = Boolean(data && data.rows.length > 0);
+  const hasFigures = data !== undefined && !isEmpty(widget, data);
 
   function handleDownload() {
     if (!handle) {
@@ -79,7 +79,7 @@ export function WidgetView({
     { label: isTable ? 'Show as chart' : 'Show as table', onSelect: () => setIsTable(!isTable) },
     ...(isTable || !handle ? [] : [{ label: 'Download as PNG', onSelect: handleDownload }]),
   ];
-  const showsMenu = mode === 'view' && isChart && hasRows && !result.isError;
+  const showsMenu = mode === 'view' && isChart && hasFigures && !result.isError;
 
   return (
     <section className={styles.widget} aria-labelledby={widget.title ? titleId : undefined}>
