@@ -48,7 +48,7 @@ Paths of 401 (no session), and 403 from the route table (missing permission), as
 | `widgets[4].display.kpi.target` | "Enter the target." |
 | `teamIds` | "You can share only with your teams." |
 | `content` | "The file is larger than 5 MB." · "The file has more than 10,000 rows." · "SP&A One can read .xlsx and CSV (UTF-8) files." |
-| `columns[2]` | "Row 14: 'n/a' is not a number." · "… and 37 more problems in this column." |
+| `columns[2]` | "Row 14, Leads: 'n/a' is not a number." · "… and 37 more problems in this column." |
 | `query.source` | "This data source doesn't exist." |
 
 ## Widget data request (example)

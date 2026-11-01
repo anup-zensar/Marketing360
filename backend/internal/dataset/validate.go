@@ -92,21 +92,21 @@ func checkLabel(label string, i int, taken map[string]bool, problems *errs.Probl
 	taken[strings.ToLower(label)] = true
 }
 
-func cellProblem(k Kind, row int, text string) string {
+func cellProblem(c Column, row int, text string) string {
 	quoted := text
 	if utf8.RuneCountInString(text) > maxQuotedRunes {
 		quoted = string([]rune(text)[:maxQuotedRunes]) + "…"
 	}
-	switch k {
+	switch c.Kind {
 	case KindNumber:
-		return fmt.Sprintf(msgNotANumber, row, quoted)
+		return fmt.Sprintf(msgNotANumber, row, c.Label, quoted)
 	case KindDate:
-		return fmt.Sprintf(msgNotADate, row, quoted)
+		return fmt.Sprintf(msgNotADate, row, c.Label, quoted)
 	case KindMoney:
-		return fmt.Sprintf(msgNotAnAmount, row, quoted)
+		return fmt.Sprintf(msgNotAnAmount, row, c.Label, quoted)
 	case KindText:
 	}
-	return fmt.Sprintf(msgTextTooLong, row)
+	return fmt.Sprintf(msgTextTooLong, row, c.Label)
 }
 
 func listedFor(problems errs.Problems, column int) int {

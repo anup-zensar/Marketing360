@@ -62,7 +62,7 @@ func TestCreate_CellProblemsAllAtOnce_FR042(t *testing.T) {
 	fields := fieldErrors(t, err)
 	want := []errs.FieldError{}
 	for row := 2; row < 2+maxCellProblems; row++ {
-		want = append(want, errs.FieldError{Field: "columns[1]", Message: fmt.Sprintf(msgNotADate, row, "someday")})
+		want = append(want, errs.FieldError{Field: "columns[1]", Message: fmt.Sprintf(msgNotADate, row, "Date", "someday")})
 	}
 	want = append(want, errs.FieldError{Field: "columns[1]", Message: fmt.Sprintf(msgMoreProblems, 10)},
 		errs.FieldError{Field: "columns[2]", Message: fmt.Sprintf(msgMoreProblems, 60)})

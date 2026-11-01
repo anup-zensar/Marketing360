@@ -146,7 +146,7 @@ func typedRows(f file, columns []Column) ([]Row, errs.Problems) {
 			}
 			failures++
 			if len(problems) < maxCellProblems {
-				problems.Add(fmt.Sprintf(columnField, i), cellProblem(c.Kind, r.Number, r.Cell(i)))
+				problems.Add(fmt.Sprintf(columnField, i), cellProblem(c, r.Number, r.Cell(i)))
 			}
 		}
 		if more := failures - listedFor(problems, i); more > 0 {

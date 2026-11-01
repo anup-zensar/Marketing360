@@ -188,7 +188,7 @@ describe('051 FR-042: saving the dataset (US3 scenario 2)', () => {
         status: 400,
         body: apiError('validation_failed', 'Check the columns.', {
           fields: [
-            { field: 'columns[2]', message: "Row 14: 'n/a' is not a number." },
+            { field: 'columns[2]', message: "Row 14, Leads: 'n/a' is not a number." },
             { field: 'columns[2]', message: '… and 37 more problems in this column.' },
             { field: 'name', message: 'You already have a dataset with this name.' },
           ],
@@ -201,7 +201,7 @@ describe('051 FR-042: saving the dataset (US3 scenario 2)', () => {
 
     expect(await screen.findByText('3 problems need your attention')).toBeInTheDocument();
     const leads = within(screen.getByRole('list', { name: 'Columns' })).getAllByRole('group')[2];
-    expect(leads).toHaveTextContent("Row 14: 'n/a' is not a number.");
+    expect(leads).toHaveTextContent("Row 14, Leads: 'n/a' is not a number.");
     expect(leads).toHaveTextContent('… and 37 more problems in this column.');
     expect(view.router.state.location.pathname).toBe('/datasets');
   });

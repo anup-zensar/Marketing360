@@ -112,8 +112,8 @@ func TestCreateDataset_StoresAndRefuses_FR042_FR043(t *testing.T) {
 	if got := statuses(badCells, taken, bySara); !slices.Equal(got, []int{400, 409, 403}) {
 		t.Errorf("refusals = %v, want 400, 409, 403", got)
 	}
-	if !strings.Contains(string(badCells.Body), "Row 4: 'someday' is not a date") ||
-		!strings.Contains(string(badCells.Body), "Row 4: 'n/a' is not a number.") {
+	if !strings.Contains(string(badCells.Body), "Row 4, Date: 'someday' is not a date") ||
+		!strings.Contains(string(badCells.Body), "Row 4, Leads: 'n/a' is not a number.") {
 		t.Errorf("cell problems = %s, want both at once", badCells.Body)
 	}
 }
