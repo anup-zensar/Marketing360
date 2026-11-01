@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-01
 
-**Status**: Draft
+**Status**: Built
 
 **Input**: User description: "Three tables in one report page with tabs: SWBS requested and not received (line
 item, plan, requested on, days waiting), purchase requests waiting for GSAP (approved and routed, no GSAP PR

@@ -146,14 +146,12 @@ first page; all under the 300 ms the tab may add to the year read (R6).
 
 ## Dependencies and hand-offs
 
-- **039 (lane A)** — `measure.Filter`, `measure.Report`/`WidgetSheet`, `measure.Planning`/`Plans`, `allwork.Match`,
-  the `registerGsapLink` stub, the shared export, `ReportFrame`, `ReportWidget`. Pushed on
-  `feature/039-measure-hub` (2026-11-01). Asked of lane A, with 043: export the frame's narrow-and-match step;
-  say whether saved views keep report parameters (`tab`, `sort`); add the rule
-  `GET /api/v1/reports/gsap-link: need(authz.ReportsView)` and the operation to `notYetServed` with the wave A
-  contract.
-- **Integrator** — fold `contracts/api.md` into the wave A contract; record 044-C1–C5 in the decision log; correct
-  issue #37's client citation (FR-044, FR-045, FR-039).
+- **039 (lane A)** — used as merged in `measure-module`: `measure.Service.Scope` (the shared step), `measure.Report` with
+  `measure.Parameterised` (`tab` and `sort` kept by saved views, given to `Sheets` in `Filter.Own`), the export,
+  `ReportFrame`, `ReportWidget`. Still asked of lane A (tasks T029, T031): `plan` and `gsapPrNumber` in
+  `GsapLinkSort`; `tab` and 044's `sort` values on `exportReport`.
+- **Integrator** — record 044-C1–C6 in the decision log; 044-C1 goes to the product owner. Issue #37's client citation
+  is corrected (FR-044, FR-045, FR-039).
 - **#DEMO (lane D)** — demo data with line items Ready to send approved 1, 4 and 12 days before the demo date, a
   purchase request waiting for GSAP over a weekend, a top-up waiting (Modification), a PO with an invoice, a credit
   note and a payment, and a PO loaded from an extract with no purchase request, so every tab state shows.
@@ -163,3 +161,4 @@ first page; all under the 300 ms the tab may add to the year read (R6).
 | Violation | Why needed | Simpler alternative rejected because |
 |---|---|---|
 | 032's "waiting for GSAP" predicate copied into `measure_gsaplink.sql` (four lines) | `purchaserequest`'s list is scoped by `purchaseRequests.list` and is outside lane D's paths | Changing it needs lane C's agreement; the copy is pinned to it by `TestWaiting_EqualsPurchaseRequestsView_SC002` on PostgreSQL |
+| The three reads answered twice: `measure_gsaplink.sql` on PostgreSQL, `gsapRecords` (`app/measure_gsaplink.go`) over the other areas' stores in memory | The API tests and a database-free run use the in-memory store set, which has no 044 store | Adding a 044 store to `stores.Set` edits shared files outside issue #37's paths that other lanes change too; the two are pinned equal by `TestGsapRecords_EqualPostgresStore` on PostgreSQL |

@@ -114,3 +114,13 @@ func TestGsapLinkExport_OwnParameters_FR019(t *testing.T) {
 		t.Errorf("export sorted by vendor on the SWBS tab = %d, want 400", r.Status)
 	}
 }
+
+func TestGsapLinkExport_NeedsDataExport(t *testing.T) {
+	t.Parallel()
+	server := apitest.New(t)
+	giveMeiOnly(t, server, "reports.view")
+	meiSees := server.SignIn(t, mei)
+
+	get(t, meiSees, report, http.StatusOK)
+	get(t, meiSees, "/api/v1/reports/gsap-link/export?year=2026&format=xlsx", http.StatusForbidden)
+}

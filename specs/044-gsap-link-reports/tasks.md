@@ -102,3 +102,14 @@ Write each test first and see it fail.
 ## Dependencies
 
 T001 → T002 – T006 → US1 (T007 – T016) → US2 → US3 → US4 → Polish. Tests before implementation in each story.
+
+## Phase 8: Convergence
+
+- [ ] T029 [FR-015] Sort Waiting for GSAP by plan and GSAP PR number, and Purchase orders by GSAP PR number: needs
+  `plan` and `gsapPrNumber` in the contract's `GsapLinkSort` (`openapi.yaml`, lane A); then add them to
+  `waitingColumns` and `orderColumns` and drop `sortable: false` on those headings. **Hand-off to lane A.**
+- [X] T030 [plan: access rules] `TestGsapLinkExport_NeedsDataExport` in `gsaplink/handler_test.go`: a person with
+  `reports.view` and no `data.export` is refused the report's export
+- [ ] T031 [FR-019, 039 hand-off] The contract's `exportReport` takes `tab` (`GsapLinkTab`) and 044's `sort` values
+  (`GsapLinkSort`) — lane A, `openapi.yaml`; then `TestGsapLinkExport_OwnParameters_FR019` drops
+  `SkipRequestValidation`. **Hand-off to lane A.**
