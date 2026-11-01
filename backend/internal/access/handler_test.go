@@ -195,7 +195,7 @@ func TestRoles_CreateChangeDelete_FR018(t *testing.T) {
 		Total int
 	}
 	alex.Do(t, http.MethodGet, "/api/v1/roles", nil).Decode(t, &page)
-	if page.Total != 7 || page.Items[0].Name != "Administrator" || len(page.Items[0].Locks) != 5 || len(page.Items[0].Permissions) != 29 {
+	if page.Total != 7 || page.Items[0].Name != "Administrator" || len(page.Items[0].Locks) != 5 || len(page.Items[0].Permissions) != 30 {
 		t.Errorf("roles = %d, first %+v", page.Total, page.Items[0])
 	}
 }

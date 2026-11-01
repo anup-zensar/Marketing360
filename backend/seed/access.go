@@ -20,7 +20,7 @@ var demoRoles = []struct {
 		[]authz.Permission{
 			authz.PlansView, authz.PlansCreate, authz.PlansEdit, authz.PlansPublish, authz.PlansDelete,
 			authz.CampaignsEdit, authz.CampaignsDelete, authz.ActivitiesEdit, authz.ActivitiesDelete,
-			authz.ActivitiesSubmit, authz.DataExport, authz.FinanceView, authz.ApprovalsDecide,
+			authz.ActivitiesSubmit, authz.DataExport, authz.ReportsView, authz.FinanceView, authz.ApprovalsDecide,
 			authz.GlobalBudgetsView, authz.GlobalBudgetsManage, authz.PurchaseRequestsEdit, authz.PurchaseRequestsDelete,
 			authz.PurchaseRequestsSubmit, authz.PurchaseRequestsList,
 		}, authz.ScopeAll},
@@ -28,15 +28,16 @@ var demoRoles = []struct {
 		[]authz.Permission{
 			authz.PlansView, authz.PlansCreate, authz.PlansEdit, authz.PlansPublish,
 			authz.CampaignsEdit, authz.CampaignsDelete, authz.ActivitiesEdit, authz.ActivitiesDelete,
-			authz.ActivitiesSubmit, authz.DataExport, authz.FinanceView,
+			authz.ActivitiesSubmit, authz.DataExport, authz.ReportsView, authz.FinanceView,
 			authz.PurchaseRequestsEdit, authz.PurchaseRequestsDelete, authz.PurchaseRequestsSubmit,
 		}, authz.ScopeMyTeams},
 	{"Approver", authz.BuiltInApprover, "Approves activities they are named on.",
-		[]authz.Permission{authz.PlansView, authz.DataExport, authz.FinanceView, authz.ApprovalsDecide}, authz.ScopeMyTeams},
+		[]authz.Permission{authz.PlansView, authz.DataExport, authz.ReportsView, authz.FinanceView, authz.ApprovalsDecide},
+		authz.ScopeMyTeams},
 	{"Viewer", authz.BuiltInViewer, "Sees plans of their markets without changing them.",
-		[]authz.Permission{authz.PlansView, authz.DataExport, authz.FinanceView}, authz.ScopeMyTeams},
+		[]authz.Permission{authz.PlansView, authz.DataExport, authz.ReportsView, authz.FinanceView}, authz.ScopeMyTeams},
 	{requisitioner, "", "Turns approved purchase requests into GSAP purchase requests.",
-		[]authz.Permission{authz.PlansView, authz.FinanceImport, authz.PurchaseRequestsList}, authz.ScopeAll},
+		[]authz.Permission{authz.PlansView, authz.ReportsView, authz.FinanceImport, authz.PurchaseRequestsList}, authz.ScopeAll},
 }
 
 // demoRoleAssignments are the roles of the seven demo people (plan "Demo data"), RA-1001 … RA-1008, in this

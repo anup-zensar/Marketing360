@@ -5,6 +5,7 @@ import { RequireSignIn } from '@/session/RequireSignIn';
 import { AppLayout } from './AppLayout';
 import { DASHBOARD_ROUTES } from './dashboard-routes';
 import { DevOnly } from './DevOnly';
+import { MEASURE_ROUTES } from './measure-routes';
 import { COMING_SOON_SECTIONS } from './navigation';
 import { NotFoundRoute } from './NotFoundRoute';
 import { WORKBOOK_ROUTES } from './routes-workbook';
@@ -166,6 +167,7 @@ const PLAN_MODULE_ROUTES: RouteObject[] = [
   { path: '/activity-log', element: <ActivityLogPage />, ...titled('Activity log') },
   { path: '/recycle-bin', element: <RecycleBinPage />, ...titled('Recycle bin') },
   ...DASHBOARD_ROUTES,
+  ...MEASURE_ROUTES,
   ...SETTINGS_ROUTES,
 ];
 
