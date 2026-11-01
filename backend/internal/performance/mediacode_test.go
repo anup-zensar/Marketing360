@@ -102,11 +102,11 @@ func TestDeleteMediaCode_RefusedOnceUsedAndDeactivateWorks_FR041(t *testing.T) {
 	f.service.UseApprovals(approvedStub{"A-1": true})
 	rows := importRows(map[string]string{"r1": "5"})
 	rows[0].Keys = performance.RowKeys{MediaCode: "9000001"}
-	if _, err := f.service.RunImport(t.Context(), alex, performance.ImportInput{
+	if _, runErr := f.service.RunImport(t.Context(), alex, performance.ImportInput{
 		SourceID: src.ID, FileName: "web.csv", Origin: performance.OriginUpload,
 		Headings: []string{"ref", "date", "inqs"}, Rows: rows,
-	}); err != nil {
-		t.Fatalf("RunImport: %v", err)
+	}); runErr != nil {
+		t.Fatalf("RunImport: %v", runErr)
 	}
 
 	err = f.service.DeleteMediaCode(t.Context(), alex, code.ID)

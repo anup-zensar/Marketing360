@@ -184,8 +184,8 @@ func (s *PostgresStore) GetConfiguration(ctx context.Context) (Configuration, bo
 	config := Configuration{MediaCodeNext: row.MediaCodeNext,
 		Meta: metaOf(row.Version, metaRow{row.CreatedAt, row.CreatedByID, row.CreatedByName,
 			row.UpdatedAt, row.UpdatedByID, row.UpdatedByName})}
-	if err := json.Unmarshal(row.CodeAttributes, &config.CodeAttributes); err != nil {
-		return Configuration{}, false, fmt.Errorf("read the code attributes: %w", err)
+	if readErr := json.Unmarshal(row.CodeAttributes, &config.CodeAttributes); readErr != nil {
+		return Configuration{}, false, fmt.Errorf("read the code attributes: %w", readErr)
 	}
 	types, err := s.db.Queries(ctx).ListCodeActivityTypes(ctx)
 	if err != nil {
