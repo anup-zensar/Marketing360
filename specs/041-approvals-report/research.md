@@ -53,6 +53,11 @@ purchase request's come from the purchase request store's reads for the plans in
 032/036 work it out, purchase order number). An amount of a plan without `finance.view` is `null` (shown "—").
 A record outside the actor's plans is never read; a name is a link only when the person may open it (041-C5).
 
+**Purchase requests in view** (041-C8): a purchase request is in view when one of its line items is, so the
+subject IDs come from the year's activities plus `Purchases.Summaries(lineItemIDs of the nodes in view)` — the
+same rule as 036's `board.subjectIDs` — and every filter of the frame narrows purchase requests through their line
+items.
+
 **Open**: `purchaserequest.Summaries` carries no name, owner or PO number. Which existing read to adapt is
 settled in the first backend task; if none gives them in one statement, the integrator widens `Summary` (outside
 Owns). Listed in plan.md for lane A.

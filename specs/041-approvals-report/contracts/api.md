@@ -9,11 +9,11 @@ operation answers 401 when signed out and 403 `forbidden` when the route rule re
 
 | Operation | Rule (`access/routes_measure.go`) | Answers |
 |---|---|---|
-| `GET /api/v1/reports/approvals` | `need(authz.ReportsView)` | 200 `ApprovalsReport`; 400 problems for a malformed filter, `sort`, `order`, `page` or `pageSize` |
+| `GET /api/v1/reports/approvals` | `need(authz.ReportsView)` | 200 `ApprovalsReport`; 400 problems only for a malformed frame filter, `sort`, `order`, `page` or `pageSize` |
 
-Not an error: a record type, outcome or approver that does not exist, or filters that match nothing — the answer
-is 200 with empty widgets and the grid's `total` 0 (spec edge cases; the page shows "Your filters exclude
-everything"). A report outside the person's reach answers as 039 defines (403 from the rule). Exports go through
+Not an error (041-C10): a `statusType`, `recordType`, `outcome` or `approver` that does not exist, or filters
+that match nothing — the answer is 200 with empty widgets and the grid's `total` 0 (spec edge cases; the page
+shows "Your filters exclude everything"). A report outside the person's reach answers as 039 defines (403 from the rule). Exports go through
 `GET /api/v1/reports/approvals/export` of 039 (`need(authz.DataExport)`), widgets `status`, `average`, `approvals`.
 
 ## Query
@@ -25,10 +25,10 @@ attributes, `currency`, `table`) plus:
 |---|---|---|
 | `statusType` | Record type of the status widget: `activity`, `purchaseRequest`, `modifiedPurchaseRequest` | `activity` |
 | `recordType` | Grid record-type filter (same values), repeatable | all |
-| `approver` | Grid approver filter: person IDs, repeatable | all |
+| `approver` | Grid approver filter only; the widgets are not narrowed by it (041-C9): person IDs, repeatable | all |
 | `outcome` | Grid status filter: `waiting`, `approved`, `declined`, `recalled`, `replaced`, `autoApproved`, `notNeeded`, repeatable | all |
 | `q` | Free text over the grid's text columns | — |
-| `sort`, `order` | Column key (`itemId`, `itemName`, `recordType`, `approver`, `decidedOn`, `outcome`, `submittedOn`, `level`, `purchaseOrder`, `amount`, `owner`) · `asc` or `desc` | `submittedOn`, `desc` (ties by `itemId`, then `level`) |
+| `sort`, `order` | Column key (`itemId`, `itemName`, `recordType`, `approver`, `decidedOn`, `outcome`, `submittedOn`, `level`, `purchaseOrder`, `amount`, `owner`, `comments`) · `asc` or `desc` | `submittedOn`, `desc` (ties by `itemId`, then `level`) |
 | `page`, `pageSize` | 1-based · 5, 10, 25, 50 or 100 | 1 · 50 |
 
 `period` and `show` are accepted and ignored: nothing is bucketed.
@@ -41,12 +41,13 @@ ApprovalsReport:
   average: ApprovalAverage
   grid: ApprovalGrid
   financeCovers: { plans: int, of: int }   # plans whose amounts the person sees, of the plans with rows
+  # purchase requests are in view through their line items (041-C8)
 
 ApprovalStatusMix:
   recordType: string                       # the one shown
   recordTypes: string[]                    # types that have rounds in the plans in view (FR-007)
   total: int
-  waiting: { count: int, oldestSince: date-time | null }   # as 036 FR-016
+  waiting: { count: int, oldestSince: date-time | null }   # the selected type's; the three types sum to 036's (041-C10)
   items: { outcome: waiting|approved|declined|recalled|replaced|autoApproved, count: int, sharePercent: int }[]
 
 ApprovalAverage:

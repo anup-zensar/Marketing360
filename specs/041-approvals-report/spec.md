@@ -76,6 +76,20 @@ objects. SP&A One's approval engine approves three record types only (031), so t
   018 FR-019 wants a per-approver list too, so both are shown with their own count. Applied to FR-009, FR-010,
   US1 scenario 3, the edge cases, the key entities and the assumptions. (Planning; research R1.)
 
+- **041-C8** — Q: How do the frame's activity-level filters (type, status, attributes, owner) narrow purchase
+  request rounds? → A: **A purchase request or modified purchase request is in view when one of its line items is
+  in view**, as 036 does, so every filter of the frame reaches it through its line items. Applied to FR-005 and
+  US1 scenario 5. (Analysis; research R4.)
+- **041-C9** — Q: Does the approver filter narrow the widgets? → A: **No: it is a filter of the grid only.** The
+  widgets stay the whole picture of the plans in view, and the per-approver list already gives each person's
+  figures. Applied to US1's introduction and scenario 5 and to US2 scenario 4. (Analysis.)
+- **041-C10** — Q: What does the waiting figure cover, and what do unknown values do? → A: **The waiting figure
+  is the selected record type's**, and the three types add up to 036's waiting count; Approvals › Monitoring
+  covers rounds ended this month only, so it is not the comparison for the totals (SC-002). **An unknown record
+  type, outcome or approver, in the widget or the grid, answers 200 with empty figures**, never an error; only a
+  malformed `sort`, `order`, `page`, `pageSize` or frame filter is a 400. Applied to FR-008, SC-002, the edge
+  cases and `contracts/api.md`. (Analysis.)
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See approval workload and cycle time (Priority: P1)
@@ -84,15 +98,16 @@ A planning lead opens **Reports › Approvals** and sees, for one record type at
 are in each status and each status's share of the total, and the average number of days from submission to a
 decision, with the number of decisions behind it and a list per approver, slowest first. The record type is
 chosen on the status widget (default **Activity**) and offers only the types that have rounds in the plans in
-view. The report's filters (year, plans, Shell attributes, owner, team, approver) narrow every figure.
+view. The report's filters (year, plans, Shell attributes, owner, team) narrow every figure; the grid has an
+approver filter of its own (041-C9).
 
 **Why this priority**: it answers the question the report exists for — is approval a bottleneck, and where.
 The Approvals page shows one person's queue; nothing else shows workload and cycle time across plans.
 
 **Independent Test**: Sign in as Alex Morgan (Administrator, all markets), open Reports › Approvals for the
 demo year: the status widget lists each status with its count and share, the average widget shows days to one
-decimal with its count, and the three numbers agree with the same plans' Approvals monitoring and with 036's
-Approvals panel.
+decimal with its count, and the waiting count (summed over the three record types), the oldest waiting date and
+the average days equal 036's Approvals panel for the same plans.
 
 **Acceptance Scenarios**:
 
@@ -105,22 +120,21 @@ Approvals panel.
    widget shows the mean days from submission to the end of the round to one decimal with the number of
    decisions (041-C7), and a list of approvers each with their own average and decisions, slowest first; pending, recalled,
    replaced and automatically approved steps are not counted (017), and skipped levels are not rows (041-C3).
-4. **Given** the same plans, **Then** the average equals the one on Approvals › Monitoring and on 036's
-   Approvals panel, because all three use 017's rule.
-5. **Given** the filter panel, **When** the person narrows the year, plans, attributes, owner, team or approver
-   and applies the change, **Then** both widgets and the grid recount for the narrowed set and the filters-applied
-   summary names them.
+4. **Given** the same plans, **Then** the waiting count (summed over the three record types), the oldest-waiting
+   date and the average equal 036's Approvals panel, which counts all rounds of the plans in view; Approvals ›
+   Monitoring uses the same average rule for rounds ended this month only (041-C10).
+5. **Given** the filter panel, **When** the person narrows the year, plans, attributes, owner or team and applies
+   the change, **Then** both widgets and the grid recount for the narrowed set and the filters-applied summary
+   names them; purchase requests narrow through their line items (041-C8).
 6. **Given** no decision was made yet in the plans in view, **Then** the average shows "—" with the words "No
    decisions yet", never 0.
-7. **Given** the display currency is changed, **Then** every amount on the page is shown in it with the currency
-   named, at the current rate.
 
 ---
 
 ### User Story 2 - Find, inspect and export approval records (Priority: P2)
 
-A planner or finance advisor looks through the approvals grid: one row per approver step per submission, with
-the record, its owner, the approver, level, dates, outcome, amount and comments. They search, sort, filter by
+A planner or finance advisor looks through the approvals grid: one row per named approver at each level of each
+submission, with the record, its owner, the approver, level, dates, outcome, amount and comments. They search, sort, filter by
 approver, status and record type, page through the rows, read a long comment in full and export every matching
 row.
 
@@ -143,7 +157,8 @@ columns and order, and none of the rows belongs to a plan outside Alex's scope.
    50), **Then** the page and the total change accordingly.
 4. **Given** the filters **Approver**, **Status** (the outcome of the step) and **Record type**, **When** any is
    applied, **Then** the grid shows only matching rows; the Status choices are the six outcome words of 041-C1
-   plus **Not needed** (041-C2), whatever record type is chosen.
+   plus **Not needed** (041-C2), whatever record type is chosen; the Approver filter narrows the grid only
+   (041-C9).
 5. **Given** a long comment, **When** the person opens it, **Then** it is shown in full on the page without
    leaving the report.
 6. **Given** a row, **Then** the record's name links to the record when the person may open it and is plain text
@@ -154,6 +169,8 @@ columns and order, and none of the rows belongs to a plan outside Alex's scope.
 8. **Given** a step with no decision yet, **Then** its **Decided on** shows "—" and its **Outcome** reads
    **Waiting**, never a date or a zero; **Given** a level where any one approver may decide and one did,
    **Then** the other approvers' rows read **Not needed** with "—" for **Decided on** (041-C2).
+9. **Given** the display currency is changed, **Then** every amount in the grid is shown in it with the currency
+   named, at the current rate.
 
 ---
 
@@ -193,8 +210,9 @@ These scenarios cover each state a widget or the grid can render; each has its o
   round decided within the hour of its submission counts as 0.0 days.
 - The grid holds many thousands of rows: paging, sorting and search stay quick and the export still holds every
   matching row.
-- Filters in the address that name a record type, status or approver that does not exist: the report shows the
-  "filters exclude everything" state and the reset, not an error.
+- Filters in the address that name a record type (the status widget's or the grid's), outcome or approver that
+  does not exist: the report answers with empty figures and shows the "filters exclude everything" state and the
+  reset, not an error (041-C10).
 
 ## Requirements *(mandatory)*
 
@@ -203,19 +221,20 @@ These scenarios cover each state a widget or the grid can render; each has its o
 **Frame and access**
 
 - **FR-001**: The report MUST appear as **Approvals** under Reports and use feature 039's report frame
-  (filter panel, Period, Show, display currency, saved views, "as of" line, table view and export of every
-  widget) without redefining any of it (client 018 FR-001, FR-004, FR-005, FR-008, FR-010).
+  (filter panel, display currency, saved views, "as of" line, table view and export of every widget; Period and
+  Show only where a report has time widgets or a ranked list, so not here, FR-005) without redefining any of it (client 018 FR-001, FR-004, FR-005, FR-008, FR-010).
 - **FR-002**: The report MUST be read-only: it MUST NOT approve, decline, recall, delegate or change any record;
   the only thing it saves is a person's saved view through 039 (client 018 FR-002, FR-023).
 - **FR-003**: The report MUST need `reports.view`, export MUST need `data.export`, and every figure and row MUST
   come only from plans in the signed-in person's scope; a record outside it MUST answer as missing. This
   replaces Hive9's "recorded for later, not enforced" (client 018 FR-011): SP&A One enforces roles and scopes
   (014).
-- **FR-004**: Filters MUST follow 039's rules: they live in the page address, apply on **Update**, show a
+- **FR-004**: Filters MUST follow 039's rules: they live in the page address, apply on **Apply** (039-C1), show a
   filters-applied summary and a one-click reset, and Back keeps them (client 018 FR-003, FR-004).
 - **FR-005**: The Year filter MUST limit the report to rounds of records in plans of the selected years (client
   018 FR-016); there is no Period selector on this report because nothing is bucketed by period (client 018
-  FR-013).
+  FR-013). A purchase request or modified purchase request is in view when one of its line items is, as in 036,
+  so the frame's filters narrow it through its line items (041-C8).
 
 **Approval status widget** *(US1)*
 
@@ -228,14 +247,15 @@ These scenarios cover each state a widget or the grid can render; each has its o
   view; the outcome words are the same for every type (041-C1; client 018 FR-015 asked for each type's own
   status words, which this report does not use because it counts rounds, not records; client 018 FR-017; 031
   FR-003).
-- **FR-008**: The widget MUST also show how many rounds wait for a decision and since when the oldest waits,
-  worked out as in 036 FR-016.
+- **FR-008**: The widget MUST also show how many rounds of the selected record type wait for a decision and since
+  when the oldest waits, worked out as in 036 FR-016, so the three types' counts add up to 036's (041-C10).
 
 **Average widget** *(US1)*
 
 - **FR-009**: The **Average days to a decision** widget MUST show the mean days from submission to
   the end of each round approved or declined by a person, to one decimal, with the number of decisions (041-C7),
-  using 017's rule exactly as the Approvals monitoring and 036's Approvals panel work it out (client 018 FR-019;
+  using 017's rule (`AverageDecisionDays`) as Approvals › Monitoring does for the current month and 036's
+  Approvals panel does for all rounds of the plans in view, which this report follows (client 018 FR-019;
   measure-metrics §1).
 - **FR-010**: The widget MUST list each approver with their own average — from each round's submission to that
   person's own decision — and number of decisions, slowest first (041-C7), crediting the person who actually decided (041-C2); waiting, recalled, replaced, not-needed and automatically
@@ -268,8 +288,8 @@ These scenarios cover each state a widget or the grid can render; each has its o
   cannot see financial data, the filters exclude everything with a reset (client 018 FR-007; build guide §6).
 - **FR-021**: Every figure MUST be computed on the server; the web app only draws what the API provides
   (constitution IV), and a total MUST equal the sum of its parts in the table view and in the export.
-- **FR-022**: The report MUST render quickly and without a statement per row at the 028 volumes, with the
-  benchmark recorded in the plan.
+- **FR-022**: The report MUST respond within the time of SC-006 and without a statement per row at the 028
+  volumes, with the benchmark recorded in the plan.
 
 **Export**
 
@@ -298,8 +318,9 @@ These scenarios cover each state a widget or the grid can render; each has its o
 
 - **SC-001**: A planning lead sees the status mix and the average days to a decision for the demo year within
   one page view, with no filter set, and finds the slowest approver in under 30 seconds.
-- **SC-002**: For the same plans, the waiting count, the oldest-waiting date and the average days are identical
-  on this report, on Approvals › Monitoring and on 036's Approvals panel in 100% of checks.
+- **SC-002**: For the same plans, the waiting count (summed over the three record types), the oldest-waiting
+  date and the average days are identical on this report and on 036's Approvals panel in 100% of checks; the
+  average uses the rule of Approvals › Monitoring.
 - **SC-003**: A person finds one specific approval step by search, approver or status in under 1 minute.
 - **SC-004**: The export holds 100% of the rows matching the filters and search — not only the visible page —
   and 0 rows from plans outside the person's scope.
@@ -312,8 +333,8 @@ These scenarios cover each state a widget or the grid can render; each has its o
 ## Assumptions
 
 - Feature 039's report frame, filter model, saved views and export are available on `measure-module`; 041 plugs
-  into them and never redefines them. Lane A's 039 spec was not yet pushed when this spec was written, so any
-  detail of the frame named here follows the build guide and is checked against 039's contracts at planning.
+  into them and never redefines them. Lane A's 039 spec and contracts were read from `origin/feature/039-measure-hub`
+  while planning; a later change of the frame is applied here and in `contracts/api.md`.
 - The three record types are those of 031; the outcome words are those the approval engine records (008, 017,
   031), shown identically for every type (041-C1); `restarted` and `cancelled` rounds show as Replaced by a new
   submission and Recalled (041-C6).
