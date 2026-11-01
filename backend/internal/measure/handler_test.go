@@ -76,6 +76,7 @@ func TestReportsExport_FR022(t *testing.T) {
 	}
 	call(t, carlos, "/api/v1/reports/plan-budget/export?format=csv", http.StatusBadRequest)
 	call(t, carlos, "/api/v1/reports/plan-budget/export?format=csv&widget=statusCount", http.StatusBadRequest)
+	call(t, carlos, "/api/v1/reports/approvals/export?year=2026&format=xlsx&tab=waiting&sort=-age", http.StatusOK)
 
 	admin := server.SignIn(t, alexEmail)
 	var created struct{ ID string }

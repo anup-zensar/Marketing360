@@ -54,14 +54,14 @@ export function useReportFrame(report: ReportKey, address: ReportAddress) {
 
 type ExportQuery = NonNullable<operations['exportReport']['parameters']['query']>;
 
-const SORTS = ['budget', 'planned', 'committed', 'actual', 'leftToPlan', 'unspent'] as const;
-
-/** The report's own parameters on screen (a ranked list's sort, group, search and drill), so the file matches it. */
+/** The report's own parameters on screen (a sort, a tab, a ranked list's group, search and drill): the file matches it. */
 function ownQuery(params?: URLSearchParams): Partial<ExportQuery> {
-  const sort = SORTS.find((s) => s === params?.get('sort'));
-  const [group, q, drill] = ['group', 'q', 'drill'].map((name) => params?.get(name) ?? '');
+  const [sort, tab, group, q, drill] = ['sort', 'tab', 'group', 'q', 'drill'].map(
+    (name) => params?.get(name) ?? '',
+  );
   return {
     ...(sort && { sort }),
+    ...(tab && { tab }),
     ...(params?.get('order') === 'asc' && { order: 'asc' as const }),
     ...(group && { group }),
     ...(q && { q }),
