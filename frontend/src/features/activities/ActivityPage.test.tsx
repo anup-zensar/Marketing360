@@ -64,7 +64,14 @@ function openPage(
         body: {
           state: 'notApproved',
           stages: [],
-          revenue: { goal: null, actual: null, excludedCount: 0, reason: 'notApproved', projected: null, months: [] },
+          revenue: {
+            goal: null,
+            actual: null,
+            excludedCount: 0,
+            reason: 'notApproved',
+            projected: null,
+            months: [],
+          },
           webMetrics: [],
           sources: [],
           projection: null,

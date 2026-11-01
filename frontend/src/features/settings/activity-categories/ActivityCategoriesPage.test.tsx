@@ -178,9 +178,9 @@ describe('ActivityCategoriesPage: delete (FR-021)', () => {
     await chooseAction('Promotion', 'Delete', user);
     await user.click(await screen.findByRole('button', { name: 'Delete activity category' }));
 
-    expect(await screen.findByRole('alertdialog', { name: "'Promotion' is in use" })).toHaveTextContent(
-      message,
-    );
+    expect(
+      await screen.findByRole('alertdialog', { name: "'Promotion' is in use" }),
+    ).toHaveTextContent(message);
   });
 
   it('reactivates an inactive category (FR-018)', async () => {

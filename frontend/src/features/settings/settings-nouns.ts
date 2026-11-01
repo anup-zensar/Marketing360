@@ -41,7 +41,7 @@ export const SETTING_NOUNS: Record<SettingKind, SettingNouns> = {
     noun: 'activity category',
     title: 'Activity category',
     inactiveEffect:
-      "The reports stop offering an inactive category; its activity types keep it and still count under it.",
+      'The reports stop offering an inactive category; its activity types keep it and still count under it.',
     notFound: 'This activity category no longer exists — someone may have deleted it.',
   },
   shellAttribute: {

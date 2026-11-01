@@ -13,11 +13,7 @@ import styles from '@/ui/settings-table.module.css';
 import { saveFailureOf } from '../save-failure';
 import { ActivityTypesField } from './ActivityTypesField';
 import { changedFields, createBody, startValues } from './category-values';
-import {
-  fetchActivityCategory,
-  useCreateActivityCategory,
-  useUpdateActivityCategory,
-} from './api';
+import { fetchActivityCategory, useCreateActivityCategory, useUpdateActivityCategory } from './api';
 import type { ActivityCategory } from './api';
 import { activityCategorySchema } from './schemas';
 import type { ActivityCategoryValues } from './schemas';

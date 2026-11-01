@@ -10,6 +10,7 @@ const PAGE_ANSWERS: HttpHandler[] = [
   }),
   reply('GET /api/v1/models', { body: { items: [], total: 0 } }),
   reply('GET /api/v1/activity-types', { body: { items: [], total: 0 } }),
+  reply('GET /api/v1/settings/activity-categories', { body: { items: [], total: 0 } }),
   reply('GET /api/v1/currencies', { body: { items: [], total: 0 } }),
   reply('GET /api/v1/finance-budgets', {
     body: { items: [], total: 0, year: 2026, years: [2026] },

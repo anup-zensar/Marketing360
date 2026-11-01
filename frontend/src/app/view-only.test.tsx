@@ -67,6 +67,7 @@ describe('Light access gating (feature 014, FR-011, FR-012)', () => {
       reply('GET /api/v1/people', never),
       reply('GET /api/v1/teams', never),
       reply('GET /api/v1/approval-workflows', never),
+      reply('GET /api/v1/settings/activity-categories', never),
     ]);
     renderWithProviders(<SettingsPage sections={await loadSettingsSections()} />, { user: SARA });
 

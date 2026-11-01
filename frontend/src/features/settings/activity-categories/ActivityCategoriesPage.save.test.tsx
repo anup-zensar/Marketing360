@@ -70,9 +70,9 @@ describe('ActivityCategoriesPage: create and edit (US3, FR-018 to FR-020)', () =
 
     expect(await within(form).findByText('2 problems need your attention')).toBeInTheDocument();
     expect(within(form).getAllByText('Enter a name of 1 to 80 characters.')).toHaveLength(2);
-    expect(
-      within(form).getAllByText("'Event' is not an activity type any more."),
-    ).not.toHaveLength(0);
+    expect(within(form).getAllByText("'Event' is not an activity type any more.")).not.toHaveLength(
+      0,
+    );
   });
 
   it('moves an activity type that is already in another category (FR-019)', async () => {

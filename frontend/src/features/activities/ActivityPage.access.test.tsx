@@ -47,7 +47,14 @@ function openPage(access: Activity['access'], person: CurrentUser, formAllowed: 
         body: {
           state: 'notApproved',
           stages: [],
-          revenue: { goal: null, actual: null, excludedCount: 0, reason: 'notApproved', projected: null, months: [] },
+          revenue: {
+            goal: null,
+            actual: null,
+            excludedCount: 0,
+            reason: 'notApproved',
+            projected: null,
+            months: [],
+          },
           webMetrics: [],
           sources: [],
           projection: null,
@@ -147,7 +154,14 @@ describe('014 FR-011: the activity page follows the reader’s access', () => {
           body: {
             state: 'notApproved',
             stages: [],
-            revenue: { goal: null, actual: null, excludedCount: 0, reason: 'notApproved', projected: null, months: [] },
+            revenue: {
+              goal: null,
+              actual: null,
+              excludedCount: 0,
+              reason: 'notApproved',
+              projected: null,
+              months: [],
+            },
             webMetrics: [],
             sources: [],
             projection: null,
