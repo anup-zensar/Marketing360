@@ -22,6 +22,10 @@ func (r *Report) Available() bool  { return true }
 func (r *Report) Params() []string { return Params() }
 
 func (r *Report) Sheets(ctx context.Context, a actor.Actor, f measure.Filter) ([]measure.WidgetSheet, error) {
+	q, err := ParseQuery(f.Own)
+	if err != nil {
+		return nil, err
+	}
 	sn, err := r.service.snapshot(ctx, a, f)
 	if err != nil {
 		return nil, err
@@ -29,6 +33,7 @@ func (r *Report) Sheets(ctx context.Context, a actor.Actor, f measure.Filter) ([
 	return []measure.WidgetSheet{
 		{Key: "status", Sheet: statusSheet(sn)},
 		{Key: "average", Sheet: averageSheet(sn)},
+		{Key: "approvals", Sheet: approvalsSheet(matching(sn.rows, q), sn.currency)},
 	}, nil
 }
 

@@ -23,11 +23,11 @@ yet); commit once per finished story.
 
 - [X] T001 Plan, research and `contracts/api.md` pushed to `origin/feature/041-approvals-report` for lane A's
   wave A contract (commit `feba42c4`)
-- [ ] T002 Record lane A's answers to plan.md questions 1–5 (report-specific parameters in address and saved
+- [X] T002 Record lane A's answers to plan.md questions 1–5 (report-specific parameters in address and saved
   views; matching helper and export location; file name `measure_approvals.go`; purchase request name/owner/PO
   read; benchmark file) as 041-C8… in `specs/041-approvals-report/spec.md` Clarifications and fix
   `contracts/api.md` if the parameters move
-- [ ] T003 Gate check, no work until all hold: 039's hub is merged into `measure-module` (build guide step 2,
+- [X] T003 Gate check, no work until all hold: 039's hub is merged into `measure-module` (build guide step 2,
   about hour 16) and the wave A contract is in `backend/api/openapi.yaml` (039 T013–T014); then `git fetch`,
   rebase `feature/041-approvals-report` on `measure-module`, `pnpm run api:types` in `frontend/`
 
@@ -133,34 +133,34 @@ the file holds every matching row and no row of a plan outside Alex's scope.
 
 ### Tests first (write, see fail)
 
-- [ ] T028 [P] [US2] `TestRows_041_FR012_C2_C3` in `rows_test.go`: no row of a plan, campaign, initiative or line
+- [X] T028 [P] [US2] `TestRows_041_FR012_C2_C3` in `rows_test.go`: no row of a plan, campaign, initiative or line
   item, no Vendor filter or accrual column (FR-024); one row per named approver per level; others
   read Not needed once one decided; an automatic level is one row with no approver; a skipped level no row;
   waiting rows show "—" for decided on
-- [ ] T029 [P] [US2] `TestGridQuery_041_FR013_FR015`, `TestUnknownValues_041_C10`,
+- [X] T029 [P] [US2] `TestGridQuery_041_FR013_FR015`, `TestUnknownValues_041_C10`,
   `TestApproverFilterGridOnly_041_C9`: record type, approver and outcome filters, an unknown value gives an
   empty page not an error, the approver filter leaves the widgets unchanged, search over text columns, sort by
   every column including `comments` across all rows with ties by item then level, every page size, total
-- [ ] T030 [P] [US2] `TestAmounts_041_FR018`, `TestCanOpen_041_FR017`: planned cost now and 032's amount in the
+- [X] T030 [P] [US2] `TestAmounts_041_FR018`, `TestCanOpen_041_FR017`: planned cost now and 032's amount in the
   display currency, changing the display currency re-expresses every amount with the currency named (US2 sc.9),
   `null` without `finance.view`; `canOpen` false when the person may not open the record
-- [ ] T031 [P] [US2] `TestSheets_041_FR023` extended for `approvals`: every matching row, no paging, the grid's
+- [X] T031 [P] [US2] `TestSheets_041_FR023` extended for `approvals`: every matching row, no paging, the grid's
   columns in order; contract test extended for the grid parameters and 400 for an unknown `sort`
-- [ ] T032 [P] [US2] `ApprovalsGrid.test.tsx` with `vitest-axe`: columns in order, search, sort, outcome, approver
+- [X] T032 [P] [US2] `ApprovalsGrid.test.tsx` with `vitest-axe`: columns in order, search, sort, outcome, approver
   and record-type filters, page size, total, a long comment opens in full, a name is plain text when `canOpen` is
   false, empty grid with the cause (no approvals / filters exclude everything with reset), loading, error with
   **Try again**
 
 ### Implementation
 
-- [ ] T033 [US2] `approvalreport/rows.go`: rows from rounds and actions (levels, approvers, decisions, capacity),
+- [X] T033 [US2] `approvalreport/rows.go`: rows from rounds and actions (levels, approvers, decisions, capacity),
   names, owners, amounts, joined PO numbers (041-C11) and `canOpen` from the year's nodes, `Purchases` and
   `OnLineItems` (T004)
-- [ ] T034 [US2] `approvalreport/grid.go`: filters, search, sort and paging over all rows; page-size allowlist;
+- [X] T034 [US2] `approvalreport/grid.go`: filters, search, sort and paging over all rows; page-size allowlist;
   `choices` from the people and types with rows
-- [ ] T035 [US2] `service.go`, `handler.go`, `app/measure_approvals.go`: wire the grid, the extra parameters and
+- [X] T035 [US2] `service.go`, `handler.go`, `app/measure_approvals.go`: wire the grid, the extra parameters and
   the `approvals` sheet into `Service.Report` and `Sheets` (still one statement per read)
-- [ ] T036 [P] [US2] `frontend/src/features/measure/approvals/ApprovalsGrid.tsx` (+ `GridFilters.tsx`,
+- [X] T036 [P] [US2] `frontend/src/features/measure/approvals/ApprovalsGrid.tsx` (+ `GridFilters.tsx`,
   `CommentDialog.tsx` on Radix Dialog): the grid in `ReportWidget`, address-backed parameters, export through the
   frame's menu
 - [ ] T037 [US2] `ApprovalsReport.tsx`: place the grid below the widgets; extend `frontend/e2e/measure-approvals.spec.ts`

@@ -37,15 +37,3 @@ func (p Purchases) OnLineItems(_ context.Context, lineItemIDs []string) ([]appro
 	}
 	return found, nil
 }
-
-type People map[string]string
-
-func (p People) Names(_ context.Context, personIDs []string) (map[string]string, error) {
-	names := map[string]string{}
-	for _, id := range personIDs {
-		if name, known := p[id]; known {
-			names[id] = name
-		}
-	}
-	return names, nil
-}

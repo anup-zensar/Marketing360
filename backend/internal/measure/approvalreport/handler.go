@@ -28,8 +28,13 @@ func (h *Handler) get(c *gin.Context) {
 		web.RespondError(c, err)
 		return
 	}
+	q, err := ParseQuery(f.Own)
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
 	a, _ := actor.From(c.Request.Context())
-	view, err := h.service.Report(c.Request.Context(), a, f, QueryOf(f.Own))
+	view, err := h.service.Report(c.Request.Context(), a, f, q)
 	if err != nil {
 		web.RespondError(c, err)
 		return

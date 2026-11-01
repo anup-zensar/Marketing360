@@ -13,7 +13,6 @@ type Transactor interface {
 	Read(ctx context.Context, fn func(ctx context.Context) error) error
 }
 
-// Scoper is the hub's scope of a filter: the plans in the reports.view scope and the records that match.
 type Scoper interface {
 	Scope(ctx context.Context, a actor.Actor, f measure.Filter, columns []string) (measure.Scope, error)
 }
@@ -34,17 +33,13 @@ type PurchaseRequest struct {
 	Name           string
 	PlanID         string
 	OwnerID        string
+	CanOpen        bool
 	Amount         money.Amount
 	PurchaseOrders []string
-}
-
-type People interface {
-	Names(ctx context.Context, personIDs []string) (map[string]string, error)
 }
 
 type Deps struct {
 	Scope     Scoper
 	Rounds    Rounds
 	Purchases Purchases
-	People    People
 }

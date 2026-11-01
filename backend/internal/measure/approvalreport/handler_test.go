@@ -38,10 +38,15 @@ func TestApprovalsReport_Contract_041(t *testing.T) {
 	if len(view.StatusMix.Items) != 6 || view.StatusMix.RecordType != approvalreport.RecordActivity {
 		t.Errorf("StatusMix = %+v, want six outcomes for activities", view.StatusMix)
 	}
+	if view.Grid.Total == 0 || len(view.Grid.Items) == 0 {
+		t.Errorf("Grid = %+v, want the demo data's approval steps, validated against the contract", view.Grid.Total)
+	}
 	for _, unknown := range []string{"statusType=nonsense", "recordType=nonsense", "outcome=nonsense", "approver=nobody"} {
 		get(t, alex, reportURL+"?year=2026&"+unknown, http.StatusOK)
 	}
-	for _, malformed := range []string{"year=abc", "period=year"} {
+	get(t, alex, reportURL+"?year=2026&sort=amount&order=asc&pageSize=10&page=1&outcome=waiting&q=event", http.StatusOK)
+	get(t, alex, reportURL+"?year=2026&recordType=purchaseRequest&approver=U-1001", http.StatusOK)
+	for _, malformed := range []string{"year=abc", "period=year", "sort=nope", "order=up", "page=0", "pageSize=7"} {
 		get(t, alex, reportURL+"?"+malformed, http.StatusBadRequest)
 	}
 	signedOut := server.Do(t, http.MethodGet, reportURL, nil)

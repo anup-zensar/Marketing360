@@ -31,3 +31,5 @@ func outcomeLabel(o Outcome) string {
 	}
 	return string(o)
 }
+
+const NothingText = "—"

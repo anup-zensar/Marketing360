@@ -1,30 +1,49 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { RECORD_TYPES, readApprovalsParams, writeApprovalsParams } from './schemas';
+import {
+  DEFAULT_PARAMS,
+  PAGE_SIZES,
+  RECORD_TYPES,
+  SORT_KEYS,
+  readApprovalsParams,
+  writeApprovalsParams,
+} from './schemas';
+import type { ApprovalsParams } from './schemas';
 
-describe('the report address of Approvals (041 FR-005)', () => {
-  it('keeps the record type through the address and leaves the default out', () => {
+const word = fc.stringMatching(/^[A-Za-z0-9-]{1,12}$/);
+const params: fc.Arbitrary<ApprovalsParams> = fc.record({
+  statusType: fc.constantFrom(...RECORD_TYPES),
+  recordTypes: fc.uniqueArray(word, { maxLength: 3 }),
+  approvers: fc.uniqueArray(word, { maxLength: 3 }),
+  outcomes: fc.uniqueArray(word, { maxLength: 3 }),
+  q: fc.stringMatching(/^[a-z0-9]{0,20}$/),
+  sort: fc.constantFrom(...SORT_KEYS),
+  order: fc.constantFrom('asc' as const, 'desc' as const),
+  page: fc.integer({ min: 1, max: 500 }),
+  pageSize: fc.constantFrom(...PAGE_SIZES),
+});
+
+describe('the report address of Approvals (041 FR-005, FR-015)', () => {
+  it('keeps every parameter through the address and the frame’s parameters beside them', () => {
     fc.assert(
-      fc.property(fc.constantFrom(...RECORD_TYPES), (statusType) => {
-        const written = writeApprovalsParams(new URLSearchParams('year=2026'), { statusType });
+      fc.property(params, (next) => {
+        const written = writeApprovalsParams(new URLSearchParams('year=2026'), next);
 
-        expect(readApprovalsParams(written)).toEqual({ statusType });
+        expect(readApprovalsParams(written)).toEqual(next);
         expect(written.get('year')).toBe('2026');
-        expect(written.has('statusType')).toBe(statusType !== 'activity');
       }),
     );
   });
 
-  it('drops a malformed record type to the default', () => {
-    fc.assert(
-      fc.property(
-        fc.string().filter((text) => !RECORD_TYPES.some((type) => type === text)),
-        (text) => {
-          const params = new URLSearchParams({ statusType: text });
+  it('leaves the defaults out of the address', () => {
+    expect(writeApprovalsParams(new URLSearchParams(), DEFAULT_PARAMS).toString()).toBe('');
+  });
 
-          expect(readApprovalsParams(params)).toEqual({ statusType: 'activity' });
-        },
-      ),
+  it('drops malformed values to the defaults', () => {
+    const bad = new URLSearchParams(
+      'statusType=x&sort=nope&order=up&page=0&pageSize=7&recordType=a%20b&outcome=%3Cscript%3E',
     );
+
+    expect(readApprovalsParams(bad)).toEqual(DEFAULT_PARAMS);
   });
 });

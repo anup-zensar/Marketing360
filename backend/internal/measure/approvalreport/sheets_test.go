@@ -1,6 +1,7 @@
 package approvalreport_test
 
 import (
+	"net/url"
 	"testing"
 
 	"mapp/internal/measure"
@@ -22,8 +23,8 @@ func TestSheets_041_FR023(t *testing.T) {
 	if !report.Available() || report.Key() != measure.KeyApprovals {
 		t.Errorf("Key, Available = %q, %v, want %q, true", report.Key(), report.Available(), measure.KeyApprovals)
 	}
-	if len(sheets) != 2 || sheets[0].Key != "status" || sheets[1].Key != "average" {
-		t.Fatalf("sheet keys = %v, want status, average in this order", sheets)
+	if len(sheets) != 3 || sheets[0].Key != "status" || sheets[1].Key != "average" {
+		t.Fatalf("sheet keys = %v, want status, average, approvals in this order", sheets)
 	}
 	status, average := sheets[0].Sheet, sheets[1].Sheet
 	if status.Name != "Current approval status" || average.Name != "Average days to a decision" {
@@ -52,4 +53,42 @@ func equalRows(a, b []sheet.Cell) bool {
 		}
 	}
 	return true
+}
+
+func TestSheets_Grid_041_FR023(t *testing.T) {
+	t.Parallel()
+	f := approvalreporttest.New(t)
+	report := approvalreport.NewReport(approvalreport.NewService(f.DB, f.Deps))
+
+	sheets, err := report.Sheets(t.Context(), approvalreporttest.Alice, measure.Filter{Own: url.Values{"pageSize": {"5"}, "outcome": {"waiting"}}})
+	if err != nil {
+		t.Fatalf("Sheets() error: %v", err)
+	}
+
+	if len(sheets) != 3 || sheets[2].Key != "approvals" || sheets[2].Sheet.Name != "Approvals" {
+		t.Fatalf("sheets = %v, want approvals third", sheets)
+	}
+	rows := sheets[2].Sheet.Rows
+	wantHead := []string{"Item ID", "Name", "Record type", "Approver", "Decided on", "Status", "Submitted on", "Level",
+		"Purchase order", "Amount (USD)", "Owner", "Comments"}
+	for i, h := range wantHead {
+		if rows[0][i] != sheet.Bold(h) {
+			t.Errorf("heading %d = %v, want %q", i, rows[0][i], h)
+		}
+	}
+	if len(rows) != 3 {
+		t.Errorf("rows = %d, want the heading and every one of the 2 waiting rows, whatever the page size", len(rows))
+	}
+}
+
+func TestSheets_BadQuery_041_C10(t *testing.T) {
+	t.Parallel()
+	f := approvalreporttest.New(t)
+	report := approvalreport.NewReport(approvalreport.NewService(f.DB, f.Deps))
+
+	_, err := report.Sheets(t.Context(), approvalreporttest.Alice, measure.Filter{Own: url.Values{"sort": {"nope"}}})
+
+	if err == nil {
+		t.Error("Sheets() with a malformed sort = nil error, want a problem")
+	}
 }

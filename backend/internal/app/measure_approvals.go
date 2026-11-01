@@ -38,10 +38,11 @@ func (p approvalPurchases) OnLineItems(ctx context.Context, lineItemIDs []string
 	if err != nil {
 		return nil, err
 	}
+	canOpen := authz.PermissionScopeOf(ctx, authz.PurchaseRequestsList).Holds
 	list := make([]approvalreport.PurchaseRequest, 0, len(found))
 	for _, pr := range found {
 		request := approvalreport.PurchaseRequest{ID: pr.ID, Name: pr.Name, PlanID: pr.PlanID, OwnerID: pr.OwnerID,
-			PurchaseOrders: orderNumbers(pr.Lines)}
+			CanOpen: canOpen, PurchaseOrders: orderNumbers(pr.Lines)}
 		if i := slices.IndexFunc(summaries.Items, func(s purchaserequest.Summary) bool { return s.ID == pr.ID }); i >= 0 {
 			request.Amount = summaries.Items[i].AmountUSD
 		}

@@ -67,15 +67,14 @@ func New(t testing.TB) Fixture {
 	return Fixture{DB: db, Now: now, Scope: scope(), Deps: approvalreport.Deps{
 		Scope:     Scoper{Result: scope()},
 		Rounds:    rounds,
-		Purchases: Purchases{Entries: []Entry{waitingRequest()}},
-		People:    People{Alice.ID: Alice.Name, Bob.ID: Bob.Name, Carol.ID: Carol.Name, Dan.ID: Dan.Name, Erin.ID: Erin.Name},
+		Purchases: Purchases{Entries: []Entry{WaitingRequest()}},
 	}}
 }
 
-func waitingRequest() Entry {
+func WaitingRequest() Entry {
 	return Entry{
 		PurchaseRequest: approvalreport.PurchaseRequest{ID: RequestWaiting, Name: "Event stand", PlanID: PlanWithFinance,
-			OwnerID: Erin.ID, Amount: money.FromCents(250000), PurchaseOrders: []string{"4500001", "4500002"}},
+			OwnerID: Erin.ID, CanOpen: true, Amount: money.FromCents(250000), PurchaseOrders: []string{"4500001", "4500002"}},
 		LineItemIDs: []string{"li-" + ActivityWaiting},
 	}
 }
@@ -93,7 +92,7 @@ func scope() measure.Scope {
 		}
 	}
 	return measure.Scope{Year: Year, Nodes: list, Matched: matched,
-		Choices:  allwork.Choices{SeesFinance: true, FinancePlans: []string{PlanWithFinance}},
+		Choices:  allwork.Choices{SeesFinance: true, FinancePlans: []string{PlanWithFinance}, People: people()},
 		Currency: allwork.Currency{Code: money.BaseCurrency, Rate: money.One}}
 }
 
@@ -115,4 +114,12 @@ func nodes() []allwork.Node {
 func activityNode(id, planID string, cost *money.Amount) allwork.Node {
 	return allwork.Node{Level: allwork.LevelActivity, ID: id, PlanID: planID, Name: "Activity " + id,
 		Owner: &allwork.Owner{ID: Alice.ID, Name: Alice.Name}, PlannedCost: cost}
+}
+
+func people() []allwork.Option {
+	list := []allwork.Option{}
+	for _, p := range []actor.Actor{Alice, Bob, Carol, Dan, Erin} {
+		list = append(list, allwork.Option{ID: p.ID, Label: p.Name})
+	}
+	return list
 }
