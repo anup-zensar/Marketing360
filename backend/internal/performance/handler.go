@@ -36,6 +36,7 @@ func (h *Handler) RegisterRoutes(r gin.IRoutes) {
 	h.registerKeyRoutes(r)
 	h.registerReviewRoutes(r)
 	h.registerFactRoutes(r)
+	h.registerCodeRoutes(r)
 }
 
 func (h *Handler) sources(c *gin.Context) {

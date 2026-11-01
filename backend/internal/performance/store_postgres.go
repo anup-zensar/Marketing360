@@ -2,8 +2,12 @@ package performance
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/database"
@@ -167,4 +171,65 @@ func (s *PostgresStore) ActiveSuppliers(ctx context.Context, modelID string) ([]
 		})
 	}
 	return suppliers, nil
+}
+
+func (s *PostgresStore) GetConfiguration(ctx context.Context) (Configuration, bool, error) {
+	row, err := s.db.Queries(ctx).GetPerformanceConfiguration(ctx)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Configuration{}, false, nil
+	}
+	if err != nil {
+		return Configuration{}, false, fmt.Errorf("select the performance configuration: %w", err)
+	}
+	config := Configuration{MediaCodeNext: row.MediaCodeNext,
+		Meta: metaOf(row.Version, metaRow{row.CreatedAt, row.CreatedByID, row.CreatedByName,
+			row.UpdatedAt, row.UpdatedByID, row.UpdatedByName})}
+	if err := json.Unmarshal(row.CodeAttributes, &config.CodeAttributes); err != nil {
+		return Configuration{}, false, fmt.Errorf("read the code attributes: %w", err)
+	}
+	types, err := s.db.Queries(ctx).ListCodeActivityTypes(ctx)
+	if err != nil {
+		return Configuration{}, false, fmt.Errorf("select the types requiring codes: %w", err)
+	}
+	config.ActivityTypeIDs = types
+	return config, true, nil
+}
+
+func (s *PostgresStore) PutConfiguration(ctx context.Context, c Configuration) error {
+	attributes, err := json.Marshal(nonNilAttributes(c.CodeAttributes))
+	if err != nil {
+		return fmt.Errorf("write the code attributes: %w", err)
+	}
+	if putErr := s.db.Queries(ctx).PutPerformanceConfiguration(ctx, sqlcdb.PutPerformanceConfigurationParams{
+		MediaCodeNext: c.MediaCodeNext, CodeAttributes: attributes,
+		Version: c.Version, CreatedAt: c.CreatedAt, CreatedByID: c.CreatedBy.ID,
+		CreatedByName: c.CreatedBy.Name, UpdatedAt: c.UpdatedAt, UpdatedByID: c.UpdatedBy.ID,
+		UpdatedByName: c.UpdatedBy.Name,
+	}); putErr != nil {
+		return fmt.Errorf("save the performance configuration: %w", putErr)
+	}
+	if clearErr := s.db.Queries(ctx).ClearCodeActivityTypes(ctx); clearErr != nil {
+		return fmt.Errorf("clear the types requiring codes: %w", clearErr)
+	}
+	for _, id := range c.ActivityTypeIDs {
+		if addErr := s.db.Queries(ctx).AddCodeActivityType(ctx, id); addErr != nil {
+			return fmt.Errorf("save the type requiring codes %s: %w", id, addErr)
+		}
+	}
+	return nil
+}
+
+func nonNilAttributes(attributes []CodeAttribute) []CodeAttribute {
+	if attributes == nil {
+		return []CodeAttribute{}
+	}
+	return attributes
+}
+
+func (s *PostgresStore) MediaCodeUsed(ctx context.Context, code int64) (bool, error) {
+	used, err := s.db.Queries(ctx).MediaCodeUsed(ctx, codeText(code))
+	if err != nil {
+		return false, fmt.Errorf("check whether media code %d was used: %w", code, err)
+	}
+	return used, nil
 }

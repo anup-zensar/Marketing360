@@ -116,8 +116,9 @@ func (w factWriter) row(ctx context.Context, result RowResult) error {
 func factOfResult(run Import, result RowResult, measured Measured, meta record.Meta) Fact {
 	return Fact{
 		SourceID: run.SourceID, ImportID: run.ID, SourceReference: result.reference(),
-		ActivityID: result.ActivityID, MatchedOn: result.MatchedOn, FactDate: result.FactDate,
-		Stage: measured.Stage, WebMetric: measured.WebMetric,
+		ActivityID: result.ActivityID, MatchedOn: result.MatchedOn, MatchedKey: result.MatchedKey,
+		FactDate: result.FactDate,
+		Stage:    measured.Stage, WebMetric: measured.WebMetric,
 		Count: measured.Count, Amount: measured.Amount,
 		Held: result.Outcome == OutcomeHeld, Meta: meta,
 	}

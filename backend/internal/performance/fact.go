@@ -80,6 +80,7 @@ type Fact struct {
 	SourceReference string       `json:"sourceReference"`
 	ActivityID      string       `json:"activityId"`
 	MatchedOn       MatchedOn    `json:"matchedOn"`
+	MatchedKey      string       `json:"matchedKey"`
 	FactDate        time.Time    `json:"factDate"`
 	Stage           string       `json:"stage"`
 	WebMetric       WebMetric    `json:"webMetric"`

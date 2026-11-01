@@ -52,6 +52,7 @@ CREATE TABLE performance_facts (
     activity_id      text        REFERENCES activities (id) DEFERRABLE INITIALLY DEFERRED,
     matched_on       text        NOT NULL
                                  CHECK (matched_on IN ('', 'activityId', 'mediaCode', 'integrationId', 'externalName')),
+    matched_key      text        NOT NULL,
     fact_date        date        NOT NULL,
     stage            text        NOT NULL CHECK (stage IN ('', 'inq', 'mql', 'revenue')),
     web_metric       text        NOT NULL
@@ -74,6 +75,7 @@ CREATE TABLE performance_facts (
     CHECK (num_nulls(count_value, amount_minor) = 1),
     CHECK ((amount_minor IS NULL) = (currency IS NULL)),
     CHECK ((activity_id IS NULL) = (matched_on = '')),
+    CHECK ((matched_on = '') = (matched_key = '')),
     CHECK (NOT held OR activity_id IS NOT NULL)
 );
 

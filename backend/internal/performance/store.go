@@ -120,6 +120,9 @@ type Codes interface {
 	PutMediaCode(ctx context.Context, c MediaCode) error
 	PutIntegrationID(ctx context.Context, k IntegrationID) error
 	TakeNextCode(ctx context.Context, by actor.Actor, at time.Time) (int64, error)
+	MediaCodeUsed(ctx context.Context, code int64) (bool, error)
+	GetConfiguration(ctx context.Context) (Configuration, bool, error)
+	PutConfiguration(ctx context.Context, c Configuration) error
 }
 
 // Children serves the recycle bin, which collects an activity's records before deleting it (FR-021).

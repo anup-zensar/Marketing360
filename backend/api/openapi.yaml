@@ -8688,6 +8688,128 @@ paths:
           $ref: "#/components/responses/Forbidden"
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/activities/{activityId}/media-codes:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: listMediaCodes
+      summary: The activity's media codes; present only where its type requires them (046 FR-040)
+      responses:
+        "200":
+          description: The codes, and whether the type requires them at all.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaCodeArea" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+    post:
+      tags: [Performance data]
+      operationId: generateMediaCode
+      summary: Generate a code at any activity status (needs performance.link) (046 FR-041, FR-042)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MediaCodeInput" }
+      responses:
+        "201":
+          description: The code, system-numbered and never reused.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaCode" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/media-codes/{codeId}:
+    parameters:
+      - $ref: "#/components/parameters/MediaCodeId"
+    patch:
+      tags: [Performance data]
+      operationId: editMediaCode
+      summary: Change a code's attributes and landing page only (needs performance.link) (046 FR-041)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MediaCodeInput" }
+      responses:
+        "200":
+          description: The code as saved.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaCode" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [Performance data]
+      operationId: deleteMediaCode
+      summary: Delete a code while unused; once facts matched through it, Deactivate is offered (046 FR-041)
+      responses:
+        "204": { description: Deleted to the recycle bin. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/media-codes/{codeId}/deactivate:
+    parameters:
+      - $ref: "#/components/parameters/MediaCodeId"
+    post:
+      tags: [Performance data]
+      operationId: deactivateMediaCode
+      summary: Stop a code matching; its history stays (needs performance.link) (046 FR-041)
+      responses:
+        "200":
+          description: The code, inactive.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaCode" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/configuration:
+    get:
+      tags: [Performance data]
+      operationId: getPerformanceConfiguration
+      summary: Which activity types require codes, the attribute catalogue and the next number (046 FR-039, 046-C12)
+      responses:
+        "200":
+          description: The configuration; its defaults before the first save.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceConfiguration" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        default: { $ref: "#/components/responses/Error" }
+    patch:
+      tags: [Performance data]
+      operationId: savePerformanceConfiguration
+      summary: Change the configuration (needs performance.import) (046 FR-039, FR-042)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PerformanceConfigurationInput" }
+      responses:
+        "200":
+          description: The configuration as saved.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceConfiguration" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
 components:
   securitySchemes:
     sessionCookie:
@@ -8703,6 +8825,12 @@ components:
       required: true
       description: A data source's readable ID, such as PS-1001.
       schema: { type: string, pattern: "^PS-[0-9]+$" }
+    MediaCodeId:
+      name: codeId
+      in: path
+      required: true
+      description: A media code's readable ID, such as MC-1001.
+      schema: { type: string, pattern: "^MC-[0-9]+$" }
     ReviewRowId:
       name: rowId
       in: path
@@ -10153,6 +10281,80 @@ components:
         sources:
           type: array
           items: { $ref: "#/components/schemas/PanelSource" }
+    CodeAttribute:
+      type: object
+      required: [name, required]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        required: { type: boolean }
+    MediaCode:
+      type: object
+      description: A system-generated campaign-link code; its number is never reused (FR-042).
+      required: [id, code, activityId, attributes, landingPage, status,
+                 version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        code: { type: integer, format: int64 }
+        activityId: { type: string }
+        attributes:
+          type: object
+          additionalProperties: { type: string }
+        landingPage: { type: string }
+        status: { type: string, enum: [active, inactive] }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    MediaCodeArea:
+      type: object
+      required: [requiresCodes, items]
+      properties:
+        requiresCodes:
+          type: boolean
+          description: Stated by the API (FR-040); the web app hides the section when false.
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/MediaCode" }
+    MediaCodeInput:
+      type: object
+      additionalProperties: false
+      properties:
+        attributes:
+          type: object
+          additionalProperties: { type: string }
+        landingPage: { type: string, maxLength: 2000 }
+        version: { type: integer }
+    PerformanceConfiguration:
+      type: object
+      description: Settings - Performance data's one record (046-C12), never on the activity type.
+      required: [activityTypeIds, codeAttributes, mediaCodeNext, version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        activityTypeIds:
+          type: array
+          items: { type: string }
+        codeAttributes:
+          type: array
+          items: { $ref: "#/components/schemas/CodeAttribute" }
+        mediaCodeNext: { type: integer, format: int64 }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    PerformanceConfigurationInput:
+      type: object
+      additionalProperties: false
+      required: [activityTypeIds, codeAttributes, mediaCodeNext, version]
+      properties:
+        activityTypeIds:
+          type: array
+          items: { type: string }
+        codeAttributes:
+          type: array
+          items: { $ref: "#/components/schemas/CodeAttribute" }
+        mediaCodeNext: { type: integer, format: int64, minimum: 1 }
+        version: { type: integer }
     MatchKeyType:
       type: string
       description: Which matching key a key column carries (046-C23); empty on every other column.

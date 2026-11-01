@@ -9,6 +9,8 @@ const (
 	aliasKind       = "externalNameAlias"
 	integrationKind = "integrationId"
 
+	configurationKind  = "performanceConfiguration"
+	configurationWord  = "performance configuration"
 	reviewKind         = "performanceReviewRow"
 	sourceKind         = "performanceSource"
 	sourceKindSingular = "data source"
@@ -56,6 +58,11 @@ const (
 	msgCommentNeeded       = "Say why this row is being dismissed."
 	msgReviewNotChangeable = "Not changed - this row is %s."
 	msgUnknownColumn       = "This row carries no column named %s."
+	msgCodeNumberBack      = "Not saved - the next media code cannot move backwards. It is at %d; codes are never reused."
+	msgNoCodesHere         = "Not generated - this activity's type does not use media codes."
+	msgAttributeNeeded     = "Give the code its %s."
+	msgCodeNotFound        = "This media code doesn't exist or you can't see it."
+	msgCodeUsed            = "Not deleted - facts matched through this code. Deactivate it instead: matching stops and the history stays."
 )
 
 func codeText(code int64) string {

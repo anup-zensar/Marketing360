@@ -594,6 +594,7 @@ type PerformanceFact struct {
 	SourceReference string
 	ActivityID      *string
 	MatchedOn       string
+	MatchedKey      string
 	FactDate        time.Time
 	Stage           string
 	WebMetric       string

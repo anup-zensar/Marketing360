@@ -38,5 +38,12 @@ func performanceRoutes() map[string]Rule {
 		"GET /api/v1/activities/{activityId}/performance":                        signedIn(),
 		"GET /api/v1/activities/{activityId}/performance/facts":                  signedIn(),
 		"GET /api/v1/activities/{activityId}/performance/facts/export":           signedIn(),
+		"GET /api/v1/activities/{activityId}/media-codes":                        signedIn(),
+		"POST /api/v1/activities/{activityId}/media-codes":                       need(performance.PermissionLink),
+		"PATCH /api/v1/media-codes/{codeId}":                                     need(performance.PermissionLink),
+		"DELETE /api/v1/media-codes/{codeId}":                                    need(performance.PermissionLink),
+		"POST /api/v1/media-codes/{codeId}/deactivate":                           need(performance.PermissionLink),
+		"GET /api/v1/performance/configuration":                                  signedIn(),
+		"PATCH /api/v1/performance/configuration":                                need(performance.PermissionImport),
 	}
 }

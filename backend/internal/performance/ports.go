@@ -29,11 +29,12 @@ func (s *Service) UseFeed(f Feed) {
 // GoalFacts is what the panel needs of the activity's own side: the goals as shown (typed or calculated by
 // the model, domain model 4.5), the plan's model and its year.
 type GoalFacts struct {
-	INQ      *int64
-	MQL      *int64
-	Revenue  *money.Money
-	ModelID  string
-	PlanYear int
+	INQ            *int64
+	MQL            *int64
+	Revenue        *money.Money
+	ModelID        string
+	ActivityTypeID string
+	PlanYear       int
 }
 
 // Figures answers GoalFacts from the activity area; unset, the panel reads as having no goals.

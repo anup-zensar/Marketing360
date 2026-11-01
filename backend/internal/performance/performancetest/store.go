@@ -5,6 +5,7 @@ package performancetest
 import (
 	"context"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -38,6 +39,7 @@ type Store struct {
 	breakdowns         map[string][]performance.Breakdown
 	aliases            map[string]performance.Alias
 	integrations       map[string]performance.IntegrationID
+	configuration      *performance.Configuration
 }
 
 func NewStore(db *fake.DB) *Store {
@@ -343,7 +345,13 @@ func (s *Store) ListMediaCodes(_ context.Context, _ authz.Scope, activityID stri
 	return found, nil
 }
 
+// TakeNextCode advances the configuration's counter, exactly as the PostgreSQL query does.
 func (s *Store) TakeNextCode(_ context.Context, _ actor.Actor, _ time.Time) (int64, error) {
+	if s.configuration != nil {
+		code := s.configuration.MediaCodeNext
+		s.configuration.MediaCodeNext++
+		return code, nil
+	}
 	code := s.NextCode
 	s.NextCode++
 	return code, nil
@@ -706,4 +714,29 @@ func addFact(totals *performance.StageTotals, f performance.Fact) {
 		totals.AmountMinor += f.Amount.Amount.Cents()
 	}
 	totals.FactCount++
+}
+
+func (s *Store) GetConfiguration(_ context.Context) (performance.Configuration, bool, error) {
+	if s.configuration == nil {
+		return performance.Configuration{}, false, nil
+	}
+	return *s.configuration, true, nil
+}
+
+func (s *Store) PutConfiguration(_ context.Context, c performance.Configuration) error {
+	s.configuration = &c
+	return nil
+}
+
+func (s *Store) MediaCodeUsed(_ context.Context, code int64) (bool, error) {
+	all, err := s.facts.List()
+	if err != nil {
+		return false, err
+	}
+	for _, f := range all {
+		if f.MatchedOn == performance.MatchedMediaCode && f.MatchedKey == strconv.FormatInt(code, 10) {
+			return true, nil
+		}
+	}
+	return false, nil
 }

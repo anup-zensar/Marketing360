@@ -181,10 +181,10 @@ RETURNING (performance_configuration.media_code_next - 1)::bigint AS code;
 
 -- name: PutPerformanceFact :exec
 INSERT INTO performance_facts (
-    id, source_id, import_id, source_reference, activity_id, matched_on, fact_date, stage, web_metric,
+    id, source_id, import_id, source_reference, activity_id, matched_on, matched_key, fact_date, stage, web_metric,
     count_value, amount_minor, currency, held, replaced_by_id,
     version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
 ON CONFLICT (id) DO UPDATE SET
     activity_id = excluded.activity_id, matched_on = excluded.matched_on, held = excluded.held,
     replaced_by_id = excluded.replaced_by_id, version = excluded.version, updated_at = excluded.updated_at,
@@ -376,3 +376,31 @@ SELECT DISTINCT ON (source_id) source_id, status
 FROM performance_imports
 WHERE source_id = ANY(sqlc.arg(source_ids)::text[])
 ORDER BY source_id, created_at DESC, id COLLATE "C" DESC;
+
+-- name: MediaCodeUsed :one
+SELECT EXISTS (
+    SELECT 1 FROM performance_facts
+    WHERE matched_on = 'mediaCode' AND matched_key = sqlc.arg(code)::text
+)::boolean AS used;
+
+-- name: GetPerformanceConfiguration :one
+SELECT * FROM performance_configuration WHERE id = 'performance';
+
+-- name: PutPerformanceConfiguration :exec
+INSERT INTO performance_configuration (
+    id, media_code_next, code_attributes,
+    version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name
+) VALUES ('performance', $1, $2, $3, $4, $5, $6, $7, $8, $9)
+ON CONFLICT (id) DO UPDATE SET
+    media_code_next = excluded.media_code_next, code_attributes = excluded.code_attributes,
+    version = excluded.version, updated_at = excluded.updated_at,
+    updated_by_id = excluded.updated_by_id, updated_by_name = excluded.updated_by_name;
+
+-- name: ListCodeActivityTypes :many
+SELECT activity_type_id FROM performance_code_activity_types ORDER BY activity_type_id COLLATE "C";
+
+-- name: ClearCodeActivityTypes :exec
+DELETE FROM performance_code_activity_types;
+
+-- name: AddCodeActivityType :exec
+INSERT INTO performance_code_activity_types (activity_type_id) VALUES ($1) ON CONFLICT DO NOTHING;

@@ -4949,6 +4949,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/activities/{activityId}/media-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        /** The activity's media codes; present only where its type requires them (046 FR-040) */
+        get: operations["listMediaCodes"];
+        put?: never;
+        /** Generate a code at any activity status (needs performance.link) (046 FR-041, FR-042) */
+        post: operations["generateMediaCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/media-codes/{codeId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A media code's readable ID, such as MC-1001. */
+                codeId: components["parameters"]["MediaCodeId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a code while unused; once facts matched through it, Deactivate is offered (046 FR-041) */
+        delete: operations["deleteMediaCode"];
+        options?: never;
+        head?: never;
+        /** Change a code's attributes and landing page only (needs performance.link) (046 FR-041) */
+        patch: operations["editMediaCode"];
+        trace?: never;
+    };
+    "/api/v1/media-codes/{codeId}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A media code's readable ID, such as MC-1001. */
+                codeId: components["parameters"]["MediaCodeId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Stop a code matching; its history stays (needs performance.link) (046 FR-041) */
+        post: operations["deactivateMediaCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/configuration": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Which activity types require codes, the attribute catalogue and the next number (046 FR-039, 046-C12) */
+        get: operations["getPerformanceConfiguration"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change the configuration (needs performance.import) (046 FR-039, FR-042) */
+        patch: operations["savePerformanceConfiguration"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -5252,6 +5332,63 @@ export interface components {
             revenue: components["schemas"]["RevenueFigure"];
             webMetrics: components["schemas"]["MetricFigure"][];
             sources: components["schemas"]["PanelSource"][];
+        };
+        CodeAttribute: {
+            name: string;
+            required: boolean;
+        };
+        /** @description A system-generated campaign-link code; its number is never reused (FR-042). */
+        MediaCode: {
+            id: string;
+            /** Format: int64 */
+            code: number;
+            activityId: string;
+            attributes: {
+                [key: string]: string;
+            };
+            landingPage: string;
+            /** @enum {string} */
+            status: "active" | "inactive";
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        MediaCodeArea: {
+            /** @description Stated by the API (FR-040); the web app hides the section when false. */
+            requiresCodes: boolean;
+            items: components["schemas"]["MediaCode"][];
+        };
+        MediaCodeInput: {
+            attributes?: {
+                [key: string]: string;
+            };
+            landingPage?: string;
+            version?: number;
+        };
+        /** @description Settings - Performance data's one record (046-C12), never on the activity type. */
+        PerformanceConfiguration: {
+            activityTypeIds: string[];
+            codeAttributes: components["schemas"]["CodeAttribute"][];
+            /** Format: int64 */
+            mediaCodeNext: number;
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        PerformanceConfigurationInput: {
+            activityTypeIds: string[];
+            codeAttributes: components["schemas"]["CodeAttribute"][];
+            /** Format: int64 */
+            mediaCodeNext: number;
+            version: number;
         };
         /**
          * @description Which matching key a key column carries (046-C23); empty on every other column.
@@ -11732,6 +11869,8 @@ export interface components {
     parameters: {
         /** @description A data source's readable ID, such as PS-1001. */
         SourceId: string;
+        /** @description A media code's readable ID, such as MC-1001. */
+        MediaCodeId: string;
         /** @description A review row's readable ID, such as PRV-1001. */
         ReviewRowId: string;
         /** @description A column mapping's readable ID, such as PSM-1001. */
@@ -21231,6 +21370,202 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listMediaCodes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The codes, and whether the type requires them at all. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaCodeArea"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    generateMediaCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaCodeInput"];
+            };
+        };
+        responses: {
+            /** @description The code, system-numbered and never reused. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaCode"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteMediaCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A media code's readable ID, such as MC-1001. */
+                codeId: components["parameters"]["MediaCodeId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted to the recycle bin. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    editMediaCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A media code's readable ID, such as MC-1001. */
+                codeId: components["parameters"]["MediaCodeId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaCodeInput"];
+            };
+        };
+        responses: {
+            /** @description The code as saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaCode"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deactivateMediaCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A media code's readable ID, such as MC-1001. */
+                codeId: components["parameters"]["MediaCodeId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The code, inactive. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaCode"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getPerformanceConfiguration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The configuration; its defaults before the first save. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceConfiguration"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            default: components["responses"]["Error"];
+        };
+    };
+    savePerformanceConfiguration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PerformanceConfigurationInput"];
+            };
+        };
+        responses: {
+            /** @description The configuration as saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceConfiguration"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
             default: components["responses"]["Error"];
         };
     };

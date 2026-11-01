@@ -20,6 +20,7 @@ type RowResult struct {
 	Outcome    Outcome
 	ActivityID string
 	MatchedOn  MatchedOn
+	MatchedKey string
 	Reason     string
 	Faults     []Fault
 	Candidates []string
@@ -58,7 +59,8 @@ func (p *filePass) row(row Row) RowResult {
 	}
 	decided := Decide(row.Keys, p.env.Resolved, p.env.Approved)
 	return RowResult{Row: row, Outcome: decided.Outcome, ActivityID: decided.ActivityID,
-		MatchedOn: decided.MatchedOn, Reason: decided.Reason, Candidates: decided.Candidates,
+		MatchedOn: decided.MatchedOn, MatchedKey: decided.MatchedKey,
+		Reason: decided.Reason, Candidates: decided.Candidates,
 		FactDate: mustDate(row.Date.Value), Measured: measuredOf(row)}
 }
 

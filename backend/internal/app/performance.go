@@ -83,7 +83,8 @@ func (p performanceFigures) GoalFacts(ctx context.Context, activityID string) (p
 	if err != nil || !found {
 		return performance.GoalFacts{}, false, err
 	}
-	facts := performance.GoalFacts{INQ: act.INQ, ModelID: owning.ModelID, PlanYear: owning.Year}
+	facts := performance.GoalFacts{INQ: act.INQ, ModelID: owning.ModelID,
+		ActivityTypeID: act.ActivityTypeID, PlanYear: owning.Year}
 	if act.SetLaterStagesMyself {
 		facts.MQL, facts.Revenue = act.MQL, act.Revenue
 		return facts, true, nil

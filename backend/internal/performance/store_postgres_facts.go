@@ -14,7 +14,7 @@ import (
 func factOf(f sqlcdb.PerformanceFact) Fact {
 	fact := Fact{
 		ID: f.ID, SourceID: f.SourceID, ImportID: f.ImportID, SourceReference: f.SourceReference,
-		ActivityID: text(f.ActivityID), MatchedOn: MatchedOn(f.MatchedOn), FactDate: f.FactDate,
+		ActivityID: text(f.ActivityID), MatchedOn: MatchedOn(f.MatchedOn), MatchedKey: f.MatchedKey, FactDate: f.FactDate,
 		Stage: f.Stage, WebMetric: WebMetric(f.WebMetric), Count: f.CountValue,
 		Held: f.Held, ReplacedByID: text(f.ReplacedByID),
 		Meta: metaOf(f.Version, metaRow{f.CreatedAt, f.CreatedByID, f.CreatedByName,
@@ -29,7 +29,7 @@ func factOf(f sqlcdb.PerformanceFact) Fact {
 func factParams(f Fact) sqlcdb.PutPerformanceFactParams {
 	p := sqlcdb.PutPerformanceFactParams{
 		ID: f.ID, SourceID: f.SourceID, ImportID: f.ImportID, SourceReference: f.SourceReference,
-		ActivityID: optional(f.ActivityID), MatchedOn: string(f.MatchedOn), FactDate: f.FactDate,
+		ActivityID: optional(f.ActivityID), MatchedOn: string(f.MatchedOn), MatchedKey: f.MatchedKey, FactDate: f.FactDate,
 		Stage: f.Stage, WebMetric: string(f.WebMetric), CountValue: f.Count,
 		Held: f.Held, ReplacedByID: optional(f.ReplacedByID),
 		Version: f.Version, CreatedAt: f.CreatedAt, CreatedByID: f.CreatedBy.ID,

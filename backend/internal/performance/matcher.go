@@ -30,6 +30,7 @@ type Resolved map[MatchedOn]map[string][]string
 type Decision struct {
 	ActivityID string
 	MatchedOn  MatchedOn
+	MatchedKey string
 	Outcome    Outcome
 	Reason     string
 	Candidates []string
@@ -57,7 +58,8 @@ func Decide(keys RowKeys, resolved Resolved, approved func(activityID string) bo
 			return Decision{Outcome: OutcomeUnmatched, Reason: reasonDisagree, Candidates: distinct(reached)}
 		}
 	}
-	decided := Decision{ActivityID: reached[0], MatchedOn: present[0], Outcome: OutcomeMatched}
+	decided := Decision{ActivityID: reached[0], MatchedOn: present[0],
+		MatchedKey: keys.valueOf(present[0]), Outcome: OutcomeMatched}
 	if !approved(decided.ActivityID) {
 		decided.Outcome = OutcomeHeld
 	}
