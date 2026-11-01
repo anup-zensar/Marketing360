@@ -1,6 +1,7 @@
 # API Contract: Plan Details Report (043)
 
-For the **wave A contract** (lane A writes it into `backend/api/openapi.yaml`, tag **Reports**). It follows
+For the **wave A contract**, written into `backend/api/openapi.yaml` (tag **Reports**) by PR #57; `openapi.yaml`
+is the reference where the two differ. It follows
 039's convention (`specs/039-measure-foundation/contracts/api.md`, "The convention every report follows"):
 `GET /api/v1/reports/<path>` with the report filter returns the report's widgets, and the report's
 `measure.Report.Sheets` feeds 039's shared export, so 043 adds **no export operation of its own**. Errors use
@@ -60,10 +61,11 @@ PlanDetailsAttributeRow:
 PlanDetailsWidget:
   required: [key, title, measure, values, total]
   properties:
-    key:      { type: string }    # 039's widget key (address `table`, export `widget`), stable within a level:
-                                  # "activityType.count", "activityType.plannedCost", "status.count",
-                                  # "progress.count", "timing.count", "startPeriod.count", "plannedCostEntered",
-                                  # "goalEntered", "attr.<attributeId>.count" | ".plannedCost" | ".filledIn"
+    key:      { type: string, pattern: "^[a-z][A-Za-z0-9]{0,39}$" }  # 039's ReportWidget pattern (address
+                                  # `table`, export `widget`), stable within a level: activityTypeCount,
+                                  # activityTypePlannedCost, statusCount, progressCount, timingCount,
+                                  # startPeriodCount, plannedCostEntered, goalEntered, and per Shell attribute
+                                  # attr<number>Count | attr<number>PlannedCost | attr<number>FilledIn (SA-12 → attr12Count)
     title:    { type: string }    # "Activities by Company code", "Planned cost by Company code", "Company code filled in"
     measure:  { enum: [count, plannedCost, filledIn] }
     values:   { type: array, items: { $ref: PlanDetailsValue } }  # every value, largest first; then none,
