@@ -617,6 +617,28 @@ with **Export** (PowerPoint, PDF) as a secondary menu, Executive and Regional ta
 then summary figures, tables, the monthly chart and the panels in cards. Exported files use the same tokens'
 light values with Text Strong text on white.
 
+**Custom dashboards (feature 051, ADR-0020).** Charts people build are drawn with Apache ECharts from the API's
+figures, with the same rules: a legend in words, a text summary, **Show as table**, patterns (decals) on bars,
+areas and slices so colour never carries meaning alone. A widget's colours come from one of four palettes, never
+from a free colour choice:
+
+| Palette | Tokens | Light | Dark |
+|---|---|---|---|
+| Categorical (default) | `--chart-cat-1` … `--chart-cat-8` | `#003C88` `#008192` `#87217D` `#008557` `#A3195B` `#336094` `#5B6B7A` `#6E6E6E` | `#6F9BD1` `#3FB6C5` `#C96BBF` `#3DBB8C` `#E06A9F` `#8FB4E3` `#8696A6` `#8E99A4` |
+| Planning | `--chart-budget`, `--chart-planned`, `--chart-committed`, `--chart-actual`, then `--chart-cat-5` … `-8` | as above | as above |
+| Levels | `--level-plan` … `--level-line-item` (§4.2) | §4.2 | §4.2 |
+| Sequential (heatmaps) | `--chart-seq-1` … `--chart-seq-5`, light to strong | `#C9D8EA` `#93B1D6` `#5E8AC1` `#336094` `#003C88` | `#1F3A5C` `#2B5482` `#4B78AA` `#6F9BD1` `#A9C6EA` |
+
+Each Categorical colour is ≥ 3:1 on its surface; after eight series the colours repeat with other patterns. Heatmaps
+use five bins, each exactly one Sequential token (no interpolated tints), named in the legend. Chart text is Text
+Strong and Text Subtle, axes and gridlines Border Subtle; tooltips are Raised with Text Strong. The **Dashboards**
+page (`/dashboards`) is a list template (§2.4) with Built-in, My dashboards and Shared with me card sections; a
+custom dashboard (`/dashboards/:id`) is a list template with the filters bar and a 12-column grid of widget cards
+(80 px rows, 16 px gaps; one column below 960 px). The **builder** (`/builder`) is a full-width editor: page header
+with Undo, Redo, Sharing, View and the one yellow **Save**; the widget palette (240 px) on the left, the canvas on
+the grey page, the inspector (360 px) on the right; the selected widget has the focus ring and the 4 px yellow bar
+on its top edge.
+
 ---
 
 ## 5. Components
@@ -1263,3 +1285,4 @@ or one component (see the recommendations report for the questions to Shell).
 | 2.2 | 28 Oct 2026 | Features 032 and 033: the purchase-request screens, their words and confirmations (§2.6); level tags PURCHASE REQUEST and PR LINE in the line items' grey (§4.2). |
 | 2.3 | 28 Oct 2026 | Feature 035, constitution 4.5.0: the product is shown as SP&A One; the name is the logo with "&" Shell dark blue and "One" Shell yellow (`#AD8700` on light surfaces); `LogoTile` with a yellow "1" below 960 px and as the favicon; tokens `--brand-name-amp`, `--brand-name-one`, `--brand-tile`, `--on-brand-tile`; `--brand-mark` and the star retired (§1, §2, §3.1, §3.10, §5.7, §6, §12). |
 | 2.4 | 29 Oct 2026 | Feature 038: grids add up in every display currency (§4.4); `ConfirmDialog acknowledgeOnly` (§5.3); the approve warning and disabled Approve for approval over planned cost (§5.6). |
+| 2.5 | 1 Nov 2026 | Feature 051, constitution 4.9.0: custom-dashboard charts with Apache ECharts (ADR-0020); chart palettes Categorical, Planning, Levels and Sequential with tokens `--chart-cat-1`…`-8` and `--chart-seq-1`…`-5`; the Dashboards list, the custom-dashboard viewer and the builder layout (§4.7). |

@@ -45,7 +45,7 @@ application use these definitions. Hive9 names are given in brackets where users
 | **Actual (paid)** | What GSAP reports as paid on a record's line items — Shell's actuals (features 015, 036). The dashboards, like the SP&A view's Actual spend, count only the payments posted in the plan's year (D-357). |
 | **Unspent budget** | Budget minus actual: how much of a budget is not yet paid out (feature 036). |
 | **Budget spent** | Actual as a percentage of the budget (feature 036; Hive9's burn rate). |
-| **Dashboard** | A read-only page that adds up the plans you may see — Executive for every market, Regional for one (feature 036). |
+| **Dashboard** | A read-only page that adds up the plans you may see — Executive for every market, Regional for one (feature 036) — or a **custom dashboard** someone built (feature 051). All are listed under Dashboards. |
 
 ## Goals
 
@@ -132,3 +132,10 @@ application use these definitions. Hive9 names are given in brackets where users
 | **Plan type** | Operational, Strategic or Cross-market; plans stay one year, and views can cover up to five years. |
 | **Breakdown** | The All work view and plan card that add up planned cost by a Shell attribute or another grouping, optionally "then by" a second. |
 | **Field help** | The ⓘ text of a built-in field, kept in Settings › Field help so administrators can change it without a release. |
+| **Custom dashboard** | A dashboard a person builds in the **Dashboard builder** from widgets, private until they share it view-only with their teams; everyone sees it with their own data (feature 051). |
+| **Widget** | One chart, key figure, table or text note on a custom dashboard. |
+| **Key figure** | A widget showing one number, optionally against a target or the previous period. |
+| **Data source** | What a widget charts: one of SP&A One's built-in sources (Plans, Activities, Financial transactions, …) or a dataset. |
+| **Dataset** | A table someone uploaded from a CSV or Excel file to chart on custom dashboards. |
+| **Measure** | What a widget adds up — a count of records or the sum, average, minimum or maximum of a field. |
+| **Group by / Break down by** | The field that makes a chart's categories, and the field that splits each category into series. |

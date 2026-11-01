@@ -221,3 +221,13 @@ Shell attributes at the levels *Purchase request* and *PR line* (Settings, D-325
 |---|---|---|
 | Purchase request | Material or service (S) · PR type (S) · Short text (S) · Requestor user ID · Behalf of requestor · Invoice approver name (S) · Vendor (S) · Vendor code · Vendor contact name · Vendor email address · Vendor address · Contract holder · Outline agreement · CP lead · Email group · PR recipients · OA vendor (China specific) · Sub category (China specific) | Vendor (grouping), Vendor code, Vendor email, Short text, PR type, Email group and PR recipients (routing) |
 | PR line | Material group · Remarks / comments · Material / service code | — |
+
+## 8. Custom dashboard and dataset (feature 051)
+
+Built-in fields only (no Shell attributes on these records): **dashboard** — name (required to save, ≤ 80, unique
+per owner), description (≤ 500), default filters (date range, plans, teams), sharing (teams); per **widget** — type,
+title (≤ 80), subtitle (≤ 120), position and size, data query and display options (feature 051 data model §2–§3);
+read-only: ID, owner, created and updated. **Dataset** — name (required to save, ≤ 80, unique per owner),
+description (≤ 500), sharing; per column — name (required, ≤ 60, unique), type (Text, Number, Date, Money; fixed
+once saved), currency (Money); read-only: ID, owner, file name, sheet, rows, created and updated. The fields widgets
+can chart from SP&A One data are listed per source in feature 051's data model §5.
