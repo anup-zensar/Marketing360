@@ -4,6 +4,7 @@ package storestest
 
 import (
 	"context"
+	"strings"
 
 	"mapp/internal/performance"
 	"mapp/internal/performance/performancetest"
@@ -79,6 +80,24 @@ func performanceStore(db *fake.DB) *performancetest.Store {
 		a := found[0]
 		return performance.KeyFacts{ExternalName: a.ExternalName,
 			GoalEntered: a.MQL != nil || a.Revenue != nil}, true, nil
+	}
+	store.ResolveActivityIDs = func(ctx context.Context, scope authz.Scope, keys []string) (map[string][]string, error) {
+		all, err := activities.ListInScope(ctx, scope)
+		if err != nil {
+			return nil, err
+		}
+		wanted := map[string]bool{}
+		for _, key := range keys {
+			wanted[key] = true
+		}
+		found := map[string][]string{}
+		for _, a := range all {
+			lowered := strings.ToLower(a.ID)
+			if wanted[lowered] {
+				found[lowered] = append(found[lowered], a.ID)
+			}
+		}
+		return found, nil
 	}
 	return store
 }

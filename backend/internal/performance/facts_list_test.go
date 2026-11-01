@@ -6,17 +6,17 @@ import (
 	"mapp/internal/performance"
 )
 
-func factsFixture(t *testing.T) (*fixture, performance.Source) {
+func factsFixture(t *testing.T) *fixture {
 	t.Helper()
 	f, src := keysFixture(t)
 	f.store.Keys[performance.MatchedActivityID] = map[string][]string{"a-1": {"A-1"}}
 	f.runImport(t, src.ID, map[string]string{"r1": "5", "r2": "3"})
-	return f, src
+	return f
 }
 
 func TestActivityFacts_CarryEveryColumnFR030Names(t *testing.T) {
 	t.Parallel()
-	f, src := factsFixture(t)
+	f := factsFixture(t)
 
 	facts, err := f.service.ActivityFacts(t.Context(), alex, performance.FactQuery{ActivityID: "A-1"})
 	if err != nil || len(facts) != 2 {
@@ -27,12 +27,11 @@ func TestActivityFacts_CarryEveryColumnFR030Names(t *testing.T) {
 		fact.MatchedOn != performance.MatchedActivityID || fact.ImportID == "" {
 		t.Errorf("fact = %+v, want date, source, stage, the key matched on and the originating upload", fact)
 	}
-	_ = src
 }
 
 func TestActivityFacts_SearchNarrowsByKeyAndUpload_FR030(t *testing.T) {
 	t.Parallel()
-	f, _ := factsFixture(t)
+	f := factsFixture(t)
 
 	byReference, err := f.service.ActivityFacts(t.Context(), alex,
 		performance.FactQuery{ActivityID: "A-1", Search: "r1"})
@@ -48,7 +47,7 @@ func TestActivityFacts_SearchNarrowsByKeyAndUpload_FR030(t *testing.T) {
 
 func TestActivityFacts_AnActivityOutsideTheScopeAnswersAsMissing_FR044(t *testing.T) {
 	t.Parallel()
-	f, _ := factsFixture(t)
+	f := factsFixture(t)
 
 	if _, err := f.service.ActivityFacts(t.Context(), alex, performance.FactQuery{ActivityID: "A-9"}); err == nil {
 		t.Fatal("ActivityFacts answered for an unknown activity, want it missing")

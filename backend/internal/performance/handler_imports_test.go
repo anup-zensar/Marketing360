@@ -68,8 +68,8 @@ func TestUploadPerformanceFile_Contract_FR009_FR022(t *testing.T) {
 	created := decoded[importAnswer](t, alex.Do(t, http.MethodPost,
 		"/api/v1/performance/sources/"+sourceID+"/uploads", uploadBody(file)), http.StatusCreated)
 
-	// The in-memory stores' matcher is a stub, so the good row reads as unmatched here; matching itself is
-	// proved by the matcher's own tests, and this test proves the translation.
+	// A-9999 is no demo activity, so the good row reads as unmatched; matching itself is proved by the
+	// matcher's own tests, and this test proves the translation.
 	if created.Status != "completed" || !created.Counts.Reconciles() || created.Counts.Read != 2 {
 		t.Fatalf("upload = %+v, want a completed load whose counts account for both rows", created)
 	}

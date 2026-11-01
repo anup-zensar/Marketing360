@@ -8287,6 +8287,66 @@ paths:
         "404": { $ref: "#/components/responses/NotFound" }
         "409": { $ref: "#/components/responses/Conflict" }
         default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/performance/facts:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: listActivityFacts
+      summary: The activity's facts - date, source, stage or metric, value, currency, key matched on, upload (046 FR-030)
+      parameters:
+        - { name: search, in: query, required: false, schema: { type: string, maxLength: 100 } }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 500 } }
+      responses:
+        "200":
+          description: The facts, newest first; replaced versions are left out.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceFactList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/performance/facts/export:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: exportActivityFacts
+      summary: The same list as a CSV file (needs data.export) (046 FR-030, D-367)
+      parameters:
+        - { name: search, in: query, required: false, schema: { type: string, maxLength: 100 } }
+      responses:
+        "200":
+          description: The file; its name is in Content-Disposition.
+          headers:
+            Content-Disposition:
+              schema: { type: string }
+          content:
+            text/csv:
+              schema: { type: string }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/performance:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: getActivityPerformance
+      summary: The activity's performance panel, gated until it counts as approved (046 FR-027, FR-029)
+      description: |
+        Projected figures are feature 047's and the revenue model's name is feature 050's; both arrive as
+        backward-compatible additions. Every empty figure states its reason (FR-032), never a sample value.
+      responses:
+        "200":
+          description: The panel, or state notApproved with no figures.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformancePanel" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
 components:
   securitySchemes:
     sessionCookie:
@@ -9475,6 +9535,102 @@ components:
             properties:
               column: { type: string }
               value: { type: string }
+    PerformanceFact:
+      type: object
+      description: One figure a source delivered, matched to this activity (FR-030).
+      required: [id, sourceId, sourceName, importId, sourceReference, factDate, stage, webMetric,
+                 count, amount, held, matchedOn, version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        sourceId: { type: string }
+        sourceName: { type: string }
+        importId: { type: string, description: "The originating upload." }
+        sourceReference: { type: string }
+        factDate: { type: string, format: date }
+        stage: { type: string }
+        webMetric: { type: string }
+        count: { type: [integer, "null"] }
+        amount:
+          oneOf:
+            - { $ref: "#/components/schemas/Money" }
+            - { type: "null" }
+        held: { type: boolean }
+        matchedOn: { type: string, enum: ["", activityId, mediaCode, integrationId, externalName] }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    PerformanceFactList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/PerformanceFact" }
+    StageFigure:
+      type: object
+      required: [stage, goal, actual, conversion, reason]
+      properties:
+        stage: { type: string, enum: [inq, mql] }
+        goal: { type: [integer, "null"] }
+        actual: { type: [integer, "null"] }
+        conversion:
+          type: [number, "null"]
+          description: Actual over the previous stage's actual, one decimal; null where it cannot be worked out.
+        reason: { type: string, enum: ["", noSource, noGoal, failed, stale, noData] }
+    RevenueFigure:
+      type: object
+      required: [goal, actual, excludedCount, reason]
+      properties:
+        goal:
+          oneOf:
+            - { $ref: "#/components/schemas/Money" }
+            - { type: "null" }
+        actual:
+          oneOf:
+            - { $ref: "#/components/schemas/Money" }
+            - { type: "null" }
+          description: One USD total at the current rate (046-C7).
+        excludedCount: { type: integer, description: "Facts left out because their currency has no rate (SC-010)." }
+        reason: { type: string, enum: ["", notApproved, noSource, noGoal, failed, stale, noData] }
+    MetricFigure:
+      type: object
+      required: [metric, months]
+      properties:
+        metric: { type: string, enum: [sessions, visits, engagementTouches] }
+        months:
+          type: array
+          items:
+            type: object
+            required: [month, value]
+            properties:
+              month: { type: string, example: "2026-02" }
+              value: { type: integer }
+    PanelSource:
+      type: object
+      required: [sourceId, sourceName, freshness, dataThrough]
+      properties:
+        sourceId: { type: string }
+        sourceName: { type: string }
+        freshness: { $ref: "#/components/schemas/PerformanceFreshness" }
+        dataThrough: { type: [string, "null"], format: date }
+    PerformancePanel:
+      type: object
+      description: The activity's Performance area (FR-029); gated until the activity counts as approved.
+      required: [state, stages, revenue, webMetrics, sources]
+      properties:
+        state: { type: string, enum: [ok, notApproved] }
+        stages:
+          type: array
+          items: { $ref: "#/components/schemas/StageFigure" }
+        revenue: { $ref: "#/components/schemas/RevenueFigure" }
+        webMetrics:
+          type: array
+          items: { $ref: "#/components/schemas/MetricFigure" }
+        sources:
+          type: array
+          items: { $ref: "#/components/schemas/PanelSource" }
     MatchKeyType:
       type: string
       description: Which matching key a key column carries (046-C23); empty on every other column.

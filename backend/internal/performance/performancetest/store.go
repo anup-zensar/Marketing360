@@ -33,9 +33,11 @@ type Store struct {
 	Activities map[string]performance.KeyFacts
 	// ActivityLookup, when set, answers ActivityKeyFacts from the shared fakes instead (storestest wires it).
 	ActivityLookup func(ctx context.Context, scope authz.Scope, activityID string) (performance.KeyFacts, bool, error)
-	breakdowns     map[string][]performance.Breakdown
-	aliases        map[string]performance.Alias
-	integrations   map[string]performance.IntegrationID
+	// ResolveActivityIDs, when set, matches activity-id keys against the shared fakes (storestest wires it).
+	ResolveActivityIDs func(ctx context.Context, scope authz.Scope, keys []string) (map[string][]string, error)
+	breakdowns         map[string][]performance.Breakdown
+	aliases            map[string]performance.Alias
+	integrations       map[string]performance.IntegrationID
 }
 
 func NewStore(db *fake.DB) *Store {
@@ -153,7 +155,10 @@ func (s *Store) match(on performance.MatchedOn, keys []string) map[string][]stri
 	return found
 }
 
-func (s *Store) MatchByActivityID(_ context.Context, _ authz.Scope, keys []string) (map[string][]string, error) {
+func (s *Store) MatchByActivityID(ctx context.Context, scope authz.Scope, keys []string) (map[string][]string, error) {
+	if s.ResolveActivityIDs != nil {
+		return s.ResolveActivityIDs(ctx, scope, keys)
+	}
 	return s.match(performance.MatchedActivityID, keys), nil
 }
 
@@ -180,19 +185,26 @@ func (s *Store) ListFactsForActivity(_ context.Context, _ authz.Scope, q perform
 	}
 	views := []performance.FactView{}
 	for _, f := range all {
-		if f.ActivityID != q.ActivityID || f.ReplacedByID != "" || (q.CountedOnly && f.Held) {
-			continue
+		view, kept := s.factView(f, q)
+		if kept {
+			views = append(views, view)
 		}
-		src, _, _ := s.sources.Get(f.SourceID)
-		if q.Search != "" && !factMatches(f, src.Name, q.Search) {
-			continue
-		}
-		views = append(views, performance.FactView{Fact: f, SourceName: src.Name})
 	}
 	if q.Limit > 0 && len(views) > q.Limit {
 		views = views[:q.Limit]
 	}
 	return views, nil
+}
+
+func (s *Store) factView(f performance.Fact, q performance.FactQuery) (performance.FactView, bool) {
+	if f.ActivityID != q.ActivityID || f.ReplacedByID != "" || (q.CountedOnly && f.Held) {
+		return performance.FactView{}, false
+	}
+	src, _, _ := s.sources.Get(f.SourceID)
+	if q.Search != "" && !factMatches(f, src.Name, q.Search) {
+		return performance.FactView{}, false
+	}
+	return performance.FactView{Fact: f, SourceName: src.Name}, true
 }
 
 func factMatches(f performance.Fact, sourceName, search string) bool {
@@ -620,4 +632,78 @@ func (s *Store) HeldActivityIDs(_ context.Context, sourceID string) ([]string, e
 	}
 	slices.Sort(held)
 	return held, nil
+}
+
+func (s *Store) ActivityTotals(_ context.Context, _ authz.Scope, activityID string, year int) ([]performance.StageTotals, error) {
+	all, err := s.facts.List()
+	if err != nil {
+		return nil, err
+	}
+	byGroup := map[string]*performance.StageTotals{}
+	var order []string
+	for _, f := range all {
+		if f.ActivityID != activityID || f.Held || f.ReplacedByID != "" || f.FactDate.Year() != year {
+			continue
+		}
+		key, group := totalsGroupOf(f)
+		totals, found := byGroup[key]
+		if !found {
+			totals = &group
+			byGroup[key] = totals
+			order = append(order, key)
+		}
+		addFact(totals, f)
+	}
+	slices.Sort(order)
+	merged := make([]performance.StageTotals, 0, len(order))
+	for _, key := range order {
+		merged = append(merged, *byGroup[key])
+	}
+	return merged, nil
+}
+
+func (s *Store) LatestImportStatuses(_ context.Context, sourceIDs []string) (map[string]string, error) {
+	all, err := s.imports.List()
+	if err != nil {
+		return nil, err
+	}
+	type latest struct {
+		at     string
+		status string
+	}
+	newest := map[string]latest{}
+	for _, run := range all {
+		if !slices.Contains(sourceIDs, run.SourceID) {
+			continue
+		}
+		key := run.CreatedAt.Format("2006-01-02T15:04:05") + run.ID
+		if held, ok := newest[run.SourceID]; !ok || key > held.at {
+			newest[run.SourceID] = latest{at: key, status: string(run.Status)}
+		}
+	}
+	statuses := map[string]string{}
+	for id, held := range newest {
+		statuses[id] = held.status
+	}
+	return statuses, nil
+}
+
+func totalsGroupOf(f performance.Fact) (string, performance.StageTotals) {
+	currency := ""
+	if f.Amount != nil {
+		currency = f.Amount.Currency
+	}
+	month := f.FactDate.Format("2006-01")
+	key := f.Stage + "|" + string(f.WebMetric) + "|" + month + "|" + currency
+	return key, performance.StageTotals{Stage: f.Stage, WebMetric: string(f.WebMetric), Month: month, Currency: currency}
+}
+
+func addFact(totals *performance.StageTotals, f performance.Fact) {
+	if f.Count != nil {
+		totals.Counts += *f.Count
+	}
+	if f.Amount != nil {
+		totals.AmountMinor += f.Amount.Amount.Cents()
+	}
+	totals.FactCount++
 }

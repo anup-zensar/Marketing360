@@ -35,5 +35,8 @@ func performanceRoutes() map[string]Rule {
 		"POST /api/v1/performance/review-rows/{rowId}/reopen":                    need(performance.PermissionImport),
 		"POST /api/v1/performance/review-rows/{rowId}/correct":                   need(performance.PermissionImport),
 		"POST /api/v1/performance/sources/{sourceId}/recheck":                    need(performance.PermissionImport),
+		"GET /api/v1/activities/{activityId}/performance":                        signedIn(),
+		"GET /api/v1/activities/{activityId}/performance/facts":                  signedIn(),
+		"GET /api/v1/activities/{activityId}/performance/facts/export":           signedIn(),
 	}
 }

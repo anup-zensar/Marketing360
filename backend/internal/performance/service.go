@@ -11,6 +11,7 @@ import (
 	"mapp/internal/platform/clock"
 	"mapp/internal/platform/errs"
 	"mapp/internal/platform/ids"
+	"mapp/internal/platform/money"
 	"mapp/internal/platform/record"
 )
 
@@ -24,6 +25,8 @@ type Service struct {
 	now       clock.Clock
 	approvals Approvals
 	feed      Feed
+	figures   Figures
+	rates     func(ctx context.Context) (money.Rates, error)
 }
 
 func NewService(tools history.Tools, repo Store) *Service {

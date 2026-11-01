@@ -125,3 +125,48 @@ func (s *PostgresStore) HeldActivityIDs(ctx context.Context, sourceID string) ([
 	}
 	return ids, nil
 }
+
+// StageTotals is the panel's one aggregate: a row per (measure, month, currency) of counted facts.
+type StageTotals struct {
+	Stage       string
+	WebMetric   string
+	Month       string
+	Currency    string
+	Counts      int64
+	AmountMinor int64
+	FactCount   int
+}
+
+func (s *PostgresStore) ActivityTotals(ctx context.Context, scope authz.Scope, activityID string, year int) ([]StageTotals, error) {
+	a := argsOf(scope)
+	rows, err := s.db.Queries(ctx).ActivityFactTotals(ctx, sqlcdb.ActivityFactTotalsParams{
+		ActivityID: activityID, Year: year,
+		SeesEverything: a.seesEverything, ViewerID: a.viewerID,
+		ViewsPlans: a.viewsPlans, ViewerTeamIds: a.teamIDs,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("sum the facts of activity %s: %w", activityID, err)
+	}
+	totals := make([]StageTotals, 0, len(rows))
+	for _, r := range rows {
+		totals = append(totals, StageTotals{
+			Stage: r.Stage, WebMetric: r.WebMetric, Month: r.Month.Format(monthOnly), Currency: r.Currency,
+			Counts: r.Counts, AmountMinor: r.AmountMinor, FactCount: int(r.FactCount),
+		})
+	}
+	return totals, nil
+}
+
+const monthOnly = "2006-01"
+
+func (s *PostgresStore) LatestImportStatuses(ctx context.Context, sourceIDs []string) (map[string]string, error) {
+	rows, err := s.db.Queries(ctx).LatestImportStatuses(ctx, sourceIDs)
+	if err != nil {
+		return nil, fmt.Errorf("select the latest load of %d sources: %w", len(sourceIDs), err)
+	}
+	latest := make(map[string]string, len(rows))
+	for _, r := range rows {
+		latest[r.SourceID] = r.Status
+	}
+	return latest, nil
+}

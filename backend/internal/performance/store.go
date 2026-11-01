@@ -65,6 +65,8 @@ type Facts interface {
 	CurrentFacts(ctx context.Context, sourceID string, references []string) ([]Fact, error)
 	ListFactsOfImport(ctx context.Context, importID string) ([]Fact, error)
 	FactsReplacedBy(ctx context.Context, replacerIDs []string) ([]Fact, error)
+	ActivityTotals(ctx context.Context, scope authz.Scope, activityID string, year int) ([]StageTotals, error)
+	LatestImportStatuses(ctx context.Context, sourceIDs []string) (map[string]string, error)
 	HeldActivityIDs(ctx context.Context, sourceID string) ([]string, error)
 	ReleaseHeld(ctx context.Context, activityID string, by actor.Actor, at time.Time) (int, error)
 }

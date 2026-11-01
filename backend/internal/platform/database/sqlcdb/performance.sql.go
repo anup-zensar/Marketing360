@@ -54,6 +54,73 @@ func (q *Queries) ActiveSuppliersForModel(ctx context.Context, modelID *string) 
 	return items, nil
 }
 
+const activityFactTotals = `-- name: ActivityFactTotals :many
+SELECT stage, web_metric, date_trunc('month', fact_date)::date AS month, coalesce(currency, '') AS currency,
+    coalesce(sum(count_value), 0)::bigint AS counts, coalesce(sum(amount_minor), 0)::bigint AS amount_minor,
+    count(*) AS fact_count
+FROM performance_facts
+WHERE activity_id = $1::text AND NOT held AND replaced_by_id IS NULL
+    AND fact_date BETWEEN make_date($2::int, 1, 1) AND make_date($2::int, 12, 31)
+    AND activity_in_scope(activity_id, $3::boolean, $4::text,
+        $5::boolean, $6::text[])
+GROUP BY stage, web_metric, month, currency
+ORDER BY stage COLLATE "C", web_metric COLLATE "C", month, currency COLLATE "C"
+`
+
+type ActivityFactTotalsParams struct {
+	ActivityID     string
+	Year           int
+	SeesEverything bool
+	ViewerID       string
+	ViewsPlans     bool
+	ViewerTeamIds  []string
+}
+
+type ActivityFactTotalsRow struct {
+	Stage       string
+	WebMetric   string
+	Month       time.Time
+	Currency    string
+	Counts      int64
+	AmountMinor int64
+	FactCount   int64
+}
+
+func (q *Queries) ActivityFactTotals(ctx context.Context, arg ActivityFactTotalsParams) ([]ActivityFactTotalsRow, error) {
+	rows, err := q.db.Query(ctx, activityFactTotals,
+		arg.ActivityID,
+		arg.Year,
+		arg.SeesEverything,
+		arg.ViewerID,
+		arg.ViewsPlans,
+		arg.ViewerTeamIds,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ActivityFactTotalsRow{}
+	for rows.Next() {
+		var i ActivityFactTotalsRow
+		if err := rows.Scan(
+			&i.Stage,
+			&i.WebMetric,
+			&i.Month,
+			&i.Currency,
+			&i.Counts,
+			&i.AmountMinor,
+			&i.FactCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const activityKeyFacts = `-- name: ActivityKeyFacts :one
 SELECT a.external_name, coalesce(a.mql IS NOT NULL OR a.revenue_minor IS NOT NULL, false)::boolean AS goal_entered
 FROM activities a
@@ -591,6 +658,38 @@ func (q *Queries) IntegrationIDsOfActivities(ctx context.Context, activityIds []
 			return nil, err
 		}
 		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const latestImportStatuses = `-- name: LatestImportStatuses :many
+SELECT DISTINCT ON (source_id) source_id, status
+FROM performance_imports
+WHERE source_id = ANY($1::text[])
+ORDER BY source_id, created_at DESC, id COLLATE "C" DESC
+`
+
+type LatestImportStatusesRow struct {
+	SourceID string
+	Status   string
+}
+
+func (q *Queries) LatestImportStatuses(ctx context.Context, sourceIds []string) ([]LatestImportStatusesRow, error) {
+	rows, err := q.db.Query(ctx, latestImportStatuses, sourceIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LatestImportStatusesRow{}
+	for rows.Next() {
+		var i LatestImportStatusesRow
+		if err := rows.Scan(&i.SourceID, &i.Status); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

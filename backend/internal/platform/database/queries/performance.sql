@@ -358,3 +358,21 @@ SELECT DISTINCT activity_id::text
 FROM performance_facts
 WHERE source_id = sqlc.arg(source_id) AND held AND replaced_by_id IS NULL AND activity_id IS NOT NULL
 ORDER BY activity_id::text;
+
+-- name: ActivityFactTotals :many
+SELECT stage, web_metric, date_trunc('month', fact_date)::date AS month, coalesce(currency, '') AS currency,
+    coalesce(sum(count_value), 0)::bigint AS counts, coalesce(sum(amount_minor), 0)::bigint AS amount_minor,
+    count(*) AS fact_count
+FROM performance_facts
+WHERE activity_id = sqlc.arg(activity_id)::text AND NOT held AND replaced_by_id IS NULL
+    AND fact_date BETWEEN make_date(sqlc.arg(year)::int, 1, 1) AND make_date(sqlc.arg(year)::int, 12, 31)
+    AND activity_in_scope(activity_id, sqlc.arg(sees_everything)::boolean, sqlc.arg(viewer_id)::text,
+        sqlc.arg(views_plans)::boolean, sqlc.arg(viewer_team_ids)::text[])
+GROUP BY stage, web_metric, month, currency
+ORDER BY stage COLLATE "C", web_metric COLLATE "C", month, currency COLLATE "C";
+
+-- name: LatestImportStatuses :many
+SELECT DISTINCT ON (source_id) source_id, status
+FROM performance_imports
+WHERE source_id = ANY(sqlc.arg(source_ids)::text[])
+ORDER BY source_id, created_at DESC, id COLLATE "C" DESC;
