@@ -15,7 +15,9 @@ test('043 US1: activities spread over each Shell attribute, and what is not fill
 
   await expect(page.getByRole('heading', { level: 1, name: 'Plan details' })).toBeVisible();
   await expect(page.getByText(/^In view: /)).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Activity', pressed: true })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Activity', exact: true, pressed: true }),
+  ).toBeVisible();
   await expect(page.getByText('All filled in', { exact: true })).toBeVisible();
   const statuses = page.getByRole('list', { name: 'Activities by status' });
   await expect(statuses).toBeVisible();
@@ -69,9 +71,11 @@ test('043 US2: the level is kept in the address and Back returns to it (FR-001)'
   await page.goto('/reports/plan-details');
   await expect(page.getByRole('heading', { level: 1, name: 'Plan details' })).toBeVisible();
 
-  await page.getByRole('button', { name: 'Campaign' }).click();
+  await page.getByRole('button', { name: 'Campaign', exact: true }).click();
   await expect(page).toHaveURL(/show=campaign/);
   await expect(page.getByRole('list', { name: 'Campaigns by approval progress' })).toBeVisible();
   await page.goBack();
-  await expect(page.getByRole('button', { name: 'Activity', pressed: true })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Activity', exact: true, pressed: true }),
+  ).toBeVisible();
 });
