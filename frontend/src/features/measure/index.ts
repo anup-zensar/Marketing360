@@ -12,6 +12,8 @@ import { FunnelReport } from './funnel/FunnelReport';
 import type { ReportKey } from './reports';
 
 export { ReportsPage } from './ReportsPage';
+export { AttributionSettingsPage } from './attribution/AttributionSettingsPage';
+export { ATTRIBUTION_SETTINGS_SECTIONS } from './attribution/settings-sections';
 export { REPORT_ROUTES } from './reports';
 export type { ReportKey } from './reports';
 export { RankedList, ReportTable, ReportWidget } from './shared';

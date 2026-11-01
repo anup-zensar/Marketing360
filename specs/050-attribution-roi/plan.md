@@ -35,7 +35,7 @@ backend/internal/measure/attribution/   model.go · credit.go · roi.go · store
 backend/internal/platform/database/migrations/00034_attribution_settings.sql
 backend/internal/platform/database/queries/measure_attribution.sql
 backend/internal/app/measure_attribution.go
-frontend/src/features/settings/attribution/   AttributionSettingsPage.tsx (+ test)
+frontend/src/features/measure/attribution/    AttributionSettingsPage.tsx (+ test), Settings card and route
 frontend/src/features/measure/shared/RoiValue.tsx (+ test)
 ```
 

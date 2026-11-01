@@ -8,8 +8,7 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// Attribute shares a conversion's revenue among the activities of its journey under the model (FR-003 – FR-006);
-// the credits add up to the revenue exactly, Unattributed included.
+// Attribute shares a conversion's revenue among its journey's activities; the credits add up to it exactly.
 func Attribute(c Conversion, m Model) []Credit {
 	if !c.Journey {
 		return []Credit{{ActivityID: c.ActivityID, Amount: c.Revenue}}

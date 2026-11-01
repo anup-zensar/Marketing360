@@ -15,12 +15,13 @@
 - [X] T004 Tests first `TestSettings_FR001_FR002`; `service.go`, `kinds.go` (logged, never removed), `handler.go`;
   `openapi.yaml`; route rules; `history_access` (Manage settings); wiring `app/measure_attribution.go`;
   `TestAttributionContract`; `pnpm run api:types`
-- [ ] T005 Web: `features/settings/attribution/AttributionSettingsPage.tsx` with the confirmation; Settings section and
+- [X] T005 Web: `features/measure/attribution/AttributionSettingsPage.tsx` (in Measure, which lane A owns, not the
+  Plan module's Settings feature) with the confirmation; Settings section and
   route; tests
 
 ## Phase 3: Labels for 048 and 049 (US3)
 
-- [ ] T006 `features/measure/shared/RoiValue.tsx`: ROI with its model and cost basis, "—" with the reason; tests
+- [X] T006 `features/measure/shared/RoiValue.tsx`: ROI with its model and cost basis, "—" with the reason; tests
 
 ## Phase 4: After 046 merges (blocked: 050-Q1)
 

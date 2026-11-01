@@ -1,5 +1,4 @@
-// Package attribution credits converted revenue to the activities of a journey under the designated model, and works
-// out ROI with its cost basis (feature 050); 048 and 049 show the figures.
+// Package attribution credits revenue to a journey's activities and works out ROI (feature 050) for 048 and 049.
 package attribution
 
 import (
@@ -28,7 +27,6 @@ type ModelChoice struct {
 	Description string `json:"description"`
 }
 
-// Models are the five models of 050-C1, in the order Settings › Attribution lists them.
 func Models() []ModelChoice {
 	return []ModelChoice{
 		{FirstTouch, "First touch", "All the revenue goes to the first activity the customer met."},

@@ -3551,6 +3551,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/settings/attribution": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Settings › Attribution — the designated model that credits revenue to activities (050 FR-001) */
+        get: operations["getAttributionSettings"];
+        /** Change the designated attribution model; needs Manage settings, versioned and logged (050 FR-002) */
+        put: operations["saveAttributionSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/overspend-configuration": {
         parameters: {
             query?: never;
@@ -4580,6 +4598,25 @@ export interface components {
             name?: string;
             query?: string;
             isDefault?: boolean;
+        };
+        /** @enum {string} */
+        AttributionModel: "firstTouch" | "lastTouch" | "equallyDistributed" | "linearTimeDecay" | "uShaped";
+        AttributionSettings: {
+            model: components["schemas"]["AttributionModel"];
+            models: {
+                key: components["schemas"]["AttributionModel"];
+                name: string;
+                description: string;
+            }[];
+            version: number;
+            /** @description Null while the setting has never been saved. */
+            updatedAt: string | null;
+            updatedBy: components["schemas"]["ActorRef"] | null;
+            canChange: components["schemas"]["ActionAvailability"];
+        };
+        AttributionSettingsInput: {
+            version: number;
+            model: components["schemas"]["AttributionModel"];
         };
         PlanBudgetFigures: {
             budget: components["schemas"]["Money"] | null;
@@ -18015,6 +18052,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PurchaseRequestConfiguration"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getAttributionSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The designated model, the five models and whether the person may change it. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttributionSettings"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            default: components["responses"]["Error"];
+        };
+    };
+    saveAttributionSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttributionSettingsInput"];
+            };
+        };
+        responses: {
+            /** @description The setting as saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttributionSettings"];
                 };
             };
             400: components["responses"]["BadRequest"];
