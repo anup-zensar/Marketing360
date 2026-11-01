@@ -115,6 +115,12 @@ tags:
     description: "Delegation of approval authority for a date range (feature 017)"
   - name: Dashboards
     description: "Executive and regional planning dashboards and the export of plans and dashboards to PowerPoint and PDF (feature 036)"
+  - name: Custom dashboards
+    description: "Dashboards people build from the data they may see, their widgets and view-only sharing with teams (feature 051)"
+  - name: Datasets
+    description: "CSV and Excel files uploaded as datasets for custom dashboards, checked first, shared view-only with teams (feature 051)"
+  - name: Data sources
+    description: "The data catalogue and the widget data the API works out for the person asking (feature 051)"
 paths:
   /healthz:
     get:
@@ -7786,6 +7792,495 @@ paths:
           $ref: "#/components/responses/NotFound"
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/custom-dashboards:
+    get:
+      tags: [Custom dashboards]
+      operationId: listCustomDashboards
+      summary: The person's own dashboards and those shared with their teams, each by name (feature 051, FR-003)
+      description: >-
+        Needs dashboards.view. The built-in Executive and Regional dashboards (036) are not listed: the web app
+        shows them to holders of plans.view.
+      responses:
+        "200":
+          description: The dashboards.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomDashboardList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [Custom dashboards]
+      operationId: createCustomDashboard
+      summary: Create a dashboard owned by the person, shared with nobody (feature 051, FR-008, FR-013 – FR-025)
+      description: >-
+        Needs dashboards.build. Every problem of the name, the filters and every widget is answered at once
+        (validation_failed, fields such as widgets[2].query.measures); a name the person already uses answers 409
+        name_taken.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomDashboardCreate"
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomDashboard"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/custom-dashboards/{dashboardId}:
+    parameters:
+      - $ref: "#/components/parameters/CustomDashboardId"
+    get:
+      tags: [Custom dashboards]
+      operationId: getCustomDashboard
+      summary: One dashboard with its widgets, filters and sharing (feature 051, FR-005, FR-036)
+      description: >-
+        Needs dashboards.view; visible to its owner and to members of the teams it is shared with. Any other
+        dashboard answers 404 not_found, exactly like a missing one.
+      responses:
+        "200":
+          description: The dashboard.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomDashboard"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/Error"
+    patch:
+      tags: [Custom dashboards]
+      operationId: updateCustomDashboard
+      summary: Change a dashboard's name, description, filters or widgets — owner only (feature 051, FR-006, FR-012, FR-033)
+      description: >-
+        Needs dashboards.build and ownership (403 forbidden for a dashboard the person sees but does not own).
+        Only the fields sent change; widgets, when sent, replace the whole list. An out-of-date version answers
+        409 version_conflict.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomDashboardUpdate"
+      responses:
+        "200":
+          description: The dashboard after the change.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomDashboard"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [Custom dashboards]
+      operationId: deleteCustomDashboard
+      summary: Delete a dashboard to the recycle bin — owner only (feature 051, FR-010)
+      responses:
+        "200":
+          description: Moved to the recycle bin.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/custom-dashboards/{dashboardId}/copy:
+    parameters:
+      - $ref: "#/components/parameters/CustomDashboardId"
+    post:
+      tags: [Custom dashboards]
+      operationId: copyCustomDashboard
+      summary: Make a copy owned by the person, shared with nobody (feature 051, FR-011)
+      description: >-
+        Needs dashboards.build and sight of the dashboard. The name defaults to "Copy of <name>", shortened to 80
+        characters and numbered ("Copy of X (2)") when taken.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomDashboardCopy"
+      responses:
+        "201":
+          description: The copy.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomDashboard"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/custom-dashboards/{dashboardId}/sharing:
+    parameters:
+      - $ref: "#/components/parameters/CustomDashboardId"
+    put:
+      tags: [Custom dashboards]
+      operationId: shareCustomDashboard
+      summary: Set the teams a dashboard is shared with, view-only — owner only (feature 051, FR-046)
+      description: >-
+        Each team must be one the owner belongs to now or one already shared (validation_failed on teamIds
+        otherwise). An out-of-date version answers 409 version_conflict.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SharingUpdate"
+      responses:
+        "200":
+          description: The dashboard after the change.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomDashboard"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/datasets:
+    get:
+      tags: [Datasets]
+      operationId: listDatasets
+      summary: The person's datasets and those shared with their teams, each by name (feature 051, FR-040)
+      description: Needs dashboards.build.
+      responses:
+        "200":
+          description: The datasets.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatasetList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [Datasets]
+      operationId: createDataset
+      summary: Store an uploaded CSV or .xlsx file as a dataset with the chosen column names and types (feature 051, FR-042, FR-043)
+      description: >-
+        Needs dashboards.build. The file is read again and every cell checked against its column's type; every
+        problem is answered at once (validation_failed, fields such as columns[2] with "Row 14: 'n/a' is not a
+        number", at most 50 listed and a last one saying how many more). Limits: 5 MB file, 10,000 rows, 50
+        columns, 50 datasets per person (validation_failed on content or name).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DatasetCreate"
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dataset"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/datasets/preview:
+    post:
+      tags: [Datasets]
+      operationId: previewDataset
+      summary: Check an uploaded file and propose its columns and types; nothing is stored (feature 051, FR-041)
+      description: >-
+        Needs dashboards.build. Reads the first sheet of an .xlsx file or a UTF-8 CSV file (comma, semicolon or
+        tab); the first row holds the column names. A file that cannot be read, has no header row or breaks a
+        limit answers 400 validation_failed on content with the reason.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DatasetUpload"
+      responses:
+        "200":
+          description: The proposal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatasetPreview"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/datasets/{datasetId}:
+    parameters:
+      - $ref: "#/components/parameters/DatasetId"
+    get:
+      tags: [Datasets]
+      operationId: getDataset
+      summary: One dataset with its columns, sharing and the visible dashboards that use it (feature 051, FR-040)
+      description: Needs dashboards.build; a dataset the person may not see answers 404 not_found.
+      responses:
+        "200":
+          description: The dataset.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dataset"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/Error"
+    patch:
+      tags: [Datasets]
+      operationId: updateDataset
+      summary: Rename a dataset, change its description or its column names — owner only (feature 051, FR-040, FR-044)
+      description: Column types never change. An out-of-date version answers 409 version_conflict.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DatasetUpdate"
+      responses:
+        "200":
+          description: The dataset after the change.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dataset"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [Datasets]
+      operationId: deleteDataset
+      summary: Delete a dataset to the recycle bin — owner only (feature 051, FR-045)
+      responses:
+        "200":
+          description: Moved to the recycle bin.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/datasets/{datasetId}/rows:
+    parameters:
+      - $ref: "#/components/parameters/DatasetId"
+    get:
+      tags: [Datasets]
+      operationId: listDatasetRows
+      summary: A page of a dataset's rows, as stored (feature 051, FR-040)
+      parameters:
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 10000
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+      responses:
+        "200":
+          description: The rows.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatasetRowPage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/datasets/{datasetId}/sharing:
+    parameters:
+      - $ref: "#/components/parameters/DatasetId"
+    put:
+      tags: [Datasets]
+      operationId: shareDataset
+      summary: Set the teams a dataset is shared with, view-only — owner only (feature 051, FR-046)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SharingUpdate"
+      responses:
+        "200":
+          description: The dataset after the change.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dataset"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/data-sources:
+    get:
+      tags: [Data sources]
+      operationId: listDataSources
+      summary: The data catalogue — the built-in sources and datasets the person may read, with their fields (feature 051, FR-016)
+      description: >-
+        Needs dashboards.view or dashboards.build (checked by the service). Built-in sources need their own
+        permission (plans.view; finance.view for financialTransactions; globalBudgets.view for globalBudgets) and
+        are left out without it. Datasets: those the person owns or that are shared with their teams.
+      responses:
+        "200":
+          description: The sources, built-in first in a fixed order, then datasets by name.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataSourceList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/data-sources/query:
+    post:
+      tags: [Data sources]
+      operationId: queryWidgetData
+      summary: Work out one widget's figures for the person asking, in their scope (feature 051, FR-007, FR-016 – FR-023)
+      description: >-
+        Needs dashboards.view or dashboards.build (checked by the service). A built-in source the person may not
+        read answers 403 forbidden; a dataset they may not see, or a deleted one, answers 404 not_found — the web
+        app shows both as "You don't have access to this data" (or, to the owner of a deleted dataset, "This data
+        is no longer available"). Fields not in the source, or a query that breaks the rules of its use, answer
+        400 validation_failed listing every problem (fields such as query.measures[1].field). Nothing is stored.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WidgetDataRequest"
+      responses:
+        "200":
+          description: The widget's rows, totals and notes.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WidgetData"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     sessionCookie:
@@ -7794,6 +8289,23 @@ components:
       name: mapp_session
       description: HttpOnly session cookie set by sign-in.
   parameters:
+    # Feature 051 Dashboard builder
+    CustomDashboardId:
+      name: dashboardId
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: ^DB-[0-9]+$
+      example: DB-1001
+    DatasetId:
+      name: datasetId
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: ^DS-[0-9]+$
+      example: DS-1001
     # Feature 032 Purchase requests
     PurchaseRequestId:
       name: purchaseRequestId
@@ -19669,6 +20181,8 @@ components:
         - access.manage
         - activityLog.viewAll
         - recycleBin.purge
+        - dashboards.view
+        - dashboards.build
     PermissionInfo:
       type: object
       additionalProperties: false
@@ -19689,7 +20203,7 @@ components:
       properties:
         name:
           type: string
-          enum: [Plans and planning, Financial data, Purchase requests, Approvals, Global budgets, Administration]
+          enum: [Plans and planning, Financial data, Purchase requests, Approvals, Global budgets, Dashboards, Administration]
         permissions:
           type: array
           items:
@@ -23367,3 +23881,1124 @@ components:
           $ref: "#/components/schemas/Money"
         overAllocated:
           type: boolean
+    # Feature 051 Dashboard builder
+    Decimal:
+      type: string
+      description: An exact decimal number with up to 4 decimal places, as text (never a float).
+      pattern: ^-?[0-9]{1,15}(\.[0-9]{1,4})?$
+      example: "1234.5"
+    SharePercent:
+      type: string
+      description: A share in percent with one decimal, worked out by the API (half up).
+      pattern: ^-?[0-9]{1,4}\.[0-9]$
+      example: "37.5"
+    WidgetType:
+      type: string
+      description: >-
+        bar (vertical or horizontal; grouped, stacked or 100 %), line, area, combo (bars and lines on one or two
+        value axes), pie, donut, scatter, funnel, gauge, heatmap, treemap, radar, kpi (key figure), table, text
+        (plain-text note).
+      enum: [bar, line, area, combo, pie, donut, scatter, funnel, gauge, heatmap, treemap, radar, kpi, table, text]
+    WidgetLayout:
+      type: object
+      additionalProperties: false
+      description: >-
+        Position on the 12-column grid, zero-based (the Layout tab shows x+1 and y+1). x + w is at most 12, y + h
+        at most 200, and no two widgets of a dashboard share a cell.
+      required: [x, y, w, h]
+      properties:
+        x:
+          type: integer
+          minimum: 0
+          maximum: 11
+        y:
+          type: integer
+          minimum: 0
+          maximum: 199
+        w:
+          type: integer
+          minimum: 2
+          maximum: 12
+        h:
+          type: integer
+          minimum: 2
+          maximum: 12
+    WidgetDateGroup:
+      type: string
+      description: How a date field is grouped; weeks are ISO weeks starting on Monday. Required for date fields, refused for others.
+      enum: [day, week, month, quarter, year]
+    WidgetGroupBy:
+      type: object
+      additionalProperties: false
+      required: [field, dateGroup]
+      properties:
+        field:
+          type: string
+          description: A groupable field key of the source (data catalogue).
+          minLength: 1
+          maxLength: 80
+          example: activityType
+        dateGroup:
+          oneOf:
+            - $ref: "#/components/schemas/WidgetDateGroup"
+            - type: "null"
+    WidgetAggregation:
+      type: string
+      description: >-
+        count (records, or non-empty values of a field), countDistinct (distinct non-empty values), sum and avg
+        (number and money fields), min and max (number, money and date fields).
+      enum: [count, countDistinct, sum, avg, min, max]
+    WidgetMeasure:
+      type: object
+      additionalProperties: false
+      required: [aggregation, field, label]
+      properties:
+        aggregation:
+          $ref: "#/components/schemas/WidgetAggregation"
+        field:
+          type: [string, "null"]
+          description: The field measured; null only with count, which then counts records.
+          maxLength: 80
+          example: plannedCost
+        label:
+          type: string
+          description: The measure's name on the chart; empty uses "Sum of Planned cost" and the like.
+          maxLength: 40
+    WidgetFilterOperator:
+      type: string
+      description: >-
+        eq is, ne is not, in is one of (1–50 values), contains (text, ignoring case), gt greater than, gte at least,
+        lt less than, lte at most (number, money, date), between (2 values, both included), isEmpty and notEmpty
+        (no values). eq, ne, contains, gt, gte, lt and lte take exactly one value.
+      enum: [eq, ne, in, contains, gt, gte, lt, lte, between, isEmpty, notEmpty]
+    WidgetFilter:
+      type: object
+      additionalProperties: false
+      required: [field, operator, values]
+      properties:
+        field:
+          type: string
+          minLength: 1
+          maxLength: 80
+        operator:
+          $ref: "#/components/schemas/WidgetFilterOperator"
+        values:
+          type: array
+          description: >-
+            Typed by the field — text 1–200 characters, numbers as Decimal, money as a decimal with up to 2 places
+            in USD, dates YYYY-MM-DD.
+          maxItems: 50
+          items:
+            type: string
+            minLength: 1
+            maxLength: 200
+    WidgetSort:
+      type: object
+      additionalProperties: false
+      required: [by, measureIndex, direction]
+      properties:
+        by:
+          type: string
+          enum: [dimension, measure]
+        measureIndex:
+          type: integer
+          description: The measure sorted by (by = measure); 0 otherwise. Below the number of measures.
+          minimum: 0
+          maximum: 7
+        direction:
+          type: string
+          enum: [asc, desc]
+    WidgetQuery:
+      type: object
+      additionalProperties: false
+      description: >-
+        What a widget shows, worked out by the API in the viewer's scope. Which parts a type needs is in the
+        feature's data model §2.3 (for example pie: a dimension, no series, one measure); the API refuses others.
+      required: [source, dimension, series, measures, filters, sort, limit, groupRest]
+      properties:
+        source:
+          type: string
+          description: A built-in source key or a dataset ID.
+          pattern: ^(plans|campaigns|initiatives|activities|lineItems|plannedByMonth|financialTransactions|approvals|purchaseRequests|globalBudgets|DS-[0-9]+)$
+          example: activities
+        dimension:
+          description: The group (categories or x axis); null for gauge, kpi and an ungrouped table.
+          oneOf:
+            - $ref: "#/components/schemas/WidgetGroupBy"
+            - type: "null"
+        series:
+          description: The breakdown (series); not the same field and date group as the dimension.
+          oneOf:
+            - $ref: "#/components/schemas/WidgetGroupBy"
+            - type: "null"
+        measures:
+          type: array
+          minItems: 1
+          maxItems: 8
+          items:
+            $ref: "#/components/schemas/WidgetMeasure"
+        filters:
+          type: array
+          description: All must hold.
+          maxItems: 10
+          items:
+            $ref: "#/components/schemas/WidgetFilter"
+        sort:
+          $ref: "#/components/schemas/WidgetSort"
+        limit:
+          type: integer
+          description: The most dimension groups answered (top N by the sort).
+          minimum: 1
+          maximum: 500
+        groupRest:
+          type: boolean
+          description: The groups after the limit are answered as one group "Other".
+    ChartPalette:
+      type: string
+      description: The design-system chart palettes (§4.7); never Primary Yellow or Secondary Red.
+      enum: [categorical, planning, levels, sequential]
+    WidgetLegend:
+      type: object
+      additionalProperties: false
+      required: [show, position]
+      properties:
+        show:
+          type: boolean
+        position:
+          type: string
+          enum: [top, bottom, left, right]
+    WidgetAxisTitles:
+      type: object
+      additionalProperties: false
+      required: [x, y, y2]
+      properties:
+        x:
+          type: string
+          maxLength: 40
+        y:
+          type: string
+          maxLength: 40
+        y2:
+          type: string
+          description: The right value axis (combo).
+          maxLength: 40
+    WidgetMeasureStyle:
+      type: object
+      additionalProperties: false
+      required: [as, axis]
+      properties:
+        as:
+          type: string
+          enum: [bar, line]
+        axis:
+          type: string
+          enum: [left, right]
+    WidgetReferenceLine:
+      type: object
+      additionalProperties: false
+      required: [value, label]
+      properties:
+        value:
+          $ref: "#/components/schemas/Decimal"
+        label:
+          type: string
+          maxLength: 40
+    WidgetGaugeOptions:
+      type: object
+      additionalProperties: false
+      description: min below max; max null means the value rounded up to a round number.
+      required: [min, max]
+      properties:
+        min:
+          $ref: "#/components/schemas/Decimal"
+        max:
+          oneOf:
+            - $ref: "#/components/schemas/Decimal"
+            - type: "null"
+    WidgetKpiOptions:
+      type: object
+      additionalProperties: false
+      description: target is required when comparison is target.
+      required: [comparison, target, higherIsBetter]
+      properties:
+        comparison:
+          type: string
+          enum: [none, target, previousPeriod]
+        target:
+          oneOf:
+            - $ref: "#/components/schemas/Decimal"
+            - type: "null"
+        higherIsBetter:
+          type: boolean
+    WidgetTableOptions:
+      type: object
+      additionalProperties: false
+      required: [columns, totals]
+      properties:
+        columns:
+          type: array
+          description: The columns shown, in order, each once; empty shows every column.
+          maxItems: 10
+          items:
+            type: string
+            pattern: ^(dimension|series|m[0-7])$
+        totals:
+          type: boolean
+    WidgetDisplay:
+      type: object
+      additionalProperties: false
+      description: >-
+        Display options; every property is optional and its default is in the feature's data model §3. An option
+        a type does not draw is refused (validation_failed), so a stored widget holds only what it uses.
+      properties:
+        palette:
+          $ref: "#/components/schemas/ChartPalette"
+        legend:
+          $ref: "#/components/schemas/WidgetLegend"
+        dataLabels:
+          type: boolean
+        axisTitles:
+          $ref: "#/components/schemas/WidgetAxisTitles"
+        gridlines:
+          type: boolean
+        smooth:
+          type: boolean
+        stack:
+          type: string
+          enum: [none, stacked, percent]
+        orientation:
+          type: string
+          enum: [vertical, horizontal]
+        numberFormat:
+          type: string
+          description: compact writes 1.2K, 3.4M; percent writes the value with "%" without multiplying it.
+          enum: [number, money, percent, compact]
+        decimals:
+          type: integer
+          minimum: 0
+          maximum: 4
+        zoom:
+          type: boolean
+        referenceLine:
+          oneOf:
+            - $ref: "#/components/schemas/WidgetReferenceLine"
+            - type: "null"
+        measureStyles:
+          type: array
+          description: combo only, one per measure, in order.
+          minItems: 2
+          maxItems: 4
+          items:
+            $ref: "#/components/schemas/WidgetMeasureStyle"
+        gauge:
+          $ref: "#/components/schemas/WidgetGaugeOptions"
+        kpi:
+          $ref: "#/components/schemas/WidgetKpiOptions"
+        table:
+          $ref: "#/components/schemas/WidgetTableOptions"
+    Widget:
+      type: object
+      additionalProperties: false
+      required: [id, type, title, subtitle, layout, query, display, note]
+      properties:
+        id:
+          type: string
+          description: Made by the web app; unique in its dashboard.
+          pattern: ^w[1-9][0-9]{0,2}$
+          example: w1
+        type:
+          $ref: "#/components/schemas/WidgetType"
+        title:
+          type: string
+          maxLength: 80
+        subtitle:
+          type: string
+          maxLength: 120
+        layout:
+          $ref: "#/components/schemas/WidgetLayout"
+        query:
+          description: null exactly when type is text.
+          oneOf:
+            - $ref: "#/components/schemas/WidgetQuery"
+            - type: "null"
+        display:
+          $ref: "#/components/schemas/WidgetDisplay"
+        note:
+          type: string
+          description: The text of a text widget, plain text (never HTML); empty for other types.
+          maxLength: 2000
+    CustomDashboardFilters:
+      type: object
+      additionalProperties: false
+      description: >-
+        Applied to every built-in source that has the field, never to datasets (D-373). Plans and teams the viewer
+        cannot see are ignored. dateFrom is not after dateTo.
+      required: [dateFrom, dateTo, planIds, teamIds]
+      properties:
+        dateFrom:
+          type: [string, "null"]
+          format: date
+        dateTo:
+          type: [string, "null"]
+          format: date
+        planIds:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            pattern: ^P-[0-9]+$
+        teamIds:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            pattern: ^T-[0-9]+$
+    CustomDashboardAccess:
+      type: object
+      additionalProperties: false
+      required: [edit, share, delete, copy]
+      properties:
+        edit:
+          $ref: "#/components/schemas/ActionAvailability"
+        share:
+          $ref: "#/components/schemas/ActionAvailability"
+        delete:
+          $ref: "#/components/schemas/ActionAvailability"
+        copy:
+          $ref: "#/components/schemas/ActionAvailability"
+    CustomDashboard:
+      type: object
+      additionalProperties: false
+      required: [id, name, description, owner, isOwner, sharedWith, shareableTeams, filters, widgets, access, version,
+        createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id:
+          type: string
+          pattern: ^DB-[0-9]+$
+          example: DB-1001
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        description:
+          type: string
+          maxLength: 500
+        owner:
+          $ref: "#/components/schemas/PersonRef"
+        isOwner:
+          type: boolean
+        sharedWith:
+          type: array
+          description: Sorted by name.
+          items:
+            $ref: "#/components/schemas/TeamRef"
+        shareableTeams:
+          type: array
+          description: The teams the owner may tick in Sharing (their teams and those already shared), by name; empty for others.
+          items:
+            $ref: "#/components/schemas/TeamRef"
+        filters:
+          $ref: "#/components/schemas/CustomDashboardFilters"
+        widgets:
+          type: array
+          maxItems: 30
+          items:
+            $ref: "#/components/schemas/Widget"
+        access:
+          $ref: "#/components/schemas/CustomDashboardAccess"
+        version:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: "#/components/schemas/ActorRef"
+        updatedAt:
+          type: string
+          format: date-time
+        updatedBy:
+          $ref: "#/components/schemas/ActorRef"
+    CustomDashboardSummary:
+      type: object
+      additionalProperties: false
+      required: [id, name, description, owner, sharedWith, widgetCount, updatedAt, access]
+      properties:
+        id:
+          type: string
+          pattern: ^DB-[0-9]+$
+        name:
+          type: string
+        description:
+          type: string
+        owner:
+          $ref: "#/components/schemas/PersonRef"
+        sharedWith:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamRef"
+        widgetCount:
+          type: integer
+          minimum: 0
+          maximum: 30
+        updatedAt:
+          type: string
+          format: date-time
+        access:
+          $ref: "#/components/schemas/CustomDashboardAccess"
+    CustomDashboardList:
+      type: object
+      additionalProperties: false
+      required: [mine, sharedWithMe]
+      properties:
+        mine:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomDashboardSummary"
+        sharedWithMe:
+          type: array
+          description: Dashboards of other owners shared with one of the person's teams, by name.
+          items:
+            $ref: "#/components/schemas/CustomDashboardSummary"
+    CustomDashboardCreate:
+      type: object
+      additionalProperties: false
+      required: [name, description, filters, widgets]
+      properties:
+        name:
+          type: string
+          maxLength: 200
+          description: Required, trimmed, at most 80 characters (validation_failed names the limit).
+        description:
+          type: string
+          maxLength: 2000
+        filters:
+          $ref: "#/components/schemas/CustomDashboardFilters"
+        widgets:
+          type: array
+          maxItems: 30
+          items:
+            $ref: "#/components/schemas/Widget"
+    CustomDashboardUpdate:
+      type: object
+      additionalProperties: false
+      description: Only the fields to change, and the version. widgets, when sent, replace the whole list.
+      required: [version]
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 2000
+        filters:
+          $ref: "#/components/schemas/CustomDashboardFilters"
+        widgets:
+          type: array
+          maxItems: 30
+          items:
+            $ref: "#/components/schemas/Widget"
+    CustomDashboardCopy:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          maxLength: 200
+          description: The copy's name; left out gives "Copy of <name>".
+    CustomDashboardRef:
+      type: object
+      additionalProperties: false
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          pattern: ^DB-[0-9]+$
+        name:
+          type: string
+    SharingUpdate:
+      type: object
+      additionalProperties: false
+      required: [version, teamIds]
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        teamIds:
+          type: array
+          description: Every team it is shared with after the change; empty makes it private.
+          maxItems: 20
+          items:
+            type: string
+            pattern: ^T-[0-9]+$
+    DataFieldKind:
+      type: string
+      enum: [text, number, money, date]
+    DataField:
+      type: object
+      additionalProperties: false
+      required: [key, label, kind, multi, groupable, aggregations, finance]
+      properties:
+        key:
+          type: string
+          example: plannedCost
+        label:
+          type: string
+          example: Planned cost
+        kind:
+          $ref: "#/components/schemas/DataFieldKind"
+        multi:
+          type: boolean
+          description: The field can hold several values (a plan's teams); a record counts in each group.
+        groupable:
+          type: boolean
+        aggregations:
+          type: array
+          description: The aggregations allowed on this field (count is always allowed without a field).
+          items:
+            $ref: "#/components/schemas/WidgetAggregation"
+        finance:
+          type: boolean
+          description: Empty outside the plans where the person sees financial data.
+    DataSourceFilters:
+      type: object
+      additionalProperties: false
+      description: Which dashboard filters apply to the source; datasets never take any.
+      required: [date, plan, team]
+      properties:
+        date:
+          type: [string, "null"]
+          description: The field the date range applies to, or null.
+        plan:
+          type: boolean
+        team:
+          type: boolean
+    DataSource:
+      type: object
+      additionalProperties: false
+      required: [key, label, description, kind, fields, filters, owner]
+      properties:
+        key:
+          type: string
+          description: A built-in key, or the dataset's ID.
+          example: activities
+        label:
+          type: string
+          example: Activities
+        description:
+          type: string
+        kind:
+          type: string
+          enum: [builtIn, dataset]
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/DataField"
+        filters:
+          $ref: "#/components/schemas/DataSourceFilters"
+        owner:
+          description: The dataset's owner; null for built-in sources.
+          oneOf:
+            - $ref: "#/components/schemas/PersonRef"
+            - type: "null"
+    DataSourceList:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/DataSource"
+    WidgetComparisonRequest:
+      type: object
+      additionalProperties: false
+      description: kpi only. previousPeriod needs the filters' dateFrom and dateTo; target needs target.
+      required: [kind, target]
+      properties:
+        kind:
+          type: string
+          enum: [target, previousPeriod]
+        target:
+          oneOf:
+            - $ref: "#/components/schemas/Decimal"
+            - type: "null"
+    WidgetDataRequest:
+      type: object
+      additionalProperties: false
+      required: [type, query, filters, comparison]
+      properties:
+        type:
+          $ref: "#/components/schemas/WidgetType"
+        query:
+          $ref: "#/components/schemas/WidgetQuery"
+        filters:
+          oneOf:
+            - $ref: "#/components/schemas/CustomDashboardFilters"
+            - type: "null"
+        comparison:
+          oneOf:
+            - $ref: "#/components/schemas/WidgetComparisonRequest"
+            - type: "null"
+    WidgetDataColumn:
+      type: object
+      additionalProperties: false
+      required: [key, label, kind, dateGroup]
+      properties:
+        key:
+          type: string
+          pattern: ^(dimension|series|m[0-7])$
+        label:
+          type: string
+          example: Sum of Planned cost
+        kind:
+          $ref: "#/components/schemas/DataFieldKind"
+        dateGroup:
+          oneOf:
+            - $ref: "#/components/schemas/WidgetDateGroup"
+            - type: "null"
+    WidgetKey:
+      type: object
+      additionalProperties: false
+      description: >-
+        A group. value is the text, the decimal, or the first day of a date bucket (YYYY-MM-DD); null for "Not set"
+        and "Other". The web app writes date buckets in the person's date format.
+      required: [value, label, kind]
+      properties:
+        value:
+          type: [string, "null"]
+        label:
+          type: string
+          example: Event
+        kind:
+          type: string
+          enum: [value, empty, other]
+    WidgetValue:
+      type: object
+      additionalProperties: false
+      description: >-
+        One measure's value: exactly one of number, money and date is set for the measure's kind, all null when
+        there is no value (an average of nothing). share is the value's percent of its dimension group (with a
+        series) or of the total (without), for count, countDistinct and sum of non-negative values; else null.
+      required: [number, money, date, share]
+      properties:
+        number:
+          oneOf:
+            - $ref: "#/components/schemas/Decimal"
+            - type: "null"
+        money:
+          oneOf:
+            - $ref: "#/components/schemas/Money"
+            - type: "null"
+        date:
+          type: [string, "null"]
+          format: date
+        share:
+          oneOf:
+            - $ref: "#/components/schemas/SharePercent"
+            - type: "null"
+    WidgetDataRow:
+      type: object
+      additionalProperties: false
+      required: [dimension, series, values]
+      properties:
+        dimension:
+          oneOf:
+            - $ref: "#/components/schemas/WidgetKey"
+            - type: "null"
+        series:
+          oneOf:
+            - $ref: "#/components/schemas/WidgetKey"
+            - type: "null"
+        values:
+          type: array
+          description: One per measure, in the query's order.
+          items:
+            $ref: "#/components/schemas/WidgetValue"
+    WidgetComparison:
+      type: object
+      additionalProperties: false
+      required: [kind, value, change, period]
+      properties:
+        kind:
+          type: string
+          enum: [target, previousPeriod]
+        value:
+          $ref: "#/components/schemas/WidgetValue"
+        change:
+          description: The value's change against the comparison in percent (previousPeriod) or the share of the target reached (target); null when the comparison is zero or empty.
+          oneOf:
+            - $ref: "#/components/schemas/SharePercent"
+            - type: "null"
+        period:
+          description: The previous period compared with (previousPeriod), else null.
+          oneOf:
+            - type: object
+              additionalProperties: false
+              required: [from, to]
+              properties:
+                from:
+                  type: string
+                  format: date
+                to:
+                  type: string
+                  format: date
+            - type: "null"
+    WidgetFiltersApplied:
+      type: object
+      additionalProperties: false
+      required: [date, plan, team]
+      properties:
+        date:
+          type: boolean
+        plan:
+          type: boolean
+        team:
+          type: boolean
+    WidgetData:
+      type: object
+      additionalProperties: false
+      required: [source, columns, rows, totals, groupCount, notes, filtersApplied, comparison]
+      properties:
+        source:
+          type: string
+        columns:
+          type: array
+          description: dimension (when grouped), series (when broken down), then m0… one per measure.
+          items:
+            $ref: "#/components/schemas/WidgetDataColumn"
+        rows:
+          type: array
+          description: In the query's sort order; at most limit groups (+ Other) per series.
+          maxItems: 10500
+          items:
+            $ref: "#/components/schemas/WidgetDataRow"
+        totals:
+          type: array
+          description: One per measure over every group, also those beyond the limit.
+          items:
+            $ref: "#/components/schemas/WidgetValue"
+        groupCount:
+          type: integer
+          minimum: 0
+          description: Dimension groups before the limit ("Showing 10 of 37").
+        notes:
+          type: array
+          description: Plain sentences for the widget's foot ("Not filtered by date", "Financial figures cover 1 of 2 plans").
+          items:
+            type: string
+        filtersApplied:
+          $ref: "#/components/schemas/WidgetFiltersApplied"
+        comparison:
+          oneOf:
+            - $ref: "#/components/schemas/WidgetComparison"
+            - type: "null"
+    DatasetUpload:
+      type: object
+      additionalProperties: false
+      required: [fileName, content]
+      properties:
+        fileName:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: event-leads-2026.xlsx
+        content:
+          type: string
+          contentEncoding: base64
+          description: The .xlsx or .csv file, base64-encoded (at most 5 MB before encoding).
+    DatasetPreviewColumn:
+      type: object
+      additionalProperties: false
+      required: [position, label, proposedKind, proposedCurrency, samples, emptyCount]
+      properties:
+        position:
+          type: integer
+          minimum: 0
+          maximum: 49
+        label:
+          type: string
+          description: From the first row, trimmed and cut to 60 characters; "Column 3" when empty.
+        proposedKind:
+          $ref: "#/components/schemas/DataFieldKind"
+        proposedCurrency:
+          type: [string, "null"]
+          description: USD for a proposed money column, else null.
+          pattern: ^[A-Z]{3}$
+        samples:
+          type: array
+          maxItems: 5
+          items:
+            type: string
+        emptyCount:
+          type: integer
+          minimum: 0
+    DatasetPreview:
+      type: object
+      additionalProperties: false
+      required: [fileName, sheetName, rowCount, columns, rows, problems]
+      properties:
+        fileName:
+          type: string
+        sheetName:
+          type: string
+          description: The sheet read (the first); empty for a CSV file.
+        rowCount:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        columns:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: "#/components/schemas/DatasetPreviewColumn"
+        rows:
+          type: array
+          description: The first 20 rows as text, one string per column ("" empty).
+          maxItems: 20
+          items:
+            type: array
+            items:
+              type: string
+        problems:
+          type: array
+          description: What will stop the save or is worth knowing (duplicate column names, merged cells, empty columns).
+          items:
+            type: string
+    DatasetColumnInput:
+      type: object
+      additionalProperties: false
+      required: [position, label, kind, currency]
+      properties:
+        position:
+          type: integer
+          minimum: 0
+          maximum: 49
+        label:
+          type: string
+          maxLength: 200
+          description: Required, at most 60 characters, unique in the dataset ignoring case.
+        kind:
+          $ref: "#/components/schemas/DataFieldKind"
+        currency:
+          type: [string, "null"]
+          description: An active currency for a money column; null for others.
+          pattern: ^[A-Z]{3}$
+    DatasetCreate:
+      type: object
+      additionalProperties: false
+      required: [fileName, content, name, description, columns]
+      properties:
+        fileName:
+          type: string
+          minLength: 1
+          maxLength: 255
+        content:
+          type: string
+          contentEncoding: base64
+          description: The same file as checked, base64-encoded (at most 5 MB before encoding).
+        name:
+          type: string
+          maxLength: 200
+          description: Required, at most 80 characters, unique among the person's datasets ignoring case.
+        description:
+          type: string
+          maxLength: 2000
+        columns:
+          type: array
+          description: One per column of the file, positions 0… in order.
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: "#/components/schemas/DatasetColumnInput"
+    DatasetColumn:
+      type: object
+      additionalProperties: false
+      required: [key, position, label, kind, currency]
+      properties:
+        key:
+          type: string
+          pattern: ^c([1-9]|[1-4][0-9]|50)$
+          description: The field key in the data catalogue and in widget queries.
+        position:
+          type: integer
+          minimum: 0
+          maximum: 49
+        label:
+          type: string
+        kind:
+          $ref: "#/components/schemas/DataFieldKind"
+        currency:
+          type: [string, "null"]
+          pattern: ^[A-Z]{3}$
+    DatasetAccess:
+      type: object
+      additionalProperties: false
+      required: [edit, share, delete]
+      properties:
+        edit:
+          $ref: "#/components/schemas/ActionAvailability"
+        share:
+          $ref: "#/components/schemas/ActionAvailability"
+        delete:
+          $ref: "#/components/schemas/ActionAvailability"
+    Dataset:
+      type: object
+      additionalProperties: false
+      required: [id, name, description, owner, isOwner, sharedWith, shareableTeams, fileName, sheetName, rowCount, columns,
+        usedBy, access, version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id:
+          type: string
+          pattern: ^DS-[0-9]+$
+          example: DS-1001
+        name:
+          type: string
+        description:
+          type: string
+        owner:
+          $ref: "#/components/schemas/PersonRef"
+        isOwner:
+          type: boolean
+        sharedWith:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamRef"
+        shareableTeams:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamRef"
+        fileName:
+          type: string
+        sheetName:
+          type: string
+        rowCount:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        columns:
+          type: array
+          items:
+            $ref: "#/components/schemas/DatasetColumn"
+        usedBy:
+          type: array
+          description: Dashboards the person may see whose widgets read this dataset, by name.
+          items:
+            $ref: "#/components/schemas/CustomDashboardRef"
+        access:
+          $ref: "#/components/schemas/DatasetAccess"
+        version:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: "#/components/schemas/ActorRef"
+        updatedAt:
+          type: string
+          format: date-time
+        updatedBy:
+          $ref: "#/components/schemas/ActorRef"
+    DatasetSummary:
+      type: object
+      additionalProperties: false
+      required: [id, name, description, owner, sharedWith, rowCount, columnCount, updatedAt, access]
+      properties:
+        id:
+          type: string
+          pattern: ^DS-[0-9]+$
+        name:
+          type: string
+        description:
+          type: string
+        owner:
+          $ref: "#/components/schemas/PersonRef"
+        sharedWith:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamRef"
+        rowCount:
+          type: integer
+        columnCount:
+          type: integer
+        updatedAt:
+          type: string
+          format: date-time
+        access:
+          $ref: "#/components/schemas/DatasetAccess"
+    DatasetList:
+      type: object
+      additionalProperties: false
+      required: [mine, sharedWithMe]
+      properties:
+        mine:
+          type: array
+          items:
+            $ref: "#/components/schemas/DatasetSummary"
+        sharedWithMe:
+          type: array
+          items:
+            $ref: "#/components/schemas/DatasetSummary"
+    DatasetUpdate:
+      type: object
+      additionalProperties: false
+      description: Only the fields to change, and the version. Column types never change.
+      required: [version]
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 2000
+        columns:
+          type: array
+          description: New names of the columns given; the others keep theirs.
+          maxItems: 50
+          items:
+            type: object
+            additionalProperties: false
+            required: [position, label]
+            properties:
+              position:
+                type: integer
+                minimum: 0
+                maximum: 49
+              label:
+                type: string
+                maxLength: 200
+    DatasetRowPage:
+      type: object
+      additionalProperties: false
+      required: [columns, rows, offset, limit, total]
+      properties:
+        columns:
+          type: array
+          items:
+            $ref: "#/components/schemas/DatasetColumn"
+        rows:
+          type: array
+          description: >-
+            One array per row, one cell per column: null for empty; text as written, numbers as Decimal, dates
+            YYYY-MM-DD, money as a decimal in the column's currency.
+          items:
+            type: array
+            items:
+              type: [string, "null"]
+        offset:
+          type: integer
+          minimum: 0
+        limit:
+          type: integer
+          minimum: 1
+        total:
+          type: integer
+          minimum: 0

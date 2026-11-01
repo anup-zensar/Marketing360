@@ -65,7 +65,14 @@ func TestEveryProtectedOperationRequiresSignIn_FR005(t *testing.T) {
 
 // notYetServed: the contract's operations designed but not built yet (D-192, D-298). Each feature removes
 // its own in the change that serves them; the list must be empty when the Plan module is done.
-var notYetServed = []string{}
+var notYetServed = []string{
+	"GET /api/v1/custom-dashboards", "POST /api/v1/custom-dashboards", "GET /api/v1/custom-dashboards/{dashboardId}",
+	"PATCH /api/v1/custom-dashboards/{dashboardId}", "DELETE /api/v1/custom-dashboards/{dashboardId}",
+	"POST /api/v1/custom-dashboards/{dashboardId}/copy", "PUT /api/v1/custom-dashboards/{dashboardId}/sharing",
+	"GET /api/v1/datasets", "POST /api/v1/datasets", "POST /api/v1/datasets/preview", "GET /api/v1/datasets/{datasetId}",
+	"PATCH /api/v1/datasets/{datasetId}", "DELETE /api/v1/datasets/{datasetId}", "GET /api/v1/datasets/{datasetId}/rows",
+	"PUT /api/v1/datasets/{datasetId}/sharing", "GET /api/v1/data-sources", "POST /api/v1/data-sources/query",
+}
 
 func TestNotYetServedIsAccurate(t *testing.T) {
 	t.Parallel()
