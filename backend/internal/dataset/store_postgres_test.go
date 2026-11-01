@@ -9,6 +9,7 @@ import (
 	"mapp/internal/dataset"
 	"mapp/internal/people"
 	"mapp/internal/platform/actor"
+	"mapp/internal/platform/database"
 	"mapp/internal/platform/database/dbtest"
 	"mapp/internal/platform/record"
 )
@@ -22,7 +23,7 @@ const (
 )
 
 // scopeDB holds two datasets of the owner, one shared with the member's team, and a third person in no team.
-func scopeDB(t *testing.T) *dataset.PostgresStore {
+func scopeDB(t *testing.T) (*dataset.PostgresStore, *database.DB) {
 	t.Helper()
 	db := dbtest.NewDB(t)
 	meta := record.NewMeta(actor.System, time.Date(2026, 3, 12, 9, 0, 0, 0, time.UTC))
@@ -48,7 +49,7 @@ func scopeDB(t *testing.T) *dataset.PostgresStore {
 	if err != nil {
 		t.Fatalf("fill: %v", err)
 	}
-	return store
+	return store, db
 }
 
 func putPeople(ctx context.Context, persons *people.PostgresStore, meta record.Meta) error {
@@ -88,7 +89,7 @@ func firstError(steps ...func() error) error {
 
 func TestPostgresStoreVisibleDatasets_ScopeIsolation_FR044(t *testing.T) {
 	t.Parallel()
-	store := scopeDB(t)
+	store, _ := scopeDB(t)
 	tests := []struct {
 		person string
 		want   []string
@@ -123,7 +124,7 @@ func TestPostgresStoreVisibleDatasets_ScopeIsolation_FR044(t *testing.T) {
 
 func TestPostgresStoreRowsAndColumns_AsStored_FR042(t *testing.T) {
 	t.Parallel()
-	store := scopeDB(t)
+	store, _ := scopeDB(t)
 	d, found, err := store.GetVisible(t.Context(), member, shared)
 	if err != nil || !found {
 		t.Fatalf("GetVisible = %v, %v", found, err)
@@ -143,3 +144,22 @@ func TestPostgresStoreRowsAndColumns_AsStored_FR042(t *testing.T) {
 }
 
 var _ dataset.Store = (*dataset.PostgresStore)(nil)
+
+func TestPostgresStore_SharesLeaveWithADeletedTeam_D379(t *testing.T) {
+	t.Parallel()
+	store, db := scopeDB(t)
+	persons := people.NewPostgresStore(db)
+
+	err := db.Write(t.Context(), func(ctx context.Context) error {
+		return firstError(func() error { return persons.DeleteMembership(ctx, "TM-1") },
+			func() error { return persons.DeleteTeam(ctx, "T-1") })
+	})
+	if err != nil {
+		t.Fatalf("deleting the shared team: %v", err)
+	}
+
+	d, found, err := store.Get(t.Context(), shared)
+	if err != nil || !found || len(d.SharedWith) != 0 {
+		t.Errorf("Get(%s) = shared with %q, found %v, error %v; want shared with nobody", shared, d.SharedWith, found, err)
+	}
+}

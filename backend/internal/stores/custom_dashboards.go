@@ -10,4 +10,5 @@ import (
 type CustomDashboardStore interface {
 	customdashboard.Store
 	OwnerOf(ctx context.Context, id string) (ownerID string, found bool, err error)
+	RemoveTeamShares(ctx context.Context, teamID string) error
 }

@@ -70,7 +70,8 @@ func (w *wiring) plansArea() error {
 		return err
 	}
 	mount(w.signedIn, plan.NewHandler(w.plans))
-	w.history.UseAccess(historyAccess{plans: w.set.Plans, history: w.history, purchaseRequests: w.set.PurchaseRequests})
+	w.history.UseAccess(historyAccess{plans: w.set.Plans, history: w.history, purchaseRequests: w.set.PurchaseRequests,
+		dashboards: w.set.CustomDashboards, datasets: w.set.Datasets})
 	return nil
 }
 

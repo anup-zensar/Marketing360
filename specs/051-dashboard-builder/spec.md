@@ -262,6 +262,9 @@ the table view.
   builder and matches nothing.
 - A dataset deleted (or its owner's share removed): its widgets show "This data is no longer available" to the
   owner and "You don't have access to this data" to others; Undo or Restore brings them back.
+- A team a dashboard or dataset is shared with is deleted: the share goes with it, so its members no longer see
+  the dashboard through that team; restoring the team does not restore the share, and a dashboard or dataset
+  restored from the recycle bin keeps only the shares of teams that still exist (D-379).
 - A dashboard's owner made inactive: the dashboard stays visible to the teams it is shared with; nobody can edit it
   (Q-029).
 - Two people saving the same dashboard: the second save is refused as changed meanwhile; nothing is lost on screen.

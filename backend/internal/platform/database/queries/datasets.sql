@@ -86,4 +86,8 @@ WHERE dataset_id = $1;
 
 -- name: InsertDatasetShares :exec
 INSERT INTO dataset_shares (dataset_id, team_id)
-SELECT sqlc.arg(dataset_id), unnest(sqlc.arg(team_ids)::text[]);
+SELECT sqlc.arg(dataset_id), t.id FROM teams t WHERE t.id = ANY(sqlc.arg(team_ids)::text[]);
+
+-- name: DeleteDatasetSharesOfTeam :exec
+DELETE FROM dataset_shares
+WHERE team_id = sqlc.arg(team_id);

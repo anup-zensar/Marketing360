@@ -11,12 +11,12 @@ import (
 
 func (w *wiring) customDashboardsArea() error {
 	tools := history.Tools{Tx: w.set.Tx, IDs: w.generator, Log: w.history, Now: w.now}
-	dashboards := customdashboard.NewService(tools, w.set.CustomDashboards,
+	w.customDashboards = customdashboard.NewService(tools, w.set.CustomDashboards,
 		customDashboardDirectory{Service: w.people, repo: w.set.People})
-	if err := w.register(dashboards.Kinds()); err != nil {
+	if err := w.register(w.customDashboards.Kinds()); err != nil {
 		return err
 	}
-	mount(w.signedIn, customdashboard.NewHandler(dashboards))
+	mount(w.signedIn, customdashboard.NewHandler(w.customDashboards))
 	return nil
 }
 

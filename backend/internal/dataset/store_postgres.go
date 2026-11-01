@@ -223,6 +223,14 @@ func (s *PostgresStore) ReplaceShares(ctx context.Context, id string, teamIDs []
 	return nil
 }
 
+// RemoveTeamShares unshares every dataset from a deleted team (D-379).
+func (s *PostgresStore) RemoveTeamShares(ctx context.Context, teamID string) error {
+	if err := s.db.Queries(ctx).DeleteDatasetSharesOfTeam(ctx, teamID); err != nil {
+		return fmt.Errorf("delete dataset shares of team %s: %w", teamID, err)
+	}
+	return nil
+}
+
 func (s *PostgresStore) Delete(ctx context.Context, id string) error {
 	if err := s.db.Queries(ctx).DeleteDataset(ctx, id); err != nil {
 		return fmt.Errorf("delete dataset: %w", err)

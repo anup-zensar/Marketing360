@@ -25,7 +25,7 @@ var (
 
 // pgStore gives a store with the owner U-1001, Daniel U-1002 in T-1001, Sara U-1003 who left T-1001 and Mei
 // U-1004; DB-1001 is shared with T-1001 and reads DS-1001, DB-1002 is private, DB-1003 is Mei's.
-func pgStore(t *testing.T) (*customdashboard.PostgresStore, []customdashboard.Dashboard) {
+func pgStore(t *testing.T) (*customdashboard.PostgresStore, []customdashboard.Dashboard, *database.DB) {
 	t.Helper()
 	db := dbtest.NewDB(t)
 	s, directory := customdashboard.NewPostgresStore(db), people.NewPostgresStore(db)
@@ -49,7 +49,7 @@ func pgStore(t *testing.T) (*customdashboard.PostgresStore, []customdashboard.Da
 		return err
 	})
 	pgWrite(t, db, func(ctx context.Context) error { return directory.DeleteMembership(ctx, "TM-1002") })
-	return s, dashboards
+	return s, dashboards, db
 }
 
 func pgWrite(t *testing.T, db *database.DB, fn func(ctx context.Context) error) {
@@ -77,7 +77,7 @@ func pgDashboard(id, ownerID string, teams []string, source string) customdashbo
 
 func TestPostgresStoreVisibleDashboards_ScopeIsolation_FR005(t *testing.T) {
 	t.Parallel()
-	s, all := pgStore(t)
+	s, all, _ := pgStore(t)
 	tests := []struct {
 		name     string
 		personID string
@@ -134,4 +134,24 @@ func containsID(list []customdashboard.Dashboard, id string) bool {
 		}
 	}
 	return false
+}
+
+func TestPostgresStore_SharesLeaveWithADeletedTeam_D379(t *testing.T) {
+	t.Parallel()
+	s, _, db := pgStore(t)
+	directory := people.NewPostgresStore(db)
+
+	pgWrite(t, db, func(ctx context.Context) error {
+		return errors.Join(directory.DeleteMembership(ctx, "TM-1001"), directory.DeleteTeam(ctx, "T-1001"))
+	})
+
+	d, found, err := s.Get(t.Context(), "DB-1001")
+	if err != nil || !found || len(d.SharedWith) != 0 {
+		t.Errorf("Get(DB-1001) = shared with %q, found %v, error %v; want shared with nobody", d.SharedWith, found, err)
+	}
+	restored := pgDashboard("DB-1004", "U-1001", []string{"T-1001", "T-1002"}, "activities")
+	pgWrite(t, db, func(ctx context.Context) error { return s.Insert(ctx, restored) })
+	if d, _, err = s.Get(t.Context(), "DB-1004"); err != nil || !cmp.Equal([]string{"T-1002"}, d.SharedWith) {
+		t.Errorf("a dashboard restored after its team was deleted = shared with %q, error %v; want T-1002 only", d.SharedWith, err)
+	}
 }
