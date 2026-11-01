@@ -1,0 +1,37 @@
+/* Tooltips are drawn by ECharts on the Raised surface; text is Text Strong (design system §4.7). */
+.tooltip {
+  max-width: 280px;
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+}
+
+.tooltipTitle {
+  margin: 0 0 var(--space-1);
+  font-weight: var(--weight-bold);
+}
+
+.tooltipList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.tooltipMarker {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+}
+
+.tooltipLabel {
+  flex: 1;
+  color: var(--ink);
+}
