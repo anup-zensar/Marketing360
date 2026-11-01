@@ -172,7 +172,7 @@ the file holds every matching row and no row of a plan outside Alex's scope.
 
 - [ ] T039 `BenchmarkApprovalsReport` in `backend/internal/platform/apibench/measure_approvals_test.go` (location
   per lane A, T002) at the 028 volumes; record statements and time in `plan.md` § Benchmark
-- [ ] T040 Comment budget and file length of **every file this feature touched**, including the test files; split
+- [X] T040 Comment budget and file length of **every file this feature touched**, including the test files; split
   any file above 300 non-blank lines
 - [ ] T041 Run the report by hand on the demo data (Alex, Daniel, Sara): every spec scenario and state; fix what
   differs
@@ -227,3 +227,8 @@ the export. One story per implementation prompt; commit at each checkpoint; stop
 | SC-004 | T013, T031, T037 |
 | SC-005 | T016, T017, T032 |
 | SC-006 | T016, T032, T026 (axe), T039 |
+
+## Phase 6: Convergence
+
+- [ ] T044 Confirm with the purchase request (032) owners when a person may open a purchase request, and make `canOpen` follow it per request: today the adapter sets it for every request from the purchase-requests list permission alone, in `backend/internal/app/measure_approvals.go`, per FR-017 and 041-C5 (partial)
+- [ ] T045 Decide whether the status and average widgets need the "You can't see financial data" and "Covers N of M plans" states T016 listed, or record in the spec that the grid carries them because the widgets show no amounts, per FR-018 and FR-020 (partial)
