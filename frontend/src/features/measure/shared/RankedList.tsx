@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { recordHref } from '@/ui/record-links';
 import type { PlanningRecordType } from '@/ui/record-links';
 import { Button } from '@/ui/Button/Button';
@@ -61,6 +61,7 @@ export function RankedList<F>(props: RankedListProps<F>) {
   const { report, data, error, onRetry, columns, groups, defaultSort, flag } = props;
   const { state, change } = useRankedState(defaultSort);
   const [address] = useReportAddress();
+  const [params] = useSearchParams();
   const sorts = columns.map((c) => ({ value: c.key, label: c.label }));
   const back = data && data.trail.length > 1 ? (data.trail.at(-2)?.id ?? '') : '';
   return (
@@ -70,7 +71,9 @@ export function RankedList<F>(props: RankedListProps<F>) {
         <ExportMenu
           label="Export"
           formats={['xlsx', 'csv']}
-          download={(format) => downloadReport(report, address, format, 'ranked')}
+          download={(format) =>
+            downloadReport(report, address, format, { widget: 'ranked', own: params })
+          }
         />
       }
     >

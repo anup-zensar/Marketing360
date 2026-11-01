@@ -41,7 +41,7 @@ function PlanBudgetBody({ frame, address }: { frame: ReportFrameData; address: R
     { value: 'plan', label: 'Plan' },
     { value: 'owner', label: 'Owner' },
     ...frame.choices.attributeGroups
-      .filter((g) => LEVELS.indexOf(g.level) <= LEVELS.indexOf(show))
+      .filter((g) => LEVELS.includes(g.level) && LEVELS.indexOf(g.level) <= LEVELS.indexOf(show))
       .map((g) => ({ value: `attr:${g.attributeId}`, label: g.label })),
   ];
   return (

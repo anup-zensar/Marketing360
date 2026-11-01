@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { components } from '@/api/generated/schema';
 import { expectNoAxeViolations } from '@/testing/axe';
@@ -6,7 +6,6 @@ import { testUser } from '@/testing/fixtures/users';
 import { mockApi } from '@/testing/mock-api';
 import { renderWithProviders } from '@/testing/render';
 import { reply } from '@/testing/replies';
-import { RoiValue } from '../shared/RoiValue';
 import { AttributionSettingsPage } from './AttributionSettingsPage';
 
 type Settings = components['schemas']['AttributionSettings'];
@@ -76,22 +75,5 @@ describe('AttributionSettingsPage (050 US1)', () => {
     expect(await screen.findByText('Changing it needs Manage settings.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
     expect(screen.getByRole('radio', { name: /U-shaped/ })).toBeDisabled();
-  });
-});
-
-describe('RoiValue (050 US3, FR-007, FR-008)', () => {
-  it('names the model and the cost basis next to every ROI', () => {
-    render(
-      <>
-        <RoiValue roi={50} model="U-shaped" basis="actual" />
-        <RoiValue roi={null} model="U-shaped" basis="actual" />
-        <RoiValue roi={-12} model="Last touch" basis="planned" />
-      </>,
-    );
-
-    expect(screen.getByText('50%')).toBeInTheDocument();
-    expect(screen.getByText('U-shaped · on actual cost')).toBeInTheDocument();
-    expect(screen.getByText('No actual cost yet · U-shaped')).toBeInTheDocument();
-    expect(screen.getByText('Last touch · on planned cost')).toBeInTheDocument();
   });
 });

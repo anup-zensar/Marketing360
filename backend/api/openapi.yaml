@@ -7881,6 +7881,11 @@ paths:
         - $ref: "#/components/parameters/ReportPeriod"
         - $ref: "#/components/parameters/ReportShow"
         - $ref: "#/components/parameters/ReportCurrency"
+        - $ref: "#/components/parameters/RankedSort"
+        - $ref: "#/components/parameters/RankedOrder"
+        - $ref: "#/components/parameters/RankedGroup"
+        - $ref: "#/components/parameters/RankedSearch"
+        - $ref: "#/components/parameters/RankedDrill"
       responses:
         "200":
           description: The file, named "SP&A One – <report> [– <widget>] – <year> – <date>".
@@ -8075,22 +8080,9 @@ paths:
         - $ref: "#/components/parameters/ReportShow"
         - $ref: "#/components/parameters/ReportCurrency"
         - $ref: "#/components/parameters/ReportTable"
-        - name: sort
-          in: query
-          schema:
-            type: string
-            enum: [budget, planned, committed, actual, leftToPlan, unspent]
-        - name: order
-          in: query
-          schema:
-            type: string
-            enum: [desc, asc]
-        - name: group
-          in: query
-          description: none, plan, owner or attr:<attribute ID>.
-          schema:
-            type: string
-            pattern: ^(none|plan|owner|attr:[A-Z]+-[0-9]+)$
+        - $ref: "#/components/parameters/RankedSort"
+        - $ref: "#/components/parameters/RankedOrder"
+        - $ref: "#/components/parameters/RankedGroup"
         - name: size
           in: query
           schema:
@@ -8101,17 +8093,8 @@ paths:
           schema:
             type: integer
             minimum: 1
-        - name: q
-          in: query
-          schema:
-            type: string
-            maxLength: 100
-        - name: drill
-          in: query
-          description: The record whose children the list shows under it.
-          schema:
-            type: string
-            pattern: ^[A-Z]+-[0-9]+$
+        - $ref: "#/components/parameters/RankedSearch"
+        - $ref: "#/components/parameters/RankedDrill"
       responses:
         "200":
           description: One page of top entries with their children, in groups.
@@ -8274,6 +8257,38 @@ components:
           - summary
           - revenue
           - funnel
+    RankedSort:
+      name: sort
+      in: query
+      schema:
+        type: string
+        enum: [budget, planned, committed, actual, leftToPlan, unspent]
+    RankedOrder:
+      name: order
+      in: query
+      schema:
+        type: string
+        enum: [desc, asc]
+    RankedGroup:
+      name: group
+      in: query
+      description: none, plan, owner or attr:<attribute ID>.
+      schema:
+        type: string
+        pattern: ^(none|plan|owner|attr:[A-Z]+-[0-9]+)$
+    RankedSearch:
+      name: q
+      in: query
+      schema:
+        type: string
+        maxLength: 100
+    RankedDrill:
+      name: drill
+      in: query
+      description: The record whose children the list shows under it.
+      schema:
+        type: string
+        pattern: ^[A-Z]+-[0-9]+$
     ReportViewId:
       name: viewId
       in: path

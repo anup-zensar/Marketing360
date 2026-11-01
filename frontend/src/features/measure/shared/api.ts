@@ -52,18 +52,36 @@ export function useReportFrame(report: ReportKey, address: ReportAddress) {
   });
 }
 
+type ExportQuery = NonNullable<operations['exportReport']['parameters']['query']>;
+
+const SORTS = ['budget', 'planned', 'committed', 'actual', 'leftToPlan', 'unspent'] as const;
+
+/** The report's own parameters on screen (a ranked list's sort, group, search and drill), so the file matches it. */
+function ownQuery(params?: URLSearchParams): Partial<ExportQuery> {
+  const sort = SORTS.find((s) => s === params?.get('sort'));
+  const [group, q, drill] = ['group', 'q', 'drill'].map((name) => params?.get(name) ?? '');
+  return {
+    ...(sort && { sort }),
+    ...(params?.get('order') === 'asc' && { order: 'asc' as const }),
+    ...(group && { group }),
+    ...(q && { q }),
+    ...(drill && { drill }),
+  };
+}
+
 /** The report, or one widget of it, as a file through 039's one export (FR-022). */
 export function downloadReport(
   report: ReportKey,
   address: ReportAddress,
   format: ExportFormat,
-  widget?: string,
+  options: { widget?: string; own?: URLSearchParams } = {},
 ): Promise<string> {
+  const { widget, own } = options;
   return downloadFromApi(
     api.GET('/api/v1/reports/{report}/export', {
       params: {
         path: { report: REPORT_PATHS[report] },
-        query: { ...toQuery(address), format, ...(widget && { widget }) },
+        query: { ...toQuery(address), ...ownQuery(own), format, ...(widget && { widget }) },
       },
       parseAs: 'blob',
     }),

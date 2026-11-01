@@ -169,7 +169,9 @@ export const PurchaseRequestEditPage = lazy(() =>
   purchaseRequests().then((feature) => ({ default: feature.PurchaseRequestEditPage })),
 );
 export const AttributionSettingsPage = lazy(() =>
-  measure().then((feature) => ({ default: feature.AttributionSettingsPage })),
+  import('@/features/attribution').then((feature) => ({
+    default: feature.AttributionSettingsPage,
+  })),
 );
 export const OverspendSettingsPage = lazy(() =>
   overspend().then((feature) => ({ default: feature.OverspendSettingsPage })),

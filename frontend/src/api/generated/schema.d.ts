@@ -11003,6 +11003,13 @@ export interface components {
         ReportKey: components["schemas"]["ReportKey"];
         /** @description The report's path in the web app's address. */
         ReportPath: "plan-budget" | "approvals" | "purchase-requests" | "plan-details" | "gsap-link" | "user-access" | "summary" | "revenue" | "funnel";
+        RankedSort: "budget" | "planned" | "committed" | "actual" | "leftToPlan" | "unspent";
+        RankedOrder: "desc" | "asc";
+        /** @description none, plan, owner or attr:<attribute ID>. */
+        RankedGroup: string;
+        RankedSearch: string;
+        /** @description The record whose children the list shows under it. */
+        RankedDrill: string;
         /** @example RV-1001 */
         ReportViewId: string;
         /** @description Time widgets by month (default) or quarter of the plan year. */
@@ -19346,6 +19353,13 @@ export interface operations {
                 show?: components["parameters"]["ReportShow"];
                 /** @description The display currency; default the person's. An unknown or inactive code falls back to the default. */
                 currency?: components["parameters"]["ReportCurrency"];
+                sort?: components["parameters"]["RankedSort"];
+                order?: components["parameters"]["RankedOrder"];
+                /** @description none, plan, owner or attr:<attribute ID>. */
+                group?: components["parameters"]["RankedGroup"];
+                q?: components["parameters"]["RankedSearch"];
+                /** @description The record whose children the list shows under it. */
+                drill?: components["parameters"]["RankedDrill"];
             };
             header?: never;
             path: {
@@ -19582,15 +19596,15 @@ export interface operations {
                 currency?: components["parameters"]["ReportCurrency"];
                 /** @description Keys of the widgets shown as a table instead of a chart. */
                 table?: components["parameters"]["ReportTable"];
-                sort?: "budget" | "planned" | "committed" | "actual" | "leftToPlan" | "unspent";
-                order?: "desc" | "asc";
+                sort?: components["parameters"]["RankedSort"];
+                order?: components["parameters"]["RankedOrder"];
                 /** @description none, plan, owner or attr:<attribute ID>. */
-                group?: string;
+                group?: components["parameters"]["RankedGroup"];
                 size?: 10 | 25 | 50;
                 page?: number;
-                q?: string;
+                q?: components["parameters"]["RankedSearch"];
                 /** @description The record whose children the list shows under it. */
-                drill?: string;
+                drill?: components["parameters"]["RankedDrill"];
             };
             header?: never;
             path?: never;
