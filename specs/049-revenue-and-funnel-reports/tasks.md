@@ -35,7 +35,8 @@ marks tasks that can run in parallel.
 - [X] T016 `cards.go`: the fixed Revenue card set — goal, actual, projected, performance (FR-010, 049-C9)
 - [X] T017 `report.go` + `handler.go`: `KeyRevenue` registration, `GET /reports/revenue`,
   `GET /reports/revenue/ranked`; wire `measure_revenue.go`. Info tip text (FR-014) is frontend work, with T019
-- [ ] T018 [P] `sheets.go`: export widgets cards/periods/ranked for Revenue
+- [X] T018 [P] `sheets.go`: export widgets cards/periods/ranked, for both Revenue and Funnel (research R1)
+  — every page of the ranked list, unbounded size, as 040's export does (FR-007)
 - [X] T019 [P] Frontend `RevenueReport.tsx`: compose `ReportFrame` + cards + `ReportWidget` (periods, a
   hand-rolled SVG chart reusing the four chart tokens) + `RankedList`, mirroring `PlanBudgetReport.tsx`'s
   shape; `api.ts` for the report and ranked reads; page test with 5 cases incl. axe

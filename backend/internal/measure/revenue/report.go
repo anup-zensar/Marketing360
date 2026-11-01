@@ -45,8 +45,8 @@ func (revenueReport) Params() []string {
 	return []string{paramCategory, paramSort, paramOrder, paramGroup, paramSize, paramSearch, paramDrill}
 }
 
-func (r revenueReport) Sheets(_ context.Context, _ actor.Actor, _ measure.Filter) ([]measure.WidgetSheet, error) {
-	return nil, nil
+func (r revenueReport) Sheets(ctx context.Context, a actor.Actor, f measure.Filter) ([]measure.WidgetSheet, error) {
+	return r.service.revenueSheets(ctx, a, f)
 }
 
 // funnelReport is Funnel stages in 039's registry, sharing Revenue's service (research R1).
@@ -65,6 +65,6 @@ func (funnelReport) Params() []string {
 	return []string{paramCategory, paramStage, paramSort, paramOrder, paramGroup, paramSize, paramSearch, paramDrill}
 }
 
-func (r funnelReport) Sheets(_ context.Context, _ actor.Actor, _ measure.Filter) ([]measure.WidgetSheet, error) {
-	return nil, nil
+func (r funnelReport) Sheets(ctx context.Context, a actor.Actor, f measure.Filter) ([]measure.WidgetSheet, error) {
+	return r.service.funnelSheets(ctx, a, f)
 }
