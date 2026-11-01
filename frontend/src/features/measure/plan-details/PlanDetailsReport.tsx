@@ -1,4 +1,5 @@
 import { useFormatters } from '@/format/useFormatters';
+import { LinkButton } from '@/ui/Button/Button';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
@@ -30,6 +31,20 @@ function PlanDetails({ address }: { address: ReportAddress }) {
       <div aria-label="Loading Plan details">
         <Skeleton lines={6} height="24px" />
       </div>
+    );
+  }
+  if (report.data.cards.records === 0) {
+    const records = RECORDS[report.data.show].many;
+    return (
+      <EmptyState
+        title="No data yet"
+        text={`${records} create this report's data; there are none in view.`}
+        action={
+          <LinkButton to="/plans" variant="secondary">
+            Open the plans
+          </LinkButton>
+        }
+      />
     );
   }
   return <Widgets report={report.data} address={address} />;

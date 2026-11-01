@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-30
 
-**Status**: Draft
+**Status**: Built
 
 **Input**: User description: "Generated from Settings: for each active Shell attribute of each level, a chart of
 records per value, a chart of planned cost per value and a count of records with the attribute *Not filled in*;

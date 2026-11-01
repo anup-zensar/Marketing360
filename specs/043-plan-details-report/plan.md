@@ -108,9 +108,10 @@ backend/internal/measure/plandetails/        # NEW, read-only, no store
 backend/internal/app/measure_plandetails.go  # registerPlanDetails replaces 039's stub: Scoped adapter, Register, mount
 backend/internal/app/contract_routes_test.go # remove 043's line from notYetServed only (build guide §4.3)
 frontend/src/features/measure/plan-details/  # replaces 039's stub page
-├── PlanDetailsReport.tsx (039's stub), PlanDetailsCards.tsx, BuiltInSection.tsx, AttributeRow.tsx,
-│   ValueWidget.tsx, FilledInWidget.tsx, allWorkLink.ts
-├── api.ts, schemas.ts (Zod of the response), index.ts
+├── PlanDetailsReport.tsx (039's stub replaced: cards, built-in section, attribute rows, No data yet)
+├── ValueWidget.tsx (count, planned cost and filled-in widgets), BarList.tsx, allWorkLink.ts,
+│   plan-details-text.ts, api.ts, PlanDetails.module.css — as built, the planned AttributeRow, BuiltInSection,
+│   FilledInWidget, PlanDetailsCards and schemas.ts were folded in; the API types come from the contract
 └── *.test.tsx
 frontend/e2e/measure-plan-details.spec.ts
 ```

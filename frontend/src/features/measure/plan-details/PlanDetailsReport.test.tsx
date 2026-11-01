@@ -45,6 +45,26 @@ describe('PlanDetailsReport (043 US1, FR-005 – FR-016)', () => {
     await expectNoAxeViolations();
   });
 
+  it('says "No data yet" when no record of the level is in view, and offers no export (FR-016)', async () => {
+    const empty = planDetails({
+      cards: {
+        records: 0,
+        plannedCost: { amount: '0.00', currency: 'EUR' },
+        allFilledIn: 0,
+        allFilledInPercent: null,
+      },
+      builtIn: [],
+    });
+    renderReport(empty);
+
+    expect(await screen.findByText('No data yet')).toBeInTheDocument();
+    expect(
+      screen.getByText("Activities create this report's data; there are none in view."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open the plans' })).toHaveAttribute('href', '/plans');
+    expect(screen.queryByText('Activities by Company code')).not.toBeInTheDocument();
+  });
+
   it('says when no attribute of the level is set up (FR-016)', async () => {
     renderReport(planDetails({ attributes: [], attributesSetUp: false }));
 

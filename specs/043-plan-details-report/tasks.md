@@ -158,3 +158,12 @@ All work's Breakdown by Cluster.
 
 MVP = US1's backend rules (T002–T016), then its handler, wiring and page as 039 lands. US2 and US3 extend the same
 package. Each story is committed and pushed when its tests pass.
+
+## Phase 7: Convergence
+
+- [X] T031 [US1] `partial` FR-016 (US1 scenario 12, US3 scenario 4): with plans in view but no record at the level,
+  `frontend/src/features/measure/plan-details/PlanDetailsReport.tsx` shows 039's "No data yet" naming what creates
+  the data (activities, campaigns, initiatives or plans) with a link to the plans, instead of zero cards and empty
+  widgets, so no export is offered for them; a test in `PlanDetailsReport.test.tsx`
+- [X] T032 `partial` (LOW) plan.md's file list: `AttributeRow`, `BuiltInSection`, `FilledInWidget`, `PlanDetailsCards`
+  and `schemas.ts` were folded into `PlanDetailsReport.tsx` and `ValueWidget.tsx`; record it in plan.md's source tree
