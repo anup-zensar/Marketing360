@@ -32,9 +32,8 @@ export async function svgToPng({ svgUrl, width, height, background }: PngSource)
 }
 
 export function pngFileName(dashboardName: string, widgetTitle: string): string {
-  const name = [dashboardName, widgetTitle]
+  const parts = [dashboardName, widgetTitle]
     .map((part) => part.replace(UNSAFE_IN_FILE_NAMES, '-').trim())
-    .filter(Boolean)
-    .join(' - ');
-  return `${name || 'Chart'}.png`;
+    .filter(Boolean);
+  return `${['SP&A One', ...(parts.length > 0 ? parts : ['Chart'])].join(' – ')}.png`;
 }

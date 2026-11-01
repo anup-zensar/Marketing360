@@ -46,6 +46,11 @@
   overflow: auto;
 }
 
+/* A builder preview never scrolls: a scrolling area without a focusable child is out of keyboard reach. */
+.preview {
+  overflow: hidden;
+}
+
 .notes {
   margin: 0;
   padding: 0 var(--space-4) var(--space-3);

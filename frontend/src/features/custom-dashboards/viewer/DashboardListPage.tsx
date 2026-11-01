@@ -3,6 +3,7 @@ import { useId, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useAccess } from '@/session/access';
 import { LinkButton } from '@/ui/Button/Button';
+import { Card } from '@/ui/Card/Card';
 import { EmptyState } from '@/ui/EmptyState/EmptyState';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { NoAccess } from '@/ui/NoAccess/NoAccess';
@@ -64,7 +65,9 @@ function CustomSections({ canBuild }: { canBuild: boolean }) {
     return (
       <Section title="My dashboards">
         {list.isError ? (
-          <ErrorState error={list.error} onRetry={() => void list.refetch()} />
+          <Card>
+            <ErrorState error={list.error} onRetry={() => void list.refetch()} />
+          </Card>
         ) : (
           <div aria-label="Loading dashboards" className={styles.cards}>
             <Skeleton height="120px" />
@@ -95,19 +98,23 @@ function CustomSections({ canBuild }: { canBuild: boolean }) {
         {list.data.mine.length > 0 ? (
           cards(list.data.mine)
         ) : (
-          <EmptyState
-            icon={<LayoutDashboard />}
-            title="No dashboards yet"
-            text="Build one from your plans or your own data."
-            action={canBuild && <LinkButton to="/builder">New dashboard</LinkButton>}
-          />
+          <Card>
+            <EmptyState
+              icon={<LayoutDashboard />}
+              title="No dashboards yet"
+              text="Build one from your plans or your own data."
+              action={canBuild && <LinkButton to="/builder">New dashboard</LinkButton>}
+            />
+          </Card>
         )}
       </Section>
       <Section title="Shared with me">
         {list.data.sharedWithMe.length > 0 ? (
           cards(list.data.sharedWithMe)
         ) : (
-          <EmptyState icon={<Share2 />} title="Nothing shared with you yet." />
+          <Card>
+            <EmptyState icon={<Share2 />} title="Nothing shared with you yet." />
+          </Card>
         )}
       </Section>
       {deleting && <DeleteDashboardDialog dashboard={deleting} onClose={() => setDeleting(null)} />}

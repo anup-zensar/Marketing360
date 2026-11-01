@@ -5,6 +5,7 @@ import type { ApiError } from '@/api/errors';
 import { useFormatters } from '@/format/useFormatters';
 import { ActionsMenu } from '@/ui/ActionsMenu/ActionsMenu';
 import type { ActionsMenuItem } from '@/ui/ActionsMenu/ActionsMenu';
+import { cx } from '@/ui/cx';
 import { useToast } from '@/ui/Toast/useToast';
 import type { CustomDashboardFilters, Widget, WidgetData } from '../model';
 import { widgetTypeInfo } from '../widget-types';
@@ -39,6 +40,7 @@ export interface WidgetViewProps {
 const ROW_HEIGHT = 80;
 const ROW_GAP = 16;
 const CHROME = 72;
+const EDIT_CHROME = 64;
 const NOTE_HEIGHT = 20;
 const SMALLEST_CHART = 120;
 const PREVIEW_DELAY_MS = 400;
@@ -60,7 +62,7 @@ export function WidgetView({
   const data = result.data;
   const isChart = widgetTypeInfo(widget.type).group === 'charts';
   const notes = data && !result.isError ? notesOf(data) : [];
-  const height = chartHeight(widget, notes.length);
+  const height = chartHeight(widget, notes.length, mode);
   const hasFigures = data !== undefined && !isEmpty(widget, data);
 
   function handleDownload() {
@@ -96,7 +98,10 @@ export function WidgetView({
           {showsMenu && <ActionsMenu label={widget.title || 'this chart'} items={items} />}
         </header>
       )}
-      <div className={styles.body} aria-busy={result.isFetching && Boolean(data)}>
+      <div
+        className={cx(styles.body, mode === 'edit' && styles.preview)}
+        aria-busy={result.isFetching && Boolean(data)}
+      >
         <Body
           widget={widget}
           filters={filters}
@@ -214,7 +219,9 @@ function notesOf(data: WidgetData): string[] {
   return shown ? [shown, ...data.notes] : data.notes;
 }
 
-function chartHeight(widget: Widget, noteCount: number): number {
+// The builder's handle row and padding sit inside the same cell, so its previews get less room.
+function chartHeight(widget: Widget, noteCount: number, mode: WidgetViewProps['mode']): number {
   const cell = widget.layout.h * ROW_HEIGHT + (widget.layout.h - 1) * ROW_GAP;
-  return Math.max(SMALLEST_CHART, cell - CHROME - noteCount * NOTE_HEIGHT);
+  const chrome = CHROME + (mode === 'edit' ? EDIT_CHROME : 0);
+  return Math.max(SMALLEST_CHART, cell - chrome - noteCount * NOTE_HEIGHT);
 }

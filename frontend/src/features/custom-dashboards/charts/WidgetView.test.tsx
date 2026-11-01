@@ -221,3 +221,20 @@ describe('051 FR-038: the widget menu', () => {
     expect(screen.queryByRole('button', { name: /Actions for/ })).not.toBeInTheDocument();
   });
 });
+
+describe('051 SC-006: a builder preview fits its cell', () => {
+  it('draws the chart smaller under the builder’s handle row, and never scrolls', async () => {
+    answer(widgetData());
+    show(widget('bar'), { mode: 'edit' });
+    const chart = await screen.findByRole('img', { name: CHART_NAME });
+
+    expect(chart).toHaveStyle({ height: '232px' });
+    expect(chart.closest('[aria-busy]')).toHaveClass(/preview/);
+  });
+
+  it('keeps the full height on a dashboard', async () => {
+    answer(widgetData());
+    show(widget('bar'));
+    expect(await screen.findByRole('img', { name: CHART_NAME })).toHaveStyle({ height: '296px' });
+  });
+});

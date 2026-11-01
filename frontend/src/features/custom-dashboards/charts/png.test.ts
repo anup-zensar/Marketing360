@@ -76,10 +76,14 @@ describe('051 FR-038: Download as PNG', () => {
   });
 
   it.each([
-    ['Market view', 'Planned cost by type', 'Market view - Planned cost by type.png'],
-    ['Q1: plans/teams', 'Cost?', 'Q1- plans-teams - Cost-.png'],
-    ['', '', 'Chart.png'],
-  ])('names the file after the dashboard and the widget: %s, %s', (dashboard, title, expected) => {
-    expect(pngFileName(dashboard, title)).toBe(expected);
-  });
+    ['Market view', 'Planned cost by type', 'SP&A One – Market view – Planned cost by type.png'],
+    ['Q1: plans/teams', 'Cost?', 'SP&A One – Q1- plans-teams – Cost-.png'],
+    ['Market view', '', 'SP&A One – Market view.png'],
+    ['', '', 'SP&A One – Chart.png'],
+  ])(
+    '051 US2-6: names the file "SP&A One – dashboard – widget": %s, %s',
+    (dashboard, title, expected) => {
+      expect(pngFileName(dashboard, title)).toBe(expected);
+    },
+  );
 });
