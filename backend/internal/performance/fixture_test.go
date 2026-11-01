@@ -38,8 +38,8 @@ func newFixture(t *testing.T) *fixture {
 	// app must wire the activity area before the performance area.
 	if err := f.history.Register(history.Kind{
 		Name: "activity", Singular: "activity", Plural: "activities",
-		Snapshot: func(context.Context, string) (history.Snapshot, bool, error) {
-			return history.Snapshot{}, false, nil
+		Snapshot: func(_ context.Context, id string) (history.Snapshot, bool, error) {
+			return history.Snapshot{ID: id, Name: id}, true, nil
 		},
 		Remove: func(context.Context, string) error { return nil },
 		Put:    func(context.Context, history.Snapshot) error { return nil },

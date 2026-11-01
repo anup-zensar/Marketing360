@@ -8064,6 +8064,106 @@ paths:
         "404": { $ref: "#/components/responses/NotFound" }
         "409": { $ref: "#/components/responses/Conflict" }
         default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/performance/sources:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: getActivityDataSources
+      summary: The activity's Data sources area (046 FR-031)
+      responses:
+        "200":
+          description: External name and aliases, media-code count, the two flags, and each source's key and totals.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataSourcesArea" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/external-name-aliases:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: listExternalNameAliases
+      summary: The superseded names kept for matching (046 FR-034)
+      responses:
+        "200":
+          description: The aliases, by name.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ExternalNameAliasList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/external-name-aliases/{aliasId}:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+      - name: aliasId
+        in: path
+        required: true
+        schema: { type: string, pattern: "^ENA-[0-9]+$" }
+    delete:
+      tags: [Performance data]
+      operationId: deleteExternalNameAlias
+      summary: Remove an alias; the old name then stops matching (needs performance.link) (046 FR-034)
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/integration-ids:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+    get:
+      tags: [Performance data]
+      operationId: listIntegrationIds
+      summary: The outside systems' own ids for this activity, one per source (046 FR-037)
+      responses:
+        "200":
+          description: The integration ids, by source.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IntegrationIdList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/activities/{activityId}/integration-ids/{sourceId}:
+    parameters:
+      - $ref: "#/components/parameters/ActivityId"
+      - $ref: "#/components/parameters/SourceId"
+    put:
+      tags: [Performance data]
+      operationId: setIntegrationId
+      summary: Register the source's own id for this activity (needs performance.link) (046 FR-037)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/IntegrationIdInput" }
+      responses:
+        "201":
+          description: The key as registered.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IntegrationId" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [Performance data]
+      operationId: deleteIntegrationId
+      summary: Remove the source's key; its rows then stop matching this activity (needs performance.link) (046 FR-037)
+      responses:
+        "204": { description: Removed. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
 components:
   securitySchemes:
     sessionCookie:
@@ -9103,6 +9203,77 @@ components:
         items:
           type: array
           items: { $ref: "#/components/schemas/PerformanceImport" }
+    ExternalNameAlias:
+      type: object
+      description: A superseded external name, kept so the outside world's old exports still match (FR-034).
+      required: [id, activityId, name, version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        activityId: { type: string }
+        name: { type: string }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    ExternalNameAliasList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/ExternalNameAlias" }
+    IntegrationId:
+      type: object
+      description: One outside system's own id for an activity; at most one per source (FR-037).
+      required: [id, activityId, sourceId, value, version, createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        activityId: { type: string }
+        sourceId: { type: string }
+        value: { type: string }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    IntegrationIdList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/IntegrationId" }
+    IntegrationIdInput:
+      type: object
+      additionalProperties: false
+      required: [value]
+      properties:
+        value: { type: string, minLength: 1, maxLength: 120 }
+    SourceOfFacts:
+      type: object
+      required: [sourceId, sourceName, integrationId, factCount, lastFactDate]
+      properties:
+        sourceId: { type: string }
+        sourceName: { type: string }
+        integrationId: { type: string, description: "Empty when the source has no key for this activity." }
+        factCount: { type: integer }
+        lastFactDate: { type: string, description: "Empty until the source has delivered a fact." }
+    DataSourcesArea:
+      type: object
+      description: The activity's Performance - Data sources section (FR-031).
+      required: [externalName, aliases, mediaCodeCount, integrated, goalEntered, sources]
+      properties:
+        externalName: { type: string }
+        aliases:
+          type: array
+          items: { $ref: "#/components/schemas/ExternalNameAlias" }
+        mediaCodeCount: { type: integer }
+        integrated: { type: boolean }
+        goalEntered: { type: boolean }
+        sources:
+          type: array
+          items: { $ref: "#/components/schemas/SourceOfFacts" }
     MatchKeyType:
       type: string
       description: Which matching key a key column carries (046-C23); empty on every other column.

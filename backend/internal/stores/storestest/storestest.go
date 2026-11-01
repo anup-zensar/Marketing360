@@ -5,6 +5,7 @@ package storestest
 import (
 	"context"
 
+	"mapp/internal/performance"
 	"mapp/internal/performance/performancetest"
 
 	"mapp/internal/access/accesstest"
@@ -21,6 +22,7 @@ import (
 	"mapp/internal/overspend/overspendtest"
 	"mapp/internal/people/peopletest"
 	"mapp/internal/plan/plantest"
+	"mapp/internal/platform/authz"
 	"mapp/internal/platform/fake"
 	"mapp/internal/purchaserequest/purchaserequesttest"
 	"mapp/internal/sample/sampletest"
@@ -59,7 +61,24 @@ func planning(db *fake.DB) stores.Planning {
 func finance(db *fake.DB) stores.Finance {
 	return stores.Finance{
 		Budgets: budgettest.NewStore(db), Financials: financialstest.NewStore(db), SwbsRuns: swbstest.NewStore(db),
-		Performance:      performancetest.NewStore(db),
+		Performance:      performanceStore(db),
 		PurchaseRequests: purchaserequesttest.NewStore(db),
 	}
+}
+
+// performanceStore answers 046's scoped activity read from the shared activity fake, as the SQL does
+// through activity_in_scope().
+func performanceStore(db *fake.DB) *performancetest.Store {
+	store := performancetest.NewStore(db)
+	activities := activitytest.NewStore(db)
+	store.ActivityLookup = func(ctx context.Context, scope authz.Scope, id string) (performance.KeyFacts, bool, error) {
+		found, err := activities.ListInScopeOf(ctx, scope, []string{id})
+		if err != nil || len(found) == 0 {
+			return performance.KeyFacts{}, false, err
+		}
+		a := found[0]
+		return performance.KeyFacts{ExternalName: a.ExternalName,
+			GoalEntered: a.MQL != nil || a.Revenue != nil}, true, nil
+	}
+	return store
 }

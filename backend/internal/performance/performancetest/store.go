@@ -28,10 +28,14 @@ type Store struct {
 	// NextCode is the media-code counter the configuration holds in PostgreSQL.
 	NextCode int64
 	// Currencies stands in for the currencies table; tests set what the organisation has configured.
-	Currencies   map[string]bool
-	breakdowns   map[string][]performance.Breakdown
-	aliases      map[string]performance.Alias
-	integrations map[string]performance.IntegrationID
+	Currencies map[string]bool
+	// Activities stands in for the activities table: key facts by activity id, visible to every scope.
+	Activities map[string]performance.KeyFacts
+	// ActivityLookup, when set, answers ActivityKeyFacts from the shared fakes instead (storestest wires it).
+	ActivityLookup func(ctx context.Context, scope authz.Scope, activityID string) (performance.KeyFacts, bool, error)
+	breakdowns     map[string][]performance.Breakdown
+	aliases        map[string]performance.Alias
+	integrations   map[string]performance.IntegrationID
 }
 
 func NewStore(db *fake.DB) *Store {
@@ -479,4 +483,83 @@ func (s *Store) CurrencyCodes(_ context.Context) (map[string]bool, error) {
 		return map[string]bool{"USD": true}, nil
 	}
 	return s.Currencies, nil
+}
+
+func (s *Store) ActivityKeyFacts(ctx context.Context, scope authz.Scope, activityID string) (performance.KeyFacts, bool, error) {
+	if s.ActivityLookup != nil {
+		return s.ActivityLookup(ctx, scope, activityID)
+	}
+	facts, found := s.Activities[activityID]
+	return facts, found, nil
+}
+
+func (s *Store) FactTotalsBySource(_ context.Context, activityID string) ([]performance.SourceTotals, error) {
+	all, err := s.facts.List()
+	if err != nil {
+		return nil, err
+	}
+	bySource := map[string]*performance.SourceTotals{}
+	var order []string
+	for _, f := range all {
+		if f.ActivityID != activityID || f.ReplacedByID != "" {
+			continue
+		}
+		totals, ok := bySource[f.SourceID]
+		if !ok {
+			src, _, _ := s.sources.Get(f.SourceID)
+			totals = &performance.SourceTotals{SourceID: f.SourceID, SourceName: src.Name}
+			bySource[f.SourceID] = totals
+			order = append(order, f.SourceID)
+		}
+		totals.FactCount++
+		if day := f.FactDate.Format("2006-01-02"); day > totals.LastFactDate {
+			totals.LastFactDate = day
+		}
+	}
+	merged := make([]performance.SourceTotals, 0, len(order))
+	for _, id := range order {
+		merged = append(merged, *bySource[id])
+	}
+	return merged, nil
+}
+
+func (s *Store) ListAliases(_ context.Context, activityID string) ([]performance.Alias, error) {
+	found := []performance.Alias{}
+	for _, alias := range s.aliases {
+		if alias.ActivityID == activityID {
+			found = append(found, alias)
+		}
+	}
+	slices.SortFunc(found, func(a, b performance.Alias) int { return strings.Compare(a.Name, b.Name) })
+	return found, nil
+}
+
+func (s *Store) ListIntegrationIDs(_ context.Context, activityID string) ([]performance.IntegrationID, error) {
+	found := []performance.IntegrationID{}
+	for _, key := range s.integrations {
+		if key.ActivityID == activityID {
+			found = append(found, key)
+		}
+	}
+	slices.SortFunc(found, func(a, b performance.IntegrationID) int { return strings.Compare(a.SourceID, b.SourceID) })
+	return found, nil
+}
+
+func (s *Store) RemoveAlias(_ context.Context, activityID, aliasID string) (bool, error) {
+	alias, found := s.aliases[aliasID]
+	if !found || alias.ActivityID != activityID {
+		return false, nil
+	}
+	delete(s.aliases, aliasID)
+	return true, nil
+}
+
+func (s *Store) RemoveIntegrationID(_ context.Context, activityID, sourceID string) (bool, error) {
+	for id, key := range s.integrations {
+		if key.ActivityID == activityID && key.SourceID == sourceID {
+			delete(s.integrations, id)
+			return true, nil
+		}
+	}
+	return false, nil
 }

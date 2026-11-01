@@ -81,6 +81,15 @@ type Review interface {
 	PutReviewRow(ctx context.Context, r ReviewRow) error
 }
 
+type Keys interface {
+	ActivityKeyFacts(ctx context.Context, scope authz.Scope, activityID string) (KeyFacts, bool, error)
+	FactTotalsBySource(ctx context.Context, activityID string) ([]SourceTotals, error)
+	ListAliases(ctx context.Context, activityID string) ([]Alias, error)
+	ListIntegrationIDs(ctx context.Context, activityID string) ([]IntegrationID, error)
+	RemoveAlias(ctx context.Context, activityID, aliasID string) (bool, error)
+	RemoveIntegrationID(ctx context.Context, activityID, sourceID string) (bool, error)
+}
+
 type Codes interface {
 	ListMediaCodes(ctx context.Context, scope authz.Scope, activityID string) ([]MediaCode, error)
 	PutMediaCode(ctx context.Context, c MediaCode) error
@@ -114,4 +123,5 @@ type Store interface {
 	Imports
 	Review
 	Codes
+	Keys
 }

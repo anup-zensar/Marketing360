@@ -54,6 +54,40 @@ func (q *Queries) ActiveSuppliersForModel(ctx context.Context, modelID *string) 
 	return items, nil
 }
 
+const activityKeyFacts = `-- name: ActivityKeyFacts :one
+SELECT a.external_name, coalesce(a.mql IS NOT NULL OR a.revenue_minor IS NOT NULL, false)::boolean AS goal_entered
+FROM activities a
+WHERE a.id = $1
+    AND activity_in_scope(a.id, $2::boolean, $3::text,
+        $4::boolean, $5::text[])
+`
+
+type ActivityKeyFactsParams struct {
+	ActivityID     string
+	SeesEverything bool
+	ViewerID       string
+	ViewsPlans     bool
+	ViewerTeamIds  []string
+}
+
+type ActivityKeyFactsRow struct {
+	ExternalName string
+	GoalEntered  bool
+}
+
+func (q *Queries) ActivityKeyFacts(ctx context.Context, arg ActivityKeyFactsParams) (ActivityKeyFactsRow, error) {
+	row := q.db.QueryRow(ctx, activityKeyFacts,
+		arg.ActivityID,
+		arg.SeesEverything,
+		arg.ViewerID,
+		arg.ViewsPlans,
+		arg.ViewerTeamIds,
+	)
+	var i ActivityKeyFactsRow
+	err := row.Scan(&i.ExternalName, &i.GoalEntered)
+	return i, err
+}
+
 const aliasIDsOfActivities = `-- name: AliasIDsOfActivities :many
 SELECT id FROM activity_external_name_aliases
 WHERE activity_id = ANY ($1::text[]) ORDER BY id
@@ -138,6 +172,24 @@ func (q *Queries) CurrentFactsByReferences(ctx context.Context, arg CurrentFacts
 	return items, nil
 }
 
+const deleteAlias = `-- name: DeleteAlias :execrows
+DELETE FROM activity_external_name_aliases
+WHERE id = $1 AND activity_id = $2
+`
+
+type DeleteAliasParams struct {
+	ID         string
+	ActivityID string
+}
+
+func (q *Queries) DeleteAlias(ctx context.Context, arg DeleteAliasParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteAlias, arg.ID, arg.ActivityID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const deleteAliases = `-- name: DeleteAliases :exec
 DELETE FROM activity_external_name_aliases WHERE id = ANY ($1::text[])
 `
@@ -145,6 +197,24 @@ DELETE FROM activity_external_name_aliases WHERE id = ANY ($1::text[])
 func (q *Queries) DeleteAliases(ctx context.Context, ids []string) error {
 	_, err := q.db.Exec(ctx, deleteAliases, ids)
 	return err
+}
+
+const deleteIntegrationID = `-- name: DeleteIntegrationID :execrows
+DELETE FROM activity_integration_ids
+WHERE activity_id = $1 AND source_id = $2
+`
+
+type DeleteIntegrationIDParams struct {
+	ActivityID string
+	SourceID   string
+}
+
+func (q *Queries) DeleteIntegrationID(ctx context.Context, arg DeleteIntegrationIDParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteIntegrationID, arg.ActivityID, arg.SourceID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const deleteIntegrationIDs = `-- name: DeleteIntegrationIDs :exec
@@ -256,6 +326,47 @@ func (q *Queries) FactIDsOfActivities(ctx context.Context, activityIds []string)
 			return nil, err
 		}
 		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const factTotalsBySource = `-- name: FactTotalsBySource :many
+SELECT f.source_id, s.name AS source_name, count(*) AS fact_count, max(f.fact_date)::date AS last_fact_date
+FROM performance_facts f
+JOIN performance_sources s ON s.id = f.source_id
+WHERE f.activity_id = $1::text AND f.replaced_by_id IS NULL
+GROUP BY f.source_id, s.name
+ORDER BY s.name COLLATE "C", f.source_id
+`
+
+type FactTotalsBySourceRow struct {
+	SourceID     string
+	SourceName   string
+	FactCount    int64
+	LastFactDate time.Time
+}
+
+func (q *Queries) FactTotalsBySource(ctx context.Context, activityID string) ([]FactTotalsBySourceRow, error) {
+	rows, err := q.db.Query(ctx, factTotalsBySource, activityID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []FactTotalsBySourceRow{}
+	for rows.Next() {
+		var i FactTotalsBySourceRow
+		if err := rows.Scan(
+			&i.SourceID,
+			&i.SourceName,
+			&i.FactCount,
+			&i.LastFactDate,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -460,6 +571,43 @@ func (q *Queries) IntegrationIDsOfActivities(ctx context.Context, activityIds []
 	return items, nil
 }
 
+const listAliasesOfActivity = `-- name: ListAliasesOfActivity :many
+SELECT id, activity_id, name, version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name FROM activity_external_name_aliases
+WHERE activity_id = $1
+ORDER BY name COLLATE "C"
+`
+
+func (q *Queries) ListAliasesOfActivity(ctx context.Context, activityID string) ([]ActivityExternalNameAlias, error) {
+	rows, err := q.db.Query(ctx, listAliasesOfActivity, activityID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ActivityExternalNameAlias{}
+	for rows.Next() {
+		var i ActivityExternalNameAlias
+		if err := rows.Scan(
+			&i.ID,
+			&i.ActivityID,
+			&i.Name,
+			&i.Version,
+			&i.CreatedAt,
+			&i.CreatedByID,
+			&i.CreatedByName,
+			&i.UpdatedAt,
+			&i.UpdatedByID,
+			&i.UpdatedByName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listCurrencyCodes = `-- name: ListCurrencyCodes :many
 SELECT code FROM currencies ORDER BY code
 `
@@ -602,6 +750,44 @@ func (q *Queries) ListFactsOfImport(ctx context.Context, importID string) ([]Lis
 			&i.PerformanceFact.UpdatedAt,
 			&i.PerformanceFact.UpdatedByID,
 			&i.PerformanceFact.UpdatedByName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listIntegrationIDsOfActivity = `-- name: ListIntegrationIDsOfActivity :many
+SELECT id, activity_id, source_id, value, version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name FROM activity_integration_ids
+WHERE activity_id = $1
+ORDER BY source_id COLLATE "C"
+`
+
+func (q *Queries) ListIntegrationIDsOfActivity(ctx context.Context, activityID string) ([]ActivityIntegrationID, error) {
+	rows, err := q.db.Query(ctx, listIntegrationIDsOfActivity, activityID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ActivityIntegrationID{}
+	for rows.Next() {
+		var i ActivityIntegrationID
+		if err := rows.Scan(
+			&i.ID,
+			&i.ActivityID,
+			&i.SourceID,
+			&i.Value,
+			&i.Version,
+			&i.CreatedAt,
+			&i.CreatedByID,
+			&i.CreatedByName,
+			&i.UpdatedAt,
+			&i.UpdatedByID,
+			&i.UpdatedByName,
 		); err != nil {
 			return nil, err
 		}

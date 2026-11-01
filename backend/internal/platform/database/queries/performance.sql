@@ -300,3 +300,36 @@ SELECT sqlc.embed(performance_facts)
 FROM performance_facts
 WHERE replaced_by_id = ANY(sqlc.arg(replacer_ids)::text[])
 ORDER BY id COLLATE "C";
+
+-- name: ActivityKeyFacts :one
+SELECT a.external_name, coalesce(a.mql IS NOT NULL OR a.revenue_minor IS NOT NULL, false)::boolean AS goal_entered
+FROM activities a
+WHERE a.id = sqlc.arg(activity_id)
+    AND activity_in_scope(a.id, sqlc.arg(sees_everything)::boolean, sqlc.arg(viewer_id)::text,
+        sqlc.arg(views_plans)::boolean, sqlc.arg(viewer_team_ids)::text[]);
+
+-- name: FactTotalsBySource :many
+SELECT f.source_id, s.name AS source_name, count(*) AS fact_count, max(f.fact_date)::date AS last_fact_date
+FROM performance_facts f
+JOIN performance_sources s ON s.id = f.source_id
+WHERE f.activity_id = sqlc.arg(activity_id)::text AND f.replaced_by_id IS NULL
+GROUP BY f.source_id, s.name
+ORDER BY s.name COLLATE "C", f.source_id;
+
+-- name: ListAliasesOfActivity :many
+SELECT * FROM activity_external_name_aliases
+WHERE activity_id = sqlc.arg(activity_id)
+ORDER BY name COLLATE "C";
+
+-- name: ListIntegrationIDsOfActivity :many
+SELECT * FROM activity_integration_ids
+WHERE activity_id = sqlc.arg(activity_id)
+ORDER BY source_id COLLATE "C";
+
+-- name: DeleteIntegrationID :execrows
+DELETE FROM activity_integration_ids
+WHERE activity_id = sqlc.arg(activity_id) AND source_id = sqlc.arg(source_id);
+
+-- name: DeleteAlias :execrows
+DELETE FROM activity_external_name_aliases
+WHERE id = sqlc.arg(id) AND activity_id = sqlc.arg(activity_id);

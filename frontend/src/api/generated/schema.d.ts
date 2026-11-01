@@ -4503,6 +4503,110 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/activities/{activityId}/performance/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        /** The activity's Data sources area (046 FR-031) */
+        get: operations["getActivityDataSources"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activities/{activityId}/external-name-aliases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        /** The superseded names kept for matching (046 FR-034) */
+        get: operations["listExternalNameAliases"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activities/{activityId}/external-name-aliases/{aliasId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+                aliasId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove an alias; the old name then stops matching (needs performance.link) (046 FR-034) */
+        delete: operations["deleteExternalNameAlias"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activities/{activityId}/integration-ids": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        /** The outside systems' own ids for this activity, one per source (046 FR-037) */
+        get: operations["listIntegrationIds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activities/{activityId}/integration-ids/{sourceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        /** Register the source's own id for this activity (needs performance.link) (046 FR-037) */
+        put: operations["setIntegrationId"];
+        post?: never;
+        /** Remove the source's key; its rows then stop matching this activity (needs performance.link) (046 FR-037) */
+        delete: operations["deleteIntegrationId"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4629,6 +4733,60 @@ export interface components {
         };
         PerformanceImportList: {
             items: components["schemas"]["PerformanceImport"][];
+        };
+        /** @description A superseded external name, kept so the outside world's old exports still match (FR-034). */
+        ExternalNameAlias: {
+            id: string;
+            activityId: string;
+            name: string;
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        ExternalNameAliasList: {
+            items: components["schemas"]["ExternalNameAlias"][];
+        };
+        /** @description One outside system's own id for an activity; at most one per source (FR-037). */
+        IntegrationId: {
+            id: string;
+            activityId: string;
+            sourceId: string;
+            value: string;
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        IntegrationIdList: {
+            items: components["schemas"]["IntegrationId"][];
+        };
+        IntegrationIdInput: {
+            value: string;
+        };
+        SourceOfFacts: {
+            sourceId: string;
+            sourceName: string;
+            /** @description Empty when the source has no key for this activity. */
+            integrationId: string;
+            factCount: number;
+            /** @description Empty until the source has delivered a fact. */
+            lastFactDate: string;
+        };
+        /** @description The activity's Performance - Data sources section (FR-031). */
+        DataSourcesArea: {
+            externalName: string;
+            aliases: components["schemas"]["ExternalNameAlias"][];
+            mediaCodeCount: number;
+            integrated: boolean;
+            goalEntered: boolean;
+            sources: components["schemas"]["SourceOfFacts"][];
         };
         /**
          * @description Which matching key a key column carries (046-C23); empty on every other column.
@@ -19392,6 +19550,172 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getActivityDataSources: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description External name and aliases, media-code count, the two flags, and each source's key and totals. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataSourcesArea"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listExternalNameAliases: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The aliases, by name. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalNameAliasList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteExternalNameAlias: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+                aliasId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listIntegrationIds: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The integration ids, by source. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntegrationIdList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    setIntegrationId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IntegrationIdInput"];
+            };
+        };
+        responses: {
+            /** @description The key as registered. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IntegrationId"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteIntegrationId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example A-1001 */
+                activityId: components["parameters"]["ActivityId"];
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
             default: components["responses"]["Error"];
         };
     };

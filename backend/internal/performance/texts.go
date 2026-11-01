@@ -37,11 +37,16 @@ const (
 	importKindSingular = "upload"
 	importKindPlural   = "uploads"
 
-	msgPersonalData   = "Not loaded - the file carries personal data in %s. Remove those columns and upload it again."
-	msgImportNotFound = "This upload doesn't exist or you can't see it."
-	msgNotUndoable    = "Not undone - %s is not a completed upload."
-	msgFileUnreadable = "This file can't be read. Save it as a .csv file in UTF-8 and try again."
-	msgNoPull         = "Not pulled - %s does not deliver by simulated feed. Change its delivery route first."
+	msgPersonalData        = "Not loaded - the file carries personal data in %s. Remove those columns and upload it again."
+	msgImportNotFound      = "This upload doesn't exist or you can't see it."
+	msgNotUndoable         = "Not undone - %s is not a completed upload."
+	msgFileUnreadable      = "This file can't be read. Save it as a .csv file in UTF-8 and try again."
+	msgNoPull              = "Not pulled - %s does not deliver by simulated feed. Change its delivery route first."
+	msgActivityNotFound    = "This activity doesn't exist or you can't see it."
+	msgAliasNotFound       = "This alias doesn't exist or you can't see it."
+	msgIntegrationNotFound = "This activity has no integration ID for that data source."
+	msgIntegrationExists   = "Not saved - %s already addresses this activity as %s. Remove that integration ID first."
+	msgIntegrationValue    = "Give the integration ID a value of 1 to 120 characters."
 )
 
 func codeText(code int64) string {

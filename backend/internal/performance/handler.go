@@ -33,6 +33,7 @@ func (h *Handler) RegisterRoutes(r gin.IRoutes) {
 	r.PATCH("/performance/mappings/:mappingId", h.updateMapping)
 	r.DELETE("/performance/mappings/:mappingId", h.deleteMapping)
 	h.registerImportRoutes(r)
+	h.registerKeyRoutes(r)
 }
 
 func (h *Handler) sources(c *gin.Context) {

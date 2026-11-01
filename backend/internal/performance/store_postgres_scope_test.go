@@ -209,3 +209,21 @@ func TestPostgresStore_MatchByIntegrationIDStaysInScope_FR044(t *testing.T) {
 		t.Error("an integration id outside the scope resolved: matching must not reach it")
 	}
 }
+
+func TestPostgresStore_KeyFactsOutsideTheScopeAnswerAsMissing_FR044(t *testing.T) {
+	t.Parallel()
+	store := pgPerformance(t)
+
+	mine, found, err := store.ActivityKeyFacts(t.Context(), team1Only, "A-1001")
+	if err != nil || !found {
+		t.Fatalf("ActivityKeyFacts(A-1001) = %+v found=%v (%v), want my own activity readable", mine, found, err)
+	}
+
+	_, found, err = store.ActivityKeyFacts(t.Context(), team1Only, "A-1002")
+	if err != nil {
+		t.Fatalf("ActivityKeyFacts(A-1002) error: %v", err)
+	}
+	if found {
+		t.Error("an activity outside the scope was readable, want it answered as missing")
+	}
+}
