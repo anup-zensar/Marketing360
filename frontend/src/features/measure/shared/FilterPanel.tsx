@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Button } from '@/ui/Button/Button';
 import type { ReportChoices } from './api';
 import { attrKey, restrictTo } from './filter-keys';
@@ -71,8 +71,10 @@ export function FilterPanel({ choices, applied, year, onApply }: FilterPanelProp
   const initial = draftOf(applied, year);
   const [draft, setDraft] = useState<Draft>(initial);
   const [open, setOpen] = useState(false);
+  const toggle = useRef<HTMLButtonElement>(null);
   const panelId = useId();
   const pending = JSON.stringify(draft) !== JSON.stringify(initial);
+  const empty = emptyGroups(draft, choices);
   const options = optionsOf(choices);
   const restricted = Object.values(initial.ticked).filter((t) => t !== null).length;
   const change = (changes: Record<string, Ticked>) =>
@@ -87,6 +89,7 @@ export function FilterPanel({ choices, applied, year, onApply }: FilterPanelProp
       if (event.key === 'Escape') {
         setDraft(draftOf(applied, year));
         setOpen(false);
+        toggle.current?.focus();
       }
     };
     document.addEventListener('keydown', close);
@@ -122,6 +125,7 @@ export function FilterPanel({ choices, applied, year, onApply }: FilterPanelProp
   return (
     <aside className={styles.filters} aria-label="Filters">
       <Button
+        ref={toggle}
         type="button"
         variant="secondary"
         className={styles.filtersToggle}
@@ -137,7 +141,8 @@ export function FilterPanel({ choices, applied, year, onApply }: FilterPanelProp
           <select
             className={styles.select}
             value={draft.year}
-            onChange={(e) => setDraft((d) => ({ ...d, year: Number(e.target.value) }))}
+            aria-describedby={applied.plans.length > 0 ? `${panelId}-year` : undefined}
+            onChange={(e) => onApply({ ...applied, year: Number(e.target.value), plans: [] })}
           >
             {choices.years.map((y) => (
               <option key={y} value={y}>
@@ -146,6 +151,11 @@ export function FilterPanel({ choices, applied, year, onApply }: FilterPanelProp
             ))}
           </select>
         </label>
+        {applied.plans.length > 0 && (
+          <p id={`${panelId}-year`} className={styles.pending}>
+            {yearNote(applied.plans.length)}
+          </p>
+        )}
         {LIST_KEYS.map((key) => (
           <FilterGroup
             key={key}
@@ -162,11 +172,33 @@ export function FilterPanel({ choices, applied, year, onApply }: FilterPanelProp
               {NOT_APPLIED}
             </p>
           )}
-          <Button type="button" variant="secondary" onClick={apply} disabled={!pending}>
+          {empty.length > 0 && (
+            <p className={styles.pending} role="status">
+              Tick at least one value in {empty.join(', ')}.
+            </p>
+          )}
+          <Button type="button" variant="secondary" onClick={apply} disabled={empty.length > 0}>
             Apply
           </Button>
         </div>
       </div>
     </aside>
   );
+}
+
+/** A group with nothing ticked would match nothing, so it can't be applied (FR-013). */
+function emptyGroups(draft: Draft, choices: ReportChoices): string[] {
+  const lists = LIST_KEYS.filter((key) => draft.ticked[key]?.length === 0).map(
+    (key) => TITLES[key],
+  );
+  const attributes = choices.attributeGroups
+    .filter((g) => draft.ticked[attrKey(g.attributeId)]?.length === 0)
+    .map((g) => g.label);
+  return [...lists, ...attributes];
+}
+
+function yearNote(plans: number): string {
+  return plans === 1
+    ? 'Another year clears the plan you chose.'
+    : `Another year clears the ${plans} plans you chose.`;
 }

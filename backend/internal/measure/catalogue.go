@@ -7,6 +7,7 @@ import (
 
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
+	"mapp/internal/platform/errs"
 )
 
 // Report is one report of the catalogue as its feature builds it; Sheets gives its widgets for the export.
@@ -14,6 +15,11 @@ type Report interface {
 	Key() string
 	Available() bool
 	Sheets(ctx context.Context, a actor.Actor, f Filter) ([]WidgetSheet, error)
+}
+
+// Parameterised reports have address parameters of their own (a tab, a sort) that saved views keep.
+type Parameterised interface {
+	Params() []string
 }
 
 type entry struct {
@@ -44,7 +50,6 @@ func entries() []entry {
 	}
 }
 
-// Keys are the report keys in the catalogue's order.
 func Keys() []string {
 	var keys []string
 	for _, e := range entries() {
@@ -111,4 +116,18 @@ func (s stub) Available() bool { return false }
 
 func (s stub) Sheets(context.Context, actor.Actor, Filter) ([]WidgetSheet, error) {
 	return []WidgetSheet{}, nil
+}
+
+// openable refuses a report the person's roles do not open, as the catalogue leaves it out (FR-003).
+func openable(ctx context.Context, report string) error {
+	i := slices.IndexFunc(entries(), func(e entry) bool { return e.key == report })
+	if i < 0 {
+		return errs.NotFound(msgNoReport)
+	}
+	if p := entries()[i].requires; p != "" {
+		if a := authz.AvailableAnywhere(ctx, p); !a.Available {
+			return errs.Forbidden(a.Reason)
+		}
+	}
+	return nil
 }

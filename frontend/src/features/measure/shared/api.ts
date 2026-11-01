@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, call } from '@/api/client';
 import { downloadFromApi } from '@/api/download';
 import type { components, operations } from '@/api/generated/schema';
@@ -12,6 +12,10 @@ export type ReportChoices = components['schemas']['ReportChoices'];
 export type ReportAttributeGroup = components['schemas']['ReportAttributeGroup'];
 export type Money = components['schemas']['Money'];
 export type ExportFormat = 'xlsx' | 'csv';
+export type ReportView = components['schemas']['ReportView'];
+type ReportViewPage = components['schemas']['ReportViewPage'];
+type ReportViewCreate = components['schemas']['ReportViewCreate'];
+type ReportViewUpdate = components['schemas']['ReportViewUpdate'];
 
 type ReportPath = operations['exportReport']['parameters']['path']['report'];
 
@@ -64,4 +68,73 @@ export function downloadReport(
       parseAs: 'blob',
     }),
   );
+}
+
+const viewsKey = (report: ReportKey) => ['reports', 'views', report] as const;
+
+export function useReportViews(report: ReportKey) {
+  return useQuery({
+    queryKey: viewsKey(report),
+    queryFn: () =>
+      call(
+        api.GET('/api/v1/reports/{report}/views', {
+          params: { path: { report: REPORT_PATHS[report] } },
+        }),
+      ),
+  });
+}
+
+/** A saved view goes into the list at once, so "Modified" does not flicker while the list reloads. */
+function useViewsRefresh(report: ReportKey) {
+  const queryClient = useQueryClient();
+  return {
+    remember: (view: ReportView) =>
+      queryClient.setQueryData<ReportViewPage>(viewsKey(report), (page) =>
+        page ? { ...page, items: [...page.items.filter((v) => v.id !== view.id), view] } : page,
+      ),
+    refresh: () => queryClient.invalidateQueries({ queryKey: viewsKey(report) }),
+  };
+}
+
+export function useCreateReportView(report: ReportKey) {
+  const { remember, refresh } = useViewsRefresh(report);
+  return useMutation({
+    mutationFn: (body: ReportViewCreate) =>
+      call(
+        api.POST('/api/v1/reports/{report}/views', {
+          params: { path: { report: REPORT_PATHS[report] } },
+          body,
+        }),
+      ),
+    onSuccess: remember,
+    onSettled: refresh,
+  });
+}
+
+export function useUpdateReportView(report: ReportKey) {
+  const { remember, refresh } = useViewsRefresh(report);
+  return useMutation({
+    mutationFn: ({ viewId, body }: { viewId: string; body: ReportViewUpdate }) =>
+      call(
+        api.PATCH('/api/v1/reports/{report}/views/{viewId}', {
+          params: { path: { report: REPORT_PATHS[report], viewId } },
+          body,
+        }),
+      ),
+    onSuccess: remember,
+    onSettled: refresh,
+  });
+}
+
+export function useDeleteReportView(report: ReportKey) {
+  const { refresh } = useViewsRefresh(report);
+  return useMutation({
+    mutationFn: (viewId: string) =>
+      call(
+        api.DELETE('/api/v1/reports/{report}/views/{viewId}', {
+          params: { path: { report: REPORT_PATHS[report], viewId } },
+        }),
+      ),
+    onSettled: refresh,
+  });
 }

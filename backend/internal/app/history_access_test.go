@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"mapp/internal/history"
+	"mapp/internal/measure"
+	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 )
 
@@ -58,5 +60,26 @@ func TestHistoryAccess_RestoreNeedsTheManagingPermission_D238(t *testing.T) {
 	}
 	if err := h.CanRestore(withPermissions(authz.ActivityLogViewAll, authz.ExchangeRatesManage), e); err != nil {
 		t.Errorf("a rate manager who sees the log: %v", err)
+	}
+}
+
+func TestHistoryAccess_ReportView_039_FR028(t *testing.T) {
+	t.Parallel()
+	h := historyAccess{}
+	e := history.Entry{RecordType: measure.KindReportView, RecordID: "RV-1001", Actor: actor.Actor{ID: "U-1002", Name: "Priya Raman"}}
+
+	for _, c := range []struct {
+		name string
+		ctx  context.Context
+		want bool
+	}{
+		{"the person who saved it", actor.With(withPermissions(authz.ReportsView), actor.Actor{ID: "U-1002"}), true},
+		{"another planner", actor.With(withPermissions(authz.ReportsView, authz.PlansView), actor.Actor{ID: "U-1003"}), false},
+		{"an auditor", actor.With(withPermissions(authz.ActivityLogViewAll), actor.Actor{ID: "U-1006"}), true},
+		{"an internal call", context.Background(), true},
+	} {
+		if got := h.CanSeeEntry(c.ctx, e); got != c.want {
+			t.Errorf("%s sees a saved view's entry = %t, want %t", c.name, got, c.want)
+		}
 	}
 }

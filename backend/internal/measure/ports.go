@@ -13,8 +13,7 @@ type Transactor interface {
 	Write(ctx context.Context, fn func(ctx context.Context) error) error
 }
 
-// Planning is All work's source (010): the year's plans in the person's plans.view scope, with the values the
-// owning features work out, and the Settings and people data the filter panel offers.
+// Planning is All work's source (010): the year's plans in the person's plans.view scope.
 type Planning interface {
 	Years(ctx context.Context) ([]int, error)
 	Year(ctx context.Context, year int, today date.Date, columns []string) (allwork.YearData, error)
@@ -34,7 +33,6 @@ type Currency struct {
 	Name string `json:"name"`
 }
 
-// Currencies lists the active currencies a report may be shown in, by code, and gives a currency's current rate.
 type Currencies interface {
 	Active(ctx context.Context) ([]Currency, error)
 	RateOf(ctx context.Context, code string) (money.Rate, error)
@@ -44,4 +42,5 @@ type Deps struct {
 	Planning   Planning
 	Plans      Plans
 	Currencies Currencies
+	Views      Store
 }

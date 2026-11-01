@@ -22,10 +22,7 @@ func planTypes() []string { return []string{"operational", "strategic", "crossMa
 // choicesOf are the values the filter panel offers for the scope (contract ReportChoices, FR-008 – FR-011).
 func choicesOf(sc Scope, f Filter, years []int, currencies []Currency) Choices {
 	selected := selectedPlans(sc, f)
-	teams := make([]TeamChoice, 0, len(sc.Choices.Teams))
-	for _, t := range sc.Choices.Teams {
-		teams = append(teams, TeamChoice{ID: t.ID, Name: t.Label, Mine: t.Mine})
-	}
+	teams := teamsOf(sc)
 	return Choices{Years: years, Plans: planChoices(sc.Nodes), PlanTypes: planTypes(), Teams: teams,
 		Owners: ownersOf(sc.Nodes, selected), ActivityTypes: typesOf(sc.Nodes, selected, sc.Choices.ActivityTypes),
 		ActivityStatuses: activityStatuses(), AttributeGroups: attributeGroups(sc.Attributes, sc.Nodes),
@@ -136,4 +133,21 @@ func usedBy(nodes []allwork.Node, attributeID, optionID string) bool {
 	return slices.ContainsFunc(nodes, func(n allwork.Node) bool {
 		return slices.Contains(n.Attrs[attributeID].OptionIDs, optionID)
 	})
+}
+
+// teamsOf are the teams of the plans in scope, so a market never sees another market's team names (SC-002).
+func teamsOf(sc Scope) []TeamChoice {
+	inScope := map[string]bool{}
+	for _, n := range sc.Nodes {
+		for _, id := range n.TeamIDs {
+			inScope[id] = true
+		}
+	}
+	teams := []TeamChoice{}
+	for _, t := range sc.Choices.Teams {
+		if inScope[t.ID] {
+			teams = append(teams, TeamChoice{ID: t.ID, Name: t.Label, Mine: t.Mine})
+		}
+	}
+	return teams
 }

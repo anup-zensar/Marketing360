@@ -3,6 +3,8 @@
 package measure
 
 import (
+	"net/url"
+
 	"time"
 
 	"mapp/internal/allwork"
@@ -39,6 +41,7 @@ type Filter struct {
 	Show     string
 	Currency string
 	Tables   []string
+	Own      url.Values
 }
 
 // WidgetSheet is one widget of a report as a sheet of the export; Key is the widget's key in the address.
