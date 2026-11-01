@@ -15,6 +15,7 @@ import (
 type MappingInput struct {
 	ColumnName string    `json:"columnName"`
 	Meaning    Meaning   `json:"meaning"`
+	KeyType    MatchedOn `json:"keyType"`
 	Stage      string    `json:"stage"`
 	WebMetric  WebMetric `json:"webMetric"`
 	ModelID    string    `json:"modelId"`
@@ -55,7 +56,7 @@ func (s *Service) CreateMapping(ctx context.Context, a actor.Actor, sourceID str
 		}
 		created = Mapping{
 			ID: id, SourceID: sourceID, ColumnName: strings.TrimSpace(in.ColumnName),
-			Meaning: in.Meaning, Stage: in.Stage, WebMetric: in.WebMetric, ModelID: in.ModelID,
+			Meaning: in.Meaning, KeyType: in.KeyType, Stage: in.Stage, WebMetric: in.WebMetric, ModelID: in.ModelID,
 			Meta: record.NewMeta(a, s.now()),
 		}
 		return s.repo.PutMapping(ctx, created)
@@ -121,6 +122,9 @@ func namingFaults(in MappingInput) []errs.FieldError {
 // consistencyFaults checks that a column names exactly what its meaning requires and nothing it does not.
 func consistencyFaults(in MappingInput) []errs.FieldError {
 	var problems []errs.FieldError
+	if (in.Meaning == MeaningKey) != (in.KeyType != "") || !knownKeyType(in.KeyType) {
+		problems = append(problems, errs.FieldError{Field: fieldKeyType, Message: msgKeyTypeNeeded})
+	}
 	if (in.Meaning == MeaningStage) != (in.Stage != "") {
 		problems = append(problems, errs.FieldError{Field: fieldStage, Message: msgStageNeeded})
 	}
@@ -168,7 +172,7 @@ func (s *Service) UpdateMapping(ctx context.Context, a actor.Actor, id string, i
 		}
 		saved = stored
 		saved.ColumnName, saved.Meaning = strings.TrimSpace(in.ColumnName), in.Meaning
-		saved.Stage, saved.WebMetric, saved.ModelID = in.Stage, in.WebMetric, in.ModelID
+		saved.KeyType, saved.Stage, saved.WebMetric, saved.ModelID = in.KeyType, in.Stage, in.WebMetric, in.ModelID
 		saved.Version++
 		saved.UpdatedAt, saved.UpdatedBy = s.now(), a
 		return s.repo.PutMapping(ctx, saved)
@@ -190,4 +194,12 @@ func (s *Service) mapping(ctx context.Context, id string) (Mapping, error) {
 		}
 	}
 	return Mapping{}, errs.NotFound(msgMappingNotFound)
+}
+
+func knownKeyType(on MatchedOn) bool {
+	switch on {
+	case MatchedNone, MatchedActivityID, MatchedMediaCode, MatchedIntegrationID, MatchedExternalName:
+		return true
+	}
+	return false
 }

@@ -40,6 +40,7 @@ const (
 	msgPersonalData   = "Not loaded - the file carries personal data in %s. Remove those columns and upload it again."
 	msgImportNotFound = "This upload doesn't exist or you can't see it."
 	msgNotUndoable    = "Not undone - %s is not a completed upload."
+	msgFileUnreadable = "This file can't be read. Save it as a .csv file in UTF-8 and try again."
 )
 
 func codeText(code int64) string {
@@ -49,6 +50,7 @@ func codeText(code int64) string {
 const (
 	fieldColumnName = "columnName"
 	fieldMeaning    = "meaning"
+	fieldKeyType    = "keyType"
 	fieldStage      = "stage"
 	fieldWebMetric  = "webMetric"
 	fieldModelID    = "modelId"
@@ -56,6 +58,7 @@ const (
 	msgColumnLength   = "Give the column a name of 1 to 120 characters."
 	msgMeaningUnknown = "Choose what this column means."
 	msgStageNeeded    = "A stage column names its stage, and only a stage column does."
+	msgKeyTypeNeeded  = "A key column names which key it carries, and only a key column does."
 	msgMetricNeeded   = "A web-metric column names its metric, and only a web-metric column does."
 	msgMetricUnknown  = "A web metric is sessions, visits or engagement touches."
 	msgModelNeeded    = "Only a stage or revenue column is supplied by a model, and it must name one."

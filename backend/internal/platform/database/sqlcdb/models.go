@@ -688,6 +688,7 @@ type PerformanceSourceMapping struct {
 	SourceID      string
 	ColumnName    string
 	Meaning       string
+	KeyType       string
 	Stage         string
 	WebMetric     string
 	ModelID       *string

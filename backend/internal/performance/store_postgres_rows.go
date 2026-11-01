@@ -233,3 +233,19 @@ func (s *PostgresStore) CurrencyCodes(ctx context.Context) (map[string]bool, err
 	}
 	return known, nil
 }
+
+func (s *PostgresStore) Breakdowns(ctx context.Context, importIDs []string) (map[string][]Breakdown, error) {
+	rows, err := s.db.Queries(ctx).ListPerformanceImportBreakdown(ctx, importIDs)
+	if err != nil {
+		return nil, fmt.Errorf("select the breakdown of %d imports: %w", len(importIDs), err)
+	}
+	groups := make(map[string][]Breakdown, len(importIDs))
+	for _, r := range rows {
+		groups[r.ImportID] = append(groups[r.ImportID], Breakdown{
+			Measure: Measure{Stage: r.Stage, WebMetric: WebMetric(r.WebMetric)},
+			Counts: Counts{Read: r.RowsRead, Matched: r.RowsMatched, Held: r.RowsHeld,
+				Unattributed: r.RowsUnattributed, Rejected: r.RowsRejected, Unmatched: r.RowsUnmatched},
+		})
+	}
+	return groups, nil
+}

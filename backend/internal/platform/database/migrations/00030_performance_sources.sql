@@ -32,7 +32,9 @@ CREATE TABLE performance_source_mappings (
     meaning         text        NOT NULL
                                 CHECK (meaning IN ('key', 'reference', 'factDate', 'stage', 'revenue',
                                                    'currency', 'webMetric', 'journey')),
-    stage           text        NOT NULL,
+    key_type        text        NOT NULL
+                                CHECK (key_type IN ('', 'activityId', 'mediaCode', 'integrationId', 'externalName')),
+    stage           text        NOT NULL CHECK (stage IN ('', 'inq', 'mql', 'revenue')),
     web_metric      text        NOT NULL
                                 CHECK (web_metric IN ('', 'sessions', 'visits', 'engagementTouches')),
     model_id        text        REFERENCES models (id) DEFERRABLE INITIALLY DEFERRED,
@@ -43,6 +45,7 @@ CREATE TABLE performance_source_mappings (
     updated_at      timestamptz NOT NULL,
     updated_by_id   text        NOT NULL,
     updated_by_name text        NOT NULL,
+    CHECK ((meaning = 'key') = (key_type <> '')),
     CHECK ((meaning = 'stage') = (stage <> '')),
     CHECK ((meaning = 'webMetric') = (web_metric <> '')),
     CHECK ((meaning IN ('stage', 'revenue')) = (model_id IS NOT NULL))
@@ -50,6 +53,8 @@ CREATE TABLE performance_source_mappings (
 
 CREATE UNIQUE INDEX performance_source_mappings_column_idx
     ON performance_source_mappings (source_id, lower(column_name COLLATE "C"));
+CREATE UNIQUE INDEX performance_source_mappings_key_idx
+    ON performance_source_mappings (source_id, key_type) WHERE meaning = 'key';
 
 -- One ACTIVE source per model stage and per model revenue spans two tables, so the rule lives in the
 -- service rather than a constraint (ADR-0021); these indexes only keep its check fast.

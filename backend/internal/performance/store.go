@@ -72,6 +72,7 @@ type Imports interface {
 	ListImports(ctx context.Context, id, sourceID string, limit int) ([]Import, error)
 	PutImport(ctx context.Context, i Import) error
 	PutBreakdown(ctx context.Context, importID string, groups []Breakdown) error
+	Breakdowns(ctx context.Context, importIDs []string) (map[string][]Breakdown, error)
 	CurrencyCodes(ctx context.Context) (map[string]bool, error)
 }
 

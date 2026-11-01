@@ -770,7 +770,7 @@ func (q *Queries) ListPerformanceImports(ctx context.Context, arg ListPerformanc
 }
 
 const listPerformanceMappings = `-- name: ListPerformanceMappings :many
-SELECT performance_source_mappings.id, performance_source_mappings.source_id, performance_source_mappings.column_name, performance_source_mappings.meaning, performance_source_mappings.stage, performance_source_mappings.web_metric, performance_source_mappings.model_id, performance_source_mappings.version, performance_source_mappings.created_at, performance_source_mappings.created_by_id, performance_source_mappings.created_by_name, performance_source_mappings.updated_at, performance_source_mappings.updated_by_id, performance_source_mappings.updated_by_name
+SELECT performance_source_mappings.id, performance_source_mappings.source_id, performance_source_mappings.column_name, performance_source_mappings.meaning, performance_source_mappings.key_type, performance_source_mappings.stage, performance_source_mappings.web_metric, performance_source_mappings.model_id, performance_source_mappings.version, performance_source_mappings.created_at, performance_source_mappings.created_by_id, performance_source_mappings.created_by_name, performance_source_mappings.updated_at, performance_source_mappings.updated_by_id, performance_source_mappings.updated_by_name
 FROM performance_source_mappings
 WHERE source_id = ANY ($1::text[])
 ORDER BY source_id COLLATE "C", lower(column_name COLLATE "C")
@@ -794,6 +794,7 @@ func (q *Queries) ListPerformanceMappings(ctx context.Context, sourceIds []strin
 			&i.PerformanceSourceMapping.SourceID,
 			&i.PerformanceSourceMapping.ColumnName,
 			&i.PerformanceSourceMapping.Meaning,
+			&i.PerformanceSourceMapping.KeyType,
 			&i.PerformanceSourceMapping.Stage,
 			&i.PerformanceSourceMapping.WebMetric,
 			&i.PerformanceSourceMapping.ModelID,
@@ -1433,11 +1434,12 @@ func (q *Queries) PutPerformanceImportBreakdown(ctx context.Context, arg PutPerf
 
 const putPerformanceMapping = `-- name: PutPerformanceMapping :exec
 INSERT INTO performance_source_mappings (
-    id, source_id, column_name, meaning, stage, web_metric, model_id,
+    id, source_id, column_name, meaning, key_type, stage, web_metric, model_id,
     version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 ON CONFLICT (id) DO UPDATE SET
-    column_name = excluded.column_name, meaning = excluded.meaning, stage = excluded.stage,
+    column_name = excluded.column_name, meaning = excluded.meaning, key_type = excluded.key_type,
+    stage = excluded.stage,
     web_metric = excluded.web_metric, model_id = excluded.model_id, version = excluded.version,
     updated_at = excluded.updated_at, updated_by_id = excluded.updated_by_id,
     updated_by_name = excluded.updated_by_name
@@ -1448,6 +1450,7 @@ type PutPerformanceMappingParams struct {
 	SourceID      string
 	ColumnName    string
 	Meaning       string
+	KeyType       string
 	Stage         string
 	WebMetric     string
 	ModelID       *string
@@ -1466,6 +1469,7 @@ func (q *Queries) PutPerformanceMapping(ctx context.Context, arg PutPerformanceM
 		arg.SourceID,
 		arg.ColumnName,
 		arg.Meaning,
+		arg.KeyType,
 		arg.Stage,
 		arg.WebMetric,
 		arg.ModelID,

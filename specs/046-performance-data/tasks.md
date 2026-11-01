@@ -102,7 +102,7 @@ unchanged; undo it.
 - [X] T036 [P] [US2] Write `backend/internal/performance/idempotent_test.go`: an identical file changes nothing; a repeated (source, source reference) replaces and audits both versions (FR-013) · proves SC-004
 - [X] T037 [P] [US2] Write `backend/internal/performance/undo_test.go`: undo restores replaced versions, leaves a later upload's facts alone, and leaves the import listed as *Undone* (FR-017)
 - [ ] T038 [P] [US2] Write `backend/internal/performance/money_test.go`: revenue stored exactly in its currency; without a rate it is marked and excluded with its count (FR-014); a fact counts in the fiscal year of its own date across a multi-year activity (FR-015) · proves SC-010
-- [X] T039 [P] [US2] Write `backend/internal/performance/handler_import_test.go` as a contract test for the upload, simulated-pull, list, view and undo operations, including the **422** whole-file refusal and FR-016's "an import MUST NOT be editable, and the reason MUST be stated"
+- [X] T039 [P] [US2] Write `backend/internal/performance/handler_imports_test.go` as a contract test for the upload, list, view and undo operations and the whole-file refusal — a **409**, not 422: whole-file refusals answer `not_allowed` (errs vocabulary). The pull operation's test lands with the adapter (T049)
 - [X] T040 [P] [US2] Write `backend/internal/performance/simulatedfeed/feed_test.go`: rows from the adapter take the identical validation and matching path as an uploaded file (046-C13, ADR-0020), on a fixed seed (FR-010)
 - [ ] T041 [P] [US2] Write `frontend/src/features/performance/imports/ImportPage.test.tsx`: the states data, empty, no access, upload in progress, refused file, and the summary showing all five counts
 

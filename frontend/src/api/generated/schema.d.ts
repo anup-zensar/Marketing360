@@ -4399,6 +4399,110 @@ export interface paths {
         patch: operations["updateColumnMapping"];
         trace?: never;
     };
+    "/api/v1/performance/sources/{sourceId}/uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload a CSV of performance rows for this source (needs performance.import) (046 FR-009)
+         * @description The whole file lands or none of it does. A file carrying a personal-data column is refused in
+         *     full, naming the columns, and nothing from it is stored (FR-012).
+         */
+        post: operations["uploadPerformanceFile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/sources/{sourceId}/pull": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pull the simulated feed once, by explicit action (needs performance.import) (046 FR-010, 046-C13) */
+        post: operations["pullPerformanceFeed"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The uploads, newest first, findable by source (needs performance.import) (046 FR-016) */
+        get: operations["listPerformanceImports"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/imports/{importId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example IMP-1001 */
+                importId: components["parameters"]["ImportId"];
+            };
+            cookie?: never;
+        };
+        /** One upload with its summary and the counts per measure (needs performance.import) (046 FR-022, 046-C18) */
+        get: operations["getPerformanceImport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/performance/imports/{importId}/undo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example IMP-1001 */
+                importId: components["parameters"]["ImportId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Undo a whole upload (needs performance.import and settings.manage) (046 FR-017, 046-C16)
+         * @description Replaced versions return and the upload stays listed as undone.
+         */
+        post: operations["undoPerformanceImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4481,12 +4585,63 @@ export interface components {
         PerformanceSourceList: {
             items: components["schemas"]["PerformanceSource"][];
         };
+        PerformanceUpload: {
+            /** @example eloqua_2026-10.csv */
+            fileName: string;
+            /** @description The file, base64 (at most 2 MB before encoding). */
+            content: string;
+        };
+        /** @description The five outcomes of a load; they add up to rows read (046-C3). */
+        PerformanceCounts: {
+            read: number;
+            matched: number;
+            held: number;
+            unattributed: number;
+            rejected: number;
+            unmatched: number;
+        };
+        /** @description The five counts again for one measure; a row carrying two measures counts in both (046-C18). */
+        PerformanceBreakdownGroup: {
+            stage: string;
+            webMetric: string;
+            counts: components["schemas"]["PerformanceCounts"];
+        };
+        /** @description One load of performance data. Never editable; undo is the only way back (FR-016). */
+        PerformanceImport: {
+            id: string;
+            sourceId: string;
+            fileName: string;
+            /** @enum {string} */
+            origin: "upload" | "simulated";
+            /** @enum {string} */
+            status: "completed" | "failed" | "undone";
+            /** Format: date */
+            dataThrough: string | null;
+            counts: components["schemas"]["PerformanceCounts"];
+            breakdown: components["schemas"]["PerformanceBreakdownGroup"][];
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["ActorRef"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedBy: components["schemas"]["ActorRef"];
+        };
+        PerformanceImportList: {
+            items: components["schemas"]["PerformanceImport"][];
+        };
+        /**
+         * @description Which matching key a key column carries (046-C23); empty on every other column.
+         * @enum {string}
+         */
+        MatchKeyType: "" | "activityId" | "mediaCode" | "integrationId" | "externalName";
         /** @description What one column of a source's file means. A change affects future loads only. */
         ColumnMapping: {
             id: string;
             sourceId: string;
             columnName: string;
             meaning: components["schemas"]["ColumnMeaning"];
+            keyType: components["schemas"]["MatchKeyType"];
             /** @description Set only on a stage column. */
             stage: string;
             /** @description Set only on a web-metric column. */
@@ -4504,6 +4659,7 @@ export interface components {
         ColumnMappingInput: {
             columnName: string;
             meaning: components["schemas"]["ColumnMeaning"];
+            keyType?: components["schemas"]["MatchKeyType"];
             stage?: string;
             webMetric?: components["schemas"]["WebMetric"];
             modelId?: string;
@@ -19091,6 +19247,147 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    uploadPerformanceFile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PerformanceUpload"];
+            };
+        };
+        responses: {
+            /** @description The completed load with its reconciling summary (FR-022). */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceImport"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            default: components["responses"]["Error"];
+        };
+    };
+    pullPerformanceFeed: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A data source's readable ID, such as PS-1001. */
+                sourceId: components["parameters"]["SourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The completed load; its rows took the same path as an uploaded file (ADR-0020). */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceImport"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    listPerformanceImports: {
+        parameters: {
+            query?: {
+                sourceId?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The uploads with their summaries. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceImportList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            default: components["responses"]["Error"];
+        };
+    };
+    getPerformanceImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example IMP-1001 */
+                importId: components["parameters"]["ImportId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The upload. An upload is never editable; undo is the only way back (FR-016). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceImport"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            default: components["responses"]["Error"];
+        };
+    };
+    undoPerformanceImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example IMP-1001 */
+                importId: components["parameters"]["ImportId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The upload, undone. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerformanceImport"];
+                };
+            };
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];

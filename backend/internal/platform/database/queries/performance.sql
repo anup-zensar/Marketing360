@@ -46,11 +46,12 @@ ORDER BY m.id COLLATE "C";
 
 -- name: PutPerformanceMapping :exec
 INSERT INTO performance_source_mappings (
-    id, source_id, column_name, meaning, stage, web_metric, model_id,
+    id, source_id, column_name, meaning, key_type, stage, web_metric, model_id,
     version, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 ON CONFLICT (id) DO UPDATE SET
-    column_name = excluded.column_name, meaning = excluded.meaning, stage = excluded.stage,
+    column_name = excluded.column_name, meaning = excluded.meaning, key_type = excluded.key_type,
+    stage = excluded.stage,
     web_metric = excluded.web_metric, model_id = excluded.model_id, version = excluded.version,
     updated_at = excluded.updated_at, updated_by_id = excluded.updated_by_id,
     updated_by_name = excluded.updated_by_name;

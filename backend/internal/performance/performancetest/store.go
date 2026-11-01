@@ -464,6 +464,16 @@ func (s *Store) BreakdownOf(importID string) []performance.Breakdown {
 	return s.breakdowns[importID]
 }
 
+func (s *Store) Breakdowns(_ context.Context, importIDs []string) (map[string][]performance.Breakdown, error) {
+	groups := map[string][]performance.Breakdown{}
+	for _, id := range importIDs {
+		if held, ok := s.breakdowns[id]; ok {
+			groups[id] = held
+		}
+	}
+	return groups, nil
+}
+
 func (s *Store) CurrencyCodes(_ context.Context) (map[string]bool, error) {
 	if s.Currencies == nil {
 		return map[string]bool{"USD": true}, nil

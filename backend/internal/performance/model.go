@@ -89,6 +89,7 @@ type Mapping struct {
 	SourceID   string    `json:"sourceId"`
 	ColumnName string    `json:"columnName"`
 	Meaning    Meaning   `json:"meaning"`
+	KeyType    MatchedOn `json:"keyType"`
 	Stage      string    `json:"stage"`
 	WebMetric  WebMetric `json:"webMetric"`
 	ModelID    string    `json:"modelId"`

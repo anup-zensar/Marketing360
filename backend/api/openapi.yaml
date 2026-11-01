@@ -7961,6 +7961,109 @@ paths:
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
         default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}/uploads:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    post:
+      tags: [Performance data]
+      operationId: uploadPerformanceFile
+      summary: Upload a CSV of performance rows for this source (needs performance.import) (046 FR-009)
+      description: |
+        The whole file lands or none of it does. A file carrying a personal-data column is refused in
+        full, naming the columns, and nothing from it is stored (FR-012).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PerformanceUpload" }
+      responses:
+        "201":
+          description: The completed load with its reconciling summary (FR-022).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceImport" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/sources/{sourceId}/pull:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    post:
+      tags: [Performance data]
+      operationId: pullPerformanceFeed
+      summary: Pull the simulated feed once, by explicit action (needs performance.import) (046 FR-010, 046-C13)
+      responses:
+        "201":
+          description: The completed load; its rows took the same path as an uploaded file (ADR-0020).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceImport" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/imports:
+    get:
+      tags: [Performance data]
+      operationId: listPerformanceImports
+      summary: The uploads, newest first, findable by source (needs performance.import) (046 FR-016)
+      parameters:
+        - name: sourceId
+          in: query
+          required: false
+          schema: { type: string, pattern: "^PS-[0-9]+$" }
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 500 }
+      responses:
+        "200":
+          description: The uploads with their summaries.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceImportList" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/imports/{importId}:
+    parameters:
+      - $ref: "#/components/parameters/ImportId"
+    get:
+      tags: [Performance data]
+      operationId: getPerformanceImport
+      summary: One upload with its summary and the counts per measure (needs performance.import) (046 FR-022, 046-C18)
+      responses:
+        "200":
+          description: The upload. An upload is never editable; undo is the only way back (FR-016).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceImport" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        default: { $ref: "#/components/responses/Error" }
+  /api/v1/performance/imports/{importId}/undo:
+    parameters:
+      - $ref: "#/components/parameters/ImportId"
+    post:
+      tags: [Performance data]
+      operationId: undoPerformanceImport
+      summary: Undo a whole upload (needs performance.import and settings.manage) (046 FR-017, 046-C16)
+      description: Replaced versions return and the upload stays listed as undone.
+      responses:
+        "200":
+          description: The upload, undone.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PerformanceImport" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        default: { $ref: "#/components/responses/Error" }
 components:
   securitySchemes:
     sessionCookie:
@@ -8937,16 +9040,84 @@ components:
         items:
           type: array
           items: { $ref: "#/components/schemas/PerformanceSource" }
+    PerformanceUpload:
+      type: object
+      additionalProperties: false
+      required: [fileName, content]
+      properties:
+        fileName:
+          type: string
+          minLength: 1
+          maxLength: 260
+          example: eloqua_2026-10.csv
+        content:
+          type: string
+          contentEncoding: base64
+          description: The file, base64 (at most 2 MB before encoding).
+    PerformanceCounts:
+      type: object
+      description: The five outcomes of a load; they add up to rows read (046-C3).
+      required: [read, matched, held, unattributed, rejected, unmatched]
+      properties:
+        read: { type: integer }
+        matched: { type: integer }
+        held: { type: integer }
+        unattributed: { type: integer }
+        rejected: { type: integer }
+        unmatched: { type: integer }
+    PerformanceBreakdownGroup:
+      type: object
+      description: The five counts again for one measure; a row carrying two measures counts in both (046-C18).
+      required: [stage, webMetric, counts]
+      properties:
+        stage: { type: string }
+        webMetric: { type: string }
+        counts: { $ref: "#/components/schemas/PerformanceCounts" }
+    PerformanceImport:
+      type: object
+      description: One load of performance data. Never editable; undo is the only way back (FR-016).
+      required: [id, sourceId, fileName, origin, status, dataThrough, counts, breakdown, version,
+                 createdAt, createdBy, updatedAt, updatedBy]
+      properties:
+        id: { type: string }
+        sourceId: { type: string }
+        fileName: { type: string }
+        origin: { type: string, enum: [upload, simulated] }
+        status: { type: string, enum: [completed, failed, undone] }
+        dataThrough:
+          type: [string, "null"]
+          format: date
+        counts: { $ref: "#/components/schemas/PerformanceCounts" }
+        breakdown:
+          type: array
+          items: { $ref: "#/components/schemas/PerformanceBreakdownGroup" }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        createdBy: { $ref: "#/components/schemas/ActorRef" }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { $ref: "#/components/schemas/ActorRef" }
+    PerformanceImportList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/PerformanceImport" }
+    MatchKeyType:
+      type: string
+      description: Which matching key a key column carries (046-C23); empty on every other column.
+      enum: ["", activityId, mediaCode, integrationId, externalName]
     ColumnMapping:
       type: object
       description: What one column of a source's file means. A change affects future loads only.
-      required: [id, sourceId, columnName, meaning, stage, webMetric, modelId, version,
+      required: [id, sourceId, columnName, meaning, keyType, stage, webMetric, modelId, version,
                  createdAt, createdBy, updatedAt, updatedBy]
       properties:
         id: { type: string }
         sourceId: { type: string }
         columnName: { type: string }
         meaning: { $ref: "#/components/schemas/ColumnMeaning" }
+        keyType: { $ref: "#/components/schemas/MatchKeyType" }
         stage: { type: string, description: "Set only on a stage column." }
         webMetric: { type: string, description: "Set only on a web-metric column." }
         modelId: { type: string, description: "Set only on a stage or revenue column, which a model supplies." }
@@ -8961,6 +9132,7 @@ components:
       properties:
         columnName: { type: string, minLength: 1, maxLength: 120 }
         meaning: { $ref: "#/components/schemas/ColumnMeaning" }
+        keyType: { $ref: "#/components/schemas/MatchKeyType" }
         stage: { type: string }
         webMetric: { $ref: "#/components/schemas/WebMetric" }
         modelId: { type: string }

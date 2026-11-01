@@ -205,6 +205,13 @@ these into the decision log at the end of wave B.
   would make a figure the source never sent. A row that fills **no** measure column at all is rejected with a
   stated reason, because a line saying nothing is a mistake rather than a set of zeroes.
 
+- **046-C23** — Q: 046-C2 lets one row carry several matching keys, so a file has several key columns — but
+  nothing says which of the four types a key column holds, and inferring it from the cell's shape would be
+  the guessing FR-019 forbids. → A: **The mapping names its key's type**, exactly as a stage column names its
+  stage: a `key` mapping carries `keyType` ∈ activity ID · media code · integration ID · external name, one
+  column per type at most. The reader fills the row's keys from those mappings and never inspects a value to
+  decide what it is.
+
 
 ## User Scenarios & Testing *(mandatory)*
 

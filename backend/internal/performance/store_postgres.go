@@ -125,7 +125,7 @@ func (s *PostgresStore) ListMappings(ctx context.Context, sourceIDs []string) ([
 		m := r.PerformanceSourceMapping
 		mappings = append(mappings, Mapping{
 			ID: m.ID, SourceID: m.SourceID, ColumnName: m.ColumnName, Meaning: Meaning(m.Meaning),
-			Stage: m.Stage, WebMetric: WebMetric(m.WebMetric), ModelID: text(m.ModelID),
+			KeyType: MatchedOn(m.KeyType), Stage: m.Stage, WebMetric: WebMetric(m.WebMetric), ModelID: text(m.ModelID),
 			Meta: metaOf(m.Version, metaRow{m.CreatedAt, m.CreatedByID, m.CreatedByName,
 				m.UpdatedAt, m.UpdatedByID, m.UpdatedByName}),
 		})
@@ -136,7 +136,7 @@ func (s *PostgresStore) ListMappings(ctx context.Context, sourceIDs []string) ([
 func (s *PostgresStore) PutMapping(ctx context.Context, m Mapping) error {
 	err := s.db.Queries(ctx).PutPerformanceMapping(ctx, sqlcdb.PutPerformanceMappingParams{
 		ID: m.ID, SourceID: m.SourceID, ColumnName: m.ColumnName, Meaning: string(m.Meaning),
-		Stage: m.Stage, WebMetric: string(m.WebMetric), ModelID: optional(m.ModelID),
+		KeyType: string(m.KeyType), Stage: m.Stage, WebMetric: string(m.WebMetric), ModelID: optional(m.ModelID),
 		Version: m.Version, CreatedAt: m.CreatedAt, CreatedByID: m.CreatedBy.ID,
 		CreatedByName: m.CreatedBy.Name, UpdatedAt: m.UpdatedAt, UpdatedByID: m.UpdatedBy.ID,
 		UpdatedByName: m.UpdatedBy.Name,

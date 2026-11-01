@@ -65,7 +65,9 @@ func TestEveryProtectedOperationRequiresSignIn_FR005(t *testing.T) {
 
 // notYetServed: the contract's operations designed but not built yet (D-192, D-298). Each feature removes
 // its own in the change that serves them; the list must be empty when the Plan module is done.
-var notYetServed = []string{}
+var notYetServed = []string{
+	// Feature 046, US2: the simulated pull lands with its adapter (ADR-0020).
+	"POST /api/v1/performance/sources/{sourceId}/pull"}
 
 func TestNotYetServedIsAccurate(t *testing.T) {
 	t.Parallel()

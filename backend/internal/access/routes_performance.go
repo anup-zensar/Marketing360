@@ -18,5 +18,10 @@ func performanceRoutes() map[string]Rule {
 		"GET /api/v1/performance/sources/{sourceId}/template":    signedIn(),
 		"PATCH /api/v1/performance/mappings/{mappingId}":         need(performance.PermissionImport),
 		"DELETE /api/v1/performance/mappings/{mappingId}":        need(performance.PermissionImport),
+		"POST /api/v1/performance/sources/{sourceId}/uploads":    need(performance.PermissionImport),
+		"POST /api/v1/performance/sources/{sourceId}/pull":       need(performance.PermissionImport),
+		"GET /api/v1/performance/imports":                        need(performance.PermissionImport),
+		"GET /api/v1/performance/imports/{importId}":             need(performance.PermissionImport),
+		"POST /api/v1/performance/imports/{importId}/undo":       need(performance.PermissionImport),
 	}
 }
