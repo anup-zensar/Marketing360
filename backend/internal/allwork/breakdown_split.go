@@ -7,8 +7,7 @@ import (
 	"mapp/internal/platform/money"
 )
 
-// amountOf returns the planned cost of a record in the Breakdown's currency, before conversion: USD, or the
-// plan currency; nil when it has none.
+// amountOf is a record's planned cost before conversion: USD, or the plan currency; nil when it has none.
 func (w *breakdownWork) amountOf(n *Node) *money.Amount {
 	if w.planCurrency != "" {
 		if n.PlannedCostPlan == nil {
@@ -19,9 +18,7 @@ func (w *breakdownWork) amountOf(n *Node) *money.Amount {
 	return n.PlannedCost
 }
 
-// pieces returns the parts of the activity a's planned cost (data-model §3.5): the whole activity, or, for a
-// line-item grouping, each line item and the unassigned planned cost ("Not on a line item"). Line items of an
-// activity without a planned cost count too, and are named in a note.
+// pieces split activity a's planned cost (data-model §3.5): the activity, or its line items and "Not on a line item".
 func (w *breakdownWork) pieces(a *tnode, byLineItems bool) []piece {
 	planned := w.amountOf(a.n)
 	if !byLineItems {
@@ -53,40 +50,58 @@ func (w *breakdownWork) pieces(a *tnode, byLineItems bool) []piece {
 	return list
 }
 
-// part is the amount of a piece that goes to one group.
 type part struct {
 	value
 	amount money.Amount
 }
 
-// split divides amount among the values (data-model §3.5): one value gets it all; a % split gives each value
-// amount × share ÷ 100, half up, and the last the rest; several values without shares each get it all, and
-// the Breakdown says so.
+// split divides amount among the values by AttributeParts' rule; the Breakdown says when each gets it all.
 func (w *breakdownWork) split(amount money.Amount, values []value) []part {
-	if len(values) == 1 {
-		return []part{{value: values[0], amount: amount}}
-	}
-	parts := make([]part, 0, len(values))
-	if values[0].share == nil {
-		w.countsInEach = true
-		for _, v := range values {
-			parts = append(parts, part{value: v, amount: amount})
-		}
-		return parts
-	}
-	var given money.Amount
+	shares := make([]*money.Percent, len(values))
 	for i, v := range values {
-		a := amount.Sub(given)
-		if i < len(values)-1 {
-			a = shareOfAmount(amount, *v.share)
-			given = given.Add(a)
-		}
-		parts = append(parts, part{value: v, amount: a})
+		shares[i] = v.share
+	}
+	amounts, each := splitAmount(amount, shares)
+	w.countsInEach = w.countsInEach || each
+	parts := make([]part, 0, len(values))
+	for i, v := range values {
+		parts = append(parts, part{value: v, amount: amounts[i]})
 	}
 	return parts
 }
 
-// shareOfAmount is a × p ÷ 100, rounded half up (away from zero) to the cent.
+// AttributeParts divides amount over a record's attribute value by option (data-model §3.5): one gets it all; a %
+// split gives each amount × share ÷ 100, half up, the last the rest; several without shares each get it all (true).
+func AttributeParts(v AttrValue, amount money.Amount) ([]money.Amount, bool) {
+	shares := make([]*money.Percent, len(v.OptionIDs))
+	for i, id := range v.OptionIDs {
+		if v.Shares != nil {
+			share := v.Shares[id]
+			shares[i] = &share
+		}
+	}
+	return splitAmount(amount, shares)
+}
+
+func splitAmount(amount money.Amount, shares []*money.Percent) ([]money.Amount, bool) {
+	amounts := make([]money.Amount, len(shares))
+	if len(shares) <= 1 || shares[0] == nil {
+		for i := range amounts {
+			amounts[i] = amount
+		}
+		return amounts, len(shares) > 1
+	}
+	var given money.Amount
+	for i, share := range shares {
+		amounts[i] = amount.Sub(given)
+		if i < len(shares)-1 {
+			amounts[i] = shareOfAmount(amount, *share)
+			given = given.Add(amounts[i])
+		}
+	}
+	return amounts, false
+}
+
 func shareOfAmount(a money.Amount, p money.Percent) money.Amount {
 	num := new(big.Int).Mul(big.NewInt(a.Cents()), big.NewInt(p.Hundredths()))
 	return money.FromCents(roundHalfAway(num, big.NewInt(10000)))

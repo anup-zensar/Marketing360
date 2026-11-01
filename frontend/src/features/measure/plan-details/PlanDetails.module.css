@@ -1,0 +1,70 @@
+.report {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  grid-column: 1 / -1;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+}
+
+.widgets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-4);
+}
+
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bar {
+  display: grid;
+  grid-template-columns: minmax(96px, 35%) 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.barLabel {
+  overflow: hidden;
+  color: var(--ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A value that opens All work reads as a link. */
+a.barLabel {
+  color: var(--link);
+}
+
+.track {
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background-color: var(--hairline);
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background-color: var(--chart-planned);
+}
+
+.fillMuted {
+  background-color: var(--chart-budget);
+}
+
+.barValue {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
