@@ -479,13 +479,13 @@ Pages (each F0 stub exports a component with no props): `DashboardBuilderPage` (
 
 - [ ] T063 [INT] Merge B2, B1, B3, F1, F3, F2 into `feature/051-dashboard-builder` in that order; resolve the additive
   edits; `sqlc generate` once more; `go build ./...`
-- [ ] T064 [INT] [US3] Wire `dataset.Service` as `widgetdata.DatasetTables` and `customdashboard.Service.UsingDataset`
+- [x] T064 [INT] [US3] Wire `dataset.Service` as `widgetdata.DatasetTables` and `customdashboard.Service.UsingDataset`
   as `dataset.Usage` — `internal/app/widget_data.go`, `internal/app/datasets.go`; `TestQuery_DatasetSharedOrNot_FR044`
   (Sara: 404 until shared; owner after delete: 404)
-- [ ] T065 [INT] History access for owned kinds: log entries to the owner and `activityLog.viewAll`, bin entries and
+- [x] T065 [INT] History access for owned kinds: log entries to the owner and `activityLog.viewAll`, bin entries and
   restore to the owner — `internal/app/history_access_owned.go`, a call from `history_access.go`,
   `history_access_owned_test.go` (FR-009, FR-010, FR-045)
-- [ ] T066 [INT] Empty the 051 entries of `notYetServed`; all contract, access and matrix tests pass —
+- [x] T066 [INT] Empty the 051 entries of `notYetServed`; all contract, access and matrix tests pass —
   `internal/app/contract_routes_test.go`
 - [ ] T067 [INT] [US1] E2E: Priya builds a dashboard (palette click and drag, Data tab, keyboard move and resize, undo,
   validation summary, save, reload, figures equal the activity pages; guard on leaving; Viewer without the builder
