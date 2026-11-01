@@ -242,7 +242,7 @@ a widget to its table, export it, export the report, compare every value with th
   files (`routes.go`, `catalogue.go`, `ids.go`, `seed/access.go`, `navigation.ts`, `pages.tsx`, `router.tsx`,
   `contract_routes_test.go`): whole-file 5% budget (CLAUDE.md 3), at most 300 non-blank lines
 - [X] T053 Run `specs/039-measure-foundation/quickstart.md` by hand on the demo data; fix what differs
-- [ ] T054 `/speckit-converge`; spec status Built; pull request into `measure-module` with the feature-map status
+- [X] T054 `/speckit-converge`; spec status Built; pull request into `measure-module` with the feature-map status
   change "039 Built" in its description (build guide §4.5)
 
 ## Dependencies
@@ -292,3 +292,18 @@ commit at each checkpoint.
 | SC-004, SC-005 | T020, T031, T040 |
 | SC-006 | T041, T048 |
 | SC-007 | T021, T035, T043, T031 |
+
+## Phase 8: Converge (2026-11-02)
+
+Found by `/speckit-converge` and the quickstart walkthrough; each fixed test first.
+
+- [X] T055 Owners and teams of other markets, unknown attributes, options and currencies are left out, counted and
+  never named, in the frame, its chips and the export (FR-015, SC-002; converge F1, F2)
+- [X] T056 About this export words plan types and activity statuses as the screen does (FR-022; F3)
+- [X] T057 `LevelTabs.test.tsx`: tab order, Activity first, inactive values, Select all and Clear all per tab, axe
+  (FR-008, FR-010; F4)
+- [X] T058 Year choices are the years of the reports.view scope plus the current year (FR-008; F5)
+- [X] T059 Spec aligned with the build: 039-C4 no-access page, 039-C5 no-finance words, 039-C6 views in the
+  address (FR-004, FR-025; F6, F7, F9)
+- [X] T060 `ReportWidget` takes an `empty` message instead of a chart of zeros (FR-031; F8)
+- [X] T061 Walkthrough: the level tabs wrap instead of hiding Activity; the browser test checks every tab is visible

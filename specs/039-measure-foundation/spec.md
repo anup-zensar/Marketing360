@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-30
 
-**Status**: Draft
+**Status**: Built (2026-11-02)
 
 **Input**: User description: "Measure foundation (lane A, issue #32): the Reports area and everything every report
 shares — report frame, filter panel (year, plans, Shell attributes per level with Not filled in, owner, activity
