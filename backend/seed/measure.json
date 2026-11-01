@@ -1,0 +1,255 @@
+{
+  "presets": {
+    "helix": {
+      "choices": {
+        "Channel / audience": ["External"],
+        "Global campaign": ["Helix Ultra global platform"],
+        "Growth ambition": ["LUBRICANTS – B2B expansion"],
+        "Global key accounts": ["Account C – Logistics"],
+        "Sector": ["Automotive"],
+        "Sub-sector": ["Heavy duty"],
+        "Zero-based cost hierarchy": ["LUBES - Protecting the core"]
+      },
+      "split": {"Country / OU": ["Netherlands", "60.00", "Germany", "40.00"], "Brands": ["Rimula", "100.00"]},
+      "choice": {"Company code": "NL02", "Cost centre": "NL02000340", "PIR": "Yes", "FIT4 initiative": "Not FIT4", "Product launch": "No"}
+    }
+  },
+  "plans": [
+    {
+      "name": "FY2026 Measure demo – Lubricants Benelux",
+      "year": 2026,
+      "model": "Lubricants 1.0",
+      "team": "Measure demo",
+      "owner": "Alex Morgan",
+      "budget": "800000.00",
+      "status": "published",
+      "businessUnits": ["Lubricants"],
+      "smp": false,
+      "goalStage": "inq",
+      "goalAmount": "12000",
+      "financeBudget": "2026 Lubricants Budget",
+      "description": "Every month of 2026, every approval state and the GSAP link at work, so each Measure report has something to show.",
+      "campaigns": [
+        {
+          "name": "Helix always-on 2026",
+          "owner": "Alex Morgan",
+          "start": "2026-01-01",
+          "end": "2026-12-31",
+          "budget": "450000.00",
+          "attributes": {
+            "choices": {"Cluster": ["Lubricants – Europe"], "Region": ["LUBES – BENELUX"]},
+            "yesNo": {"Insight session completed": true, "Workshop completed": false, "Global GM sign-off completed": true}
+          },
+          "initiatives": [
+            {
+              "name": "Digital demand",
+              "owner": "Alex Morgan",
+              "start": "2026-01-01",
+              "end": "2026-12-31",
+              "budget": "250000.00",
+              "attributes": {
+                "choices": {"Growth ambition": ["LUBRICANTS – B2B expansion"]},
+                "choice": {"Function": "Marketing", "Focus area": "Customer acquisition"},
+                "yesNo": {"FIT4 initiative": false}
+              },
+              "activities": [
+                {
+                  "name": "Helix search and social, first half",
+                  "type": "Digital media",
+                  "status": "approved",
+                  "owner": "Alex Morgan",
+                  "start": "2026-01-05",
+                  "end": "2026-06-30",
+                  "plannedCost": "90000.00",
+                  "workflow": "Lubricants EU approval",
+                  "preset": "helix",
+                  "inq": 4000,
+                  "mql": 800,
+                  "revenue": "450000.00",
+                  "lineItems": [
+                    {"name": "Search media, first half", "currency": "EUR", "plannedCost": "60000.00", "spread": "evenly",
+                      "spendType": "ATL - Digital", "glCode": "7250080 - Advertising - Digital", "budget": "2026 Lubricants Budget", "item": "Europe – Digital"},
+                    {"name": "Social media, first half", "currency": "EUR", "plannedCost": "30000.00", "spread": "evenly",
+                      "spendType": "ATL - Digital", "glCode": "7250080 - Advertising - Digital", "budget": "2026 Lubricants Budget", "item": "Europe – Digital"}
+                  ]
+                },
+                {
+                  "name": "Helix search and social, second half",
+                  "type": "Digital media",
+                  "status": "approved",
+                  "owner": "Alex Morgan",
+                  "start": "2026-07-01",
+                  "end": "2026-12-31",
+                  "plannedCost": "90000.00",
+                  "workflow": "Lubricants EU approval",
+                  "preset": "helix",
+                  "inq": 4000,
+                  "mql": 800,
+                  "lineItems": [
+                    {"name": "Search media, second half", "currency": "EUR", "plannedCost": "60000.00", "spread": "evenly",
+                      "spendType": "ATL - Digital", "glCode": "7250080 - Advertising - Digital", "budget": "2026 Lubricants Budget", "item": "Europe – Digital"},
+                    {"name": "Social media, second half", "currency": "EUR", "plannedCost": "30000.00", "spread": "evenly",
+                      "spendType": "ATL - Digital", "glCode": "7250080 - Advertising - Digital", "budget": "2026 Lubricants Budget", "item": "Europe – Digital"}
+                  ]
+                },
+                {
+                  "name": "Retargeting test",
+                  "type": "Digital media",
+                  "status": "approved",
+                  "owner": "Alex Morgan",
+                  "start": "2026-09-01",
+                  "end": "2026-10-31",
+                  "plannedCost": "15000.00",
+                  "workflow": "Lubricants EU approval",
+                  "preset": "helix",
+                  "lineItems": [
+                    {"name": "Retargeting media", "currency": "EUR", "plannedCost": "15000.00", "spread": "firstMonth",
+                      "spendType": "ATL - Digital", "glCode": "7250080 - Advertising - Digital", "budget": "2026 Lubricants Budget", "item": "Europe – Digital"}
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Trade events",
+              "owner": "Alex Morgan",
+              "start": "2026-03-01",
+              "end": "2026-11-30",
+              "budget": "200000.00",
+              "attributes": {
+                "choices": {"Growth ambition": ["LUBRICANTS – B2B expansion"]},
+                "choice": {"Function": "Sales", "Focus area": "Customer acquisition"},
+                "yesNo": {"FIT4 initiative": true}
+              },
+              "activities": [
+                {
+                  "name": "Fleet expo Rotterdam",
+                  "type": "Event",
+                  "status": "submitted",
+                  "owner": "Alex Morgan",
+                  "start": "2026-05-12",
+                  "end": "2026-05-14",
+                  "plannedCost": "60000.00",
+                  "workflow": "Lubricants EU approval",
+                  "preset": "helix",
+                  "inq": 600,
+                  "lineItems": [
+                    {"name": "Stand build Rotterdam", "currency": "EUR", "plannedCost": "45000.00", "spread": "lastMonth",
+                      "spendType": "BTL - Event", "glCode": "7250150 - Sponsorship programmes", "budget": "2026 Lubricants Budget", "item": "Europe – Events"},
+                    {"name": "Event staff Rotterdam", "currency": "EUR", "plannedCost": "15000.00", "spread": "firstMonth",
+                      "spendType": "BTL - Event", "glCode": "7250150 - Sponsorship programmes", "budget": "2026 Lubricants Budget", "item": "Europe – Events"}
+                  ]
+                },
+                {
+                  "name": "Workshop roadshow Benelux",
+                  "type": "Event",
+                  "status": "declined",
+                  "owner": "Alex Morgan",
+                  "start": "2026-03-02",
+                  "end": "2026-04-30",
+                  "plannedCost": "40000.00",
+                  "workflow": "Lubricants EU approval",
+                  "preset": "helix",
+                  "lineItems": [
+                    {"name": "Roadshow logistics", "currency": "EUR", "plannedCost": "40000.00", "spread": "evenly",
+                      "spendType": "BTL - Customer Meetings/Conference", "glCode": "7250150 - Sponsorship programmes", "budget": "2026 Lubricants Budget", "item": "Europe – Events"}
+                  ]
+                },
+                {
+                  "name": "Dealer summit",
+                  "type": "Event",
+                  "status": "created",
+                  "owner": "Alex Morgan",
+                  "start": "2026-11-03",
+                  "end": "2026-11-05",
+                  "plannedCost": "25000.00",
+                  "workflow": "Lubricants EU approval",
+                  "preset": "helix",
+                  "lineItems": [
+                    {"name": "Dealer summit venue", "currency": "EUR", "plannedCost": "25000.00", "spread": "evenly",
+                      "spendType": "BTL - Customer Meetings/Conference", "glCode": "7250150 - Sponsorship programmes", "budget": "2026 Lubricants Budget", "item": "Europe – Events"}
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Tellus industrial 2026",
+          "owner": "Alex Morgan",
+          "start": "2026-01-15",
+          "end": "2026-12-15",
+          "budget": "300000.00",
+          "attributes": {
+            "choices": {"Cluster": ["Lubricants – Europe"], "Region": ["LUBES – BENELUX"]},
+            "yesNo": {"Insight session completed": false, "Workshop completed": false, "Global GM sign-off completed": false}
+          },
+          "initiatives": [
+            {
+              "name": "Industrial content",
+              "owner": "Alex Morgan",
+              "start": "2026-01-15",
+              "end": "2026-12-15",
+              "budget": "300000.00",
+              "attributes": {
+                "choices": {"Growth ambition": ["LUBRICANTS – B2B expansion"]},
+                "choice": {"Function": "Marketing", "Focus area": "Brand"},
+                "yesNo": {"FIT4 initiative": false}
+              },
+              "activities": [
+                {
+                  "name": "Tellus case studies",
+                  "type": "Content production",
+                  "status": "approved",
+                  "owner": "Alex Morgan",
+                  "start": "2026-01-15",
+                  "end": "2026-03-31",
+                  "plannedCost": "30000.00",
+                  "workflow": "Lubricants EU approval",
+                  "preset": "helix",
+                  "lineItems": [
+                    {"name": "Case study production", "currency": "EUR", "plannedCost": "30000.00", "spread": "evenly",
+                      "spendType": "ATL - Agency Fees - Creative", "glCode": "7250060 - Advertising - Corp/Agency/Production", "budget": "2026 Lubricants Budget", "item": "Europe – Brand"}
+                  ]
+                },
+                {
+                  "name": "Tellus webinar series",
+                  "type": "Content production",
+                  "status": "approved",
+                  "owner": "Alex Morgan",
+                  "start": "2026-04-01",
+                  "end": "2026-12-15",
+                  "plannedCost": "50000.00",
+                  "workflow": "Lubricants EU approval",
+                  "preset": "helix",
+                  "inq": 1500,
+                  "mql": 300,
+                  "revenue": "120000.00",
+                  "lineItems": [
+                    {"name": "Webinar platform", "currency": "EUR", "plannedCost": "20000.00", "spread": "evenly",
+                      "spendType": "ATL - Digital", "glCode": "7250080 - Advertising - Digital", "budget": "2026 Lubricants Budget", "item": "Europe – Digital"},
+                    {"name": "Webinar speaker fees", "currency": "EUR", "plannedCost": "30000.00", "spread": "evenly",
+                      "spendType": "BTL - Customer Meetings/Conference", "glCode": "7250150 - Sponsorship programmes", "budget": "2026 Lubricants Budget", "item": "Europe – Brand"}
+                  ]
+                },
+                {
+                  "name": "Tellus trade press",
+                  "type": "Content production",
+                  "status": "created",
+                  "owner": "Alex Morgan",
+                  "start": "2026-02-01",
+                  "end": "2026-02-28",
+                  "plannedCost": "12000.00",
+                  "workflow": "Lubricants EU approval",
+                  "lineItems": [
+                    {"name": "Trade press placements", "currency": "EUR", "plannedCost": "12000.00", "spread": "evenly",
+                      "spendType": "ATL - Agency Fees - Creative", "glCode": "7250060 - Advertising - Corp/Agency/Production", "budget": "2026 Lubricants Budget", "item": "Europe – Brand"}
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
