@@ -105,7 +105,7 @@ work).
 - [X] T020 [US1] **⏸ 039 T027–T030, T046** `PlanDetailsReport.test.tsx` (one test per state: data, no plans,
   no data yet, no attributes set up, filters exclude everything), `AttributeRow.test.tsx`, `allWorkLink.test.ts`,
   vitest-axe in each
-- [ ] T021 [US1] **⏸ 039 T031, #DEMO** `frontend/e2e/measure-plan-details.spec.ts`: spec US1 on the demo data
+- [X] T021 [US1] **⏸ 039 T031, #DEMO** `frontend/e2e/measure-plan-details.spec.ts`: spec US1 on the demo data
   with axe
 
 **Checkpoint**: US1 works end to end on the Activity level.
@@ -122,15 +122,15 @@ All work's Breakdown by Cluster.
 - [X] T023 [US2] `level.go`, `builtin.go`, `profile.go`: records of the plan, campaign and initiative levels; a
   container's planned cost is its matching activities' (domain model §4.2), attributed per activity through the
   container's value
-- [ ] T024 [US2] **⏸ 039 T029–T030** web: the level through 039's `ShowControl` (address `show`), "No <level>
+- [X] T024 [US2] **⏸ 039 T029–T030** web: the level through 039's `ShowControl` (address `show`), "No <level>
   attributes are set up in Settings"; tests per level state
 
 ## Phase 5: User Story 3 — Export a widget (P2)
 
-- [ ] T025 [P] [US3] `sheets_test.go`: per measure the columns Value, Records (named for the level), Planned cost
+- [X] T025 [P] [US3] `sheets_test.go`: per measure the columns Value, Records (named for the level), Planned cost
   (<currency>), Share; every value including those `other` gathers; a total row; empty widget → header and total
-- [ ] T026 [US3] `sheets.go` completed to T025
-- [ ] T027 [US3] **⏸ 039 T044–T046** e2e in `measure-plan-details.spec.ts`: widget export CSV and Excel equal the
+- [X] T026 [US3] `sheets.go` completed to T025
+- [X] T027 [US3] **⏸ 039 T044–T046** e2e in `measure-plan-details.spec.ts`: widget export CSV and Excel equal the
   table; the report's Export holds one sheet per widget of the level
 
 ## Phase 6: Polish
