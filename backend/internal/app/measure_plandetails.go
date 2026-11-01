@@ -9,7 +9,6 @@ import (
 	"mapp/internal/platform/actor"
 )
 
-// registerPlanDetails registers and mounts the Plan details report (feature 043).
 func registerPlanDetails(w *wiring, r *measure.Registry) error {
 	service := plandetails.NewService(w.set.Tx, planDetailsScope{reports: w.reports})
 	mount(w.signedIn, plandetails.NewHandler(service))

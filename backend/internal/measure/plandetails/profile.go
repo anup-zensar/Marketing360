@@ -64,7 +64,6 @@ func (v view) choiceWidgets(a allwork.Attribute) []Widget {
 	}
 }
 
-// filledIn turns a record's first value into Filled in, Not filled in or Does not apply.
 func filledIn(p part) part {
 	if p.key == KeyNotFilledIn || p.key == KeyDoesNotApply {
 		return p
