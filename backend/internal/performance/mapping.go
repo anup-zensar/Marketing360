@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"mapp/internal/history"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/errs"
@@ -59,7 +60,14 @@ func (s *Service) CreateMapping(ctx context.Context, a actor.Actor, sourceID str
 			Meaning: in.Meaning, KeyType: in.KeyType, Stage: in.Stage, WebMetric: in.WebMetric, ModelID: in.ModelID,
 			Meta: record.NewMeta(a, s.now()),
 		}
-		return s.repo.PutMapping(ctx, created)
+		if putErr := s.repo.PutMapping(ctx, created); putErr != nil {
+			return putErr
+		}
+		_, logErr := s.history.Log(ctx, a, history.LogInput{
+			Kind: mappingKind, RecordID: created.ID, RecordName: created.ColumnName,
+			ParentID: sourceID, Action: history.ActionCreated,
+		})
+		return logErr
 	})
 	if err != nil {
 		return Mapping{}, fmt.Errorf("create a mapping on source %s: %w", sourceID, err)
@@ -86,12 +94,18 @@ func (s *Service) mappableSource(ctx context.Context, sourceID string, in Mappin
 	return s.CheckSupplier(ctx, in.ModelID, in.Meaning, in.Stage)
 }
 
-func (s *Service) DeleteMapping(ctx context.Context, _ actor.Actor, id string) error {
+// DeleteMapping goes through the recycle bin, as every record delete does; the bin entry writes the one
+// log entry itself.
+func (s *Service) DeleteMapping(ctx context.Context, a actor.Actor, id string) error {
 	if err := authz.Require(ctx, PermissionImport); err != nil {
 		return err
 	}
 	return s.tx.Write(ctx, func(ctx context.Context) error {
-		return s.repo.DeleteMapping(ctx, id)
+		if _, err := s.mapping(ctx, id); err != nil {
+			return err
+		}
+		_, err := s.history.MoveToBin(ctx, a, mappingKind, id)
+		return err
 	})
 }
 
@@ -175,7 +189,14 @@ func (s *Service) UpdateMapping(ctx context.Context, a actor.Actor, id string, i
 		saved.KeyType, saved.Stage, saved.WebMetric, saved.ModelID = in.KeyType, in.Stage, in.WebMetric, in.ModelID
 		saved.Version++
 		saved.UpdatedAt, saved.UpdatedBy = s.now(), a
-		return s.repo.PutMapping(ctx, saved)
+		if putErr := s.repo.PutMapping(ctx, saved); putErr != nil {
+			return putErr
+		}
+		_, logErr := s.history.Log(ctx, a, history.LogInput{
+			Kind: mappingKind, RecordID: saved.ID, RecordName: saved.ColumnName,
+			ParentID: saved.SourceID, Action: history.ActionChanged,
+		})
+		return logErr
 	})
 	if err != nil {
 		return Mapping{}, fmt.Errorf("update column mapping %s: %w", id, err)

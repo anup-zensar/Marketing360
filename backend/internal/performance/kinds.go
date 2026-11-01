@@ -13,6 +13,9 @@ func (s *Service) Kinds() []history.Kind {
 		Name: sourceKind, Singular: sourceKindSingular, Plural: sourceKindPlural,
 		Snapshot: s.snapshotSource, Remove: s.removeSource, Put: s.restoreSource,
 	}, {
+		Name: mappingKind, Singular: mappingKindSingular, Plural: mappingKindPlural,
+		Snapshot: s.snapshotMapping, Remove: s.removeMapping, Put: s.restoreMapping,
+	}, {
 		Name: importKind, Singular: importKindSingular, Plural: importKindPlural,
 		Snapshot: neverBinned, Remove: noRemove, Put: noPut,
 	}, {
@@ -55,4 +58,28 @@ func (s *Service) restoreSource(ctx context.Context, snapshot history.Snapshot) 
 		return err
 	}
 	return s.repo.PutSource(ctx, src)
+}
+
+func (s *Service) snapshotMapping(ctx context.Context, id string) (history.Snapshot, bool, error) {
+	found, err := s.mapping(ctx, id)
+	if err != nil {
+		return history.Snapshot{}, false, nil //nolint:nilerr // a missing mapping is not a snapshot failure
+	}
+	data, err := json.Marshal(found)
+	if err != nil {
+		return history.Snapshot{}, false, err
+	}
+	return history.Snapshot{ID: found.ID, Name: found.ColumnName, Data: data}, true, nil
+}
+
+func (s *Service) removeMapping(ctx context.Context, id string) error {
+	return s.repo.DeleteMapping(ctx, id)
+}
+
+func (s *Service) restoreMapping(ctx context.Context, snapshot history.Snapshot) error {
+	var mapping Mapping
+	if err := json.Unmarshal(snapshot.Data, &mapping); err != nil {
+		return err
+	}
+	return s.repo.PutMapping(ctx, mapping)
 }

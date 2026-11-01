@@ -17,7 +17,9 @@ const (
 	sourceKindPlural   = "data sources"
 
 	msgSourceNotFound   = "This data source doesn't exist or you can't see it."
+	mappingKind         = "performanceMapping"
 	mappingKindSingular = "column mapping"
+	mappingKindPlural   = "column mappings"
 	msgMappingNotFound  = "This column mapping doesn't exist or you can't see it."
 	msgHoldsFacts       = "Not deleted — %s holds performance data. Deactivate it instead: its data stays and it stops accepting new loads."
 	msgSourceInactive   = "Not loaded — %s is deactivated and accepts no further data. Reactivate it first."
