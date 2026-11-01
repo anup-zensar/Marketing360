@@ -20,6 +20,7 @@ import (
 	"mapp/internal/financials/financialstest"
 	"mapp/internal/history/historytest"
 	"mapp/internal/lineitem/lineitemtest"
+	"mapp/internal/measure/attribution/attributiontest"
 	"mapp/internal/measure/measuretest"
 	"mapp/internal/overspend/overspendtest"
 	"mapp/internal/people/peopletest"
@@ -57,7 +58,7 @@ func planning(db *fake.DB) stores.Planning {
 		LineItems: lineitemtest.NewStore(db), Approvals: approvaltest.NewStore(db), AllWork: allworktest.NewStore(db),
 		Overspend: overspendtest.NewStore(db),
 		Bulk:      bulktest.NewStore(db), Workbook: workbooktest.NewStore(db, plantest.NewStore(db)),
-		Measure: measuretest.NewStore(db),
+		Measure: measuretest.NewStore(db), Attribution: attributiontest.NewStore(db),
 	}
 }
 

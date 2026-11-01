@@ -2,7 +2,15 @@ import type { SettingsSection } from '@/features/settings';
 
 /** Every Settings card, in order; loaded with the Settings page, off the first page. */
 export async function loadSettingsSections(): Promise<SettingsSection[]> {
-  const [settings, people, approvalWorkflows, purchaseRequests, overspend, performance] =
+  const [
+    settings,
+    people,
+    approvalWorkflows,
+    purchaseRequests,
+    overspend,
+    performance,
+    attribution,
+  ] =
     await Promise.all([
       import('@/features/settings'),
       import('@/features/people'),
@@ -10,6 +18,7 @@ export async function loadSettingsSections(): Promise<SettingsSection[]> {
       import('@/features/purchase-requests'),
       import('@/features/overspend'),
       import('@/features/performance'),
+      import('@/features/attribution'),
     ]);
   return [
     ...settings.SETTINGS_OWN_SECTIONS,
@@ -20,6 +29,7 @@ export async function loadSettingsSections(): Promise<SettingsSection[]> {
     ...purchaseRequests.PURCHASE_REQUEST_SETTINGS_SECTIONS,
     ...overspend.OVERSPEND_SETTINGS_SECTIONS,
     ...performance.PERFORMANCE_SETTINGS_SECTIONS,
+    ...attribution.ATTRIBUTION_SETTINGS_SECTIONS,
     ...people.ACCESS_SETTINGS_SECTIONS,
   ];
 }

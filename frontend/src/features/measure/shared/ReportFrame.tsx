@@ -1,5 +1,6 @@
 import { ChartColumnIncreasing } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useSearchParams } from 'react-router';
 import { ApiError } from '@/api/errors';
 import { useFormatters } from '@/format/useFormatters';
 import { Button } from '@/ui/Button/Button';
@@ -59,6 +60,7 @@ export function ReportFrame({ report, period, show, children, comingSoon }: Repo
   const name = REPORT_ROUTES.find((r) => r.key === report)?.name ?? 'Report';
   usePageTitle(name);
   const [address, setAddress] = useReportAddress();
+  const [params] = useSearchParams();
   const frame = useReportFrame(report, address);
   const { dateTime } = useFormatters();
 
@@ -79,7 +81,7 @@ export function ReportFrame({ report, period, show, children, comingSoon }: Repo
               <ExportMenu
                 label="Export"
                 formats={['xlsx']}
-                download={(format) => downloadReport(report, address, format)}
+                download={(format) => downloadReport(report, address, format, { own: params })}
               />
             </>
           )

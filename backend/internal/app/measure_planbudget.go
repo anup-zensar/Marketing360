@@ -1,8 +1,13 @@
 package app
 
-import "mapp/internal/measure"
+import (
+	"mapp/internal/measure"
+	"mapp/internal/measure/planbudget"
+)
 
-// registerPlanBudget registers the report of feature 040; its lane replaces the stub with the built report.
-func registerPlanBudget(_ *wiring, r *measure.Registry) error {
-	return r.Register(measure.Stub(measure.KeyPlanBudget))
+// registerPlanBudget registers the Plan budget report (feature 040) and serves its widgets.
+func registerPlanBudget(w *wiring, r *measure.Registry) error {
+	service := planbudget.NewService(w.set.Tx, planbudget.Deps{Scoper: w.reports, Spending: w.financials}, w.now)
+	mount(w.signedIn, planbudget.NewHandler(service))
+	return r.Register(planbudget.NewReport(service))
 }

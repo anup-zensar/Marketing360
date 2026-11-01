@@ -1,0 +1,16 @@
+.roi {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.value {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-bold);
+}
+
+.basis {
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+}

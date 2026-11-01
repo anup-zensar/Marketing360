@@ -17,6 +17,7 @@ import (
 	"mapp/internal/history"
 	"mapp/internal/lineitem"
 	"mapp/internal/measure"
+	"mapp/internal/measure/attribution"
 	"mapp/internal/overspend"
 	"mapp/internal/people"
 	"mapp/internal/plan"
@@ -58,6 +59,7 @@ func postgresPlanning(db *database.DB) Planning {
 		Overspend: overspend.NewPostgresStore(db),
 		Approvals: approval.NewPostgresStore(db), AllWork: allwork.NewPostgresStore(db), Bulk: bulk.NewPostgresStore(db),
 		Workbook: workbook.NewPostgresStore(db), Measure: measure.NewPostgresStore(db),
+		Attribution: attribution.NewPostgresStore(db),
 	}
 }
 

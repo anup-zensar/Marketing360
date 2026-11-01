@@ -9,6 +9,7 @@ import {
   ImportRatesPage,
   ModelsPage,
   OverspendSettingsPage,
+  AttributionSettingsPage,
   PeoplePage,
   PurchaseRequestSettingsPage,
   RoleFormPage,
@@ -68,6 +69,11 @@ export const SETTINGS_ROUTES: RouteObject[] = [
     path: '/settings/overspend-control',
     element: <OverspendSettingsPage />,
     ...titled('Overspend control'),
+  },
+  {
+    path: '/settings/attribution',
+    element: <AttributionSettingsPage />,
+    ...titled('Attribution'),
   },
   {
     path: '/settings/currencies/import',
