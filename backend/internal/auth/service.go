@@ -103,6 +103,9 @@ func (s *Service) startSession(ctx context.Context, email, password, oldToken st
 		if err := s.removeOldSessions(ctx, oldToken, now); err != nil {
 			return err
 		}
+		if err := s.repo.RecordSignIn(ctx, person.ID, now.UTC()); err != nil { // 045 FR-009: in the session's step
+			return err
+		}
 		return s.repo.Put(ctx, Session{ID: hashToken(token), PersonID: person.ID, CreatedAt: now, LastUsedAt: now})
 	})
 	if err != nil {

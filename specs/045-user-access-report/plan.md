@@ -158,4 +158,4 @@ Benchmark result: _recorded here after implementation_.
 
 | Violation | Why needed | Simpler alternative rejected because |
 |---|---|---|
-| A one-row `sign_in_recording` table besides the column (research R2 addendum) | The contract's `recordedSince` is when recording started in this database | goose's version table is outside sqlc's schema; a date in code is wrong for later environments |
+| Two tables, `sign_ins` and the one-row `sign_in_recording`, instead of the `people` column (research R2 addendum) | A `people` column changes the people package's generated rows; `recordedSince` is when recording started in this database | The column needs 003's people store changed (outside issue #38's paths); goose's version table is outside sqlc's schema |

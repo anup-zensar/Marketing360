@@ -66,9 +66,12 @@ roles and 4,000 assignments through fakes. Target: under 100 ms, keeping SC-001'
 
 **Rationale**: `internal/platform/apibench` is not a lane D path (043 R5).
 
-## R2 addendum (implementation) — when recording started
+## R2 addendum (implementation) — a table of its own, and when recording started
 
-**Decision**: migration 00029 also creates `sign_in_recording`, one row stamped with the moment the migration runs;
+**Decision**: migration 00029 creates `sign_ins (person_id, last_signed_in_at)`, one row per person upserted by sign-in,
+instead of a `people` column: a new `people` column changes the rows sqlc generates for 003's people queries, and so
+the people package, which is outside issue #38's paths. Apart from the person, the time cannot move their version or
+"last changed" (FR-010) by construction. It also creates `sign_in_recording`, one row stamped with the moment the migration runs;
 `GetSignInsRecordedSince` reads it for the contract's `recordedSince` ("Never" means "not since this date").
 
 **Rationale**: the true start is when 00029 ran in that database. goose's own version table is outside the schema

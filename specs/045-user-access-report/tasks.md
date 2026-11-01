@@ -22,16 +22,16 @@ each story.
 
 ## Phase 2: Foundational — the sign-in time (blocks US1)
 
-- [ ] T002 `backend/internal/platform/database/migrations/00029_last_sign_in.sql`: `people.last_signed_in_at
-  timestamptz NULL`; a one-row `sign_in_recording (since)` stamped when the migration runs (research R2,
+- [X] T002 `backend/internal/platform/database/migrations/00029_last_sign_in.sql`: `sign_ins (person_id, last_signed_in_at)`
+  (research R2 addendum); a one-row `sign_in_recording (since)` stamped when the migration runs (research R2,
   `recordedSince`); Down drops both
-- [ ] T003 `backend/internal/platform/database/queries/sign_ins.sql`: `RecordSignIn` (the column only),
+- [X] T003 `backend/internal/platform/database/queries/sign_ins.sql`: `RecordSignIn` (the column only),
   `ListLastSignIns`, `GetSignInsRecordedSince`; `sqlc generate`
-- [ ] T004 Tests first: `auth/service_test.go` `TestSignIn_RecordsLastSignIn_FR009`,
+- [X] T004 Tests first: `auth/service_test.go` `TestSignIn_RecordsLastSignIn_FR009`,
   `TestSignIn_RefusedRecordsNothing_FR009` (wrong password, inactive, locked); `auth/store_postgres_test.go`
   `TestRecordSignIn_OnlyTheTime_FR010` (version and `updated_*` unchanged, no log entry),
   `TestLastSignIns_NoneBeforeFirstSignIn_FR011`
-- [ ] T005 `auth.Store` += `RecordSignIn`, `LastSignIns`, `SignInsRecordedSince`: `store_postgres.go`, the fakes
+- [X] T005 `auth.Store` += `RecordSignIn`, `LastSignIns`, `SignInsRecordedSince`: `store_postgres.go`, the fakes
   (`store_fake_test.go`, `authtest/store.go`); `service.go` `startSession` records the time inside its `Write`
 
 ## Phase 3: User Story 1 — The report with last sign-in (P1) 🎯 MVP
