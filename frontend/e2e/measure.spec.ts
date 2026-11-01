@@ -51,11 +51,13 @@ test('039 US1: a report opens on the defaults, filters on Apply and keeps everyt
     await expect(levels.getByRole('tab', { name: level })).toBeInViewport({ ratio: 1 });
   }
 
+  const unfiltered = await inView(page).innerText();
   const status = page.getByRole('group', { name: /^Activity status/ });
   await status.getByRole('checkbox', { name: 'Created' }).uncheck();
   await expect(page.getByText('Changes not applied yet')).toBeVisible();
   await page.getByRole('button', { name: 'Apply' }).click();
   await expect(page).toHaveURL(/activityStatus=/);
+  await expect(inView(page)).not.toHaveText(unfiltered);
   const filtered = await inView(page).innerText();
   await expect(page.getByRole('button', { name: /^Remove filter: Activity status/ })).toBeVisible();
 
