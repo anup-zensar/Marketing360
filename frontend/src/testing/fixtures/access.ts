@@ -220,7 +220,7 @@ export const CATALOGUE: PermissionCatalogue = {
   groups: [
     {
       name: 'Plans and planning',
-      permissions: PERMISSIONS.slice(0, 11).map(({ key, label, scoped }) => ({
+      permissions: PERMISSIONS.slice(0, 12).map(({ key, label, scoped }) => ({
         key,
         label,
         scoped,
@@ -228,7 +228,7 @@ export const CATALOGUE: PermissionCatalogue = {
     },
     {
       name: 'Financial data',
-      permissions: PERMISSIONS.slice(11, 14).map(({ key, label, scoped }) => ({
+      permissions: PERMISSIONS.slice(12, 15).map(({ key, label, scoped }) => ({
         key,
         label,
         scoped,
@@ -236,7 +236,7 @@ export const CATALOGUE: PermissionCatalogue = {
     },
     {
       name: 'Purchase requests',
-      permissions: PERMISSIONS.slice(14, 18).map(({ key, label, scoped }) => ({
+      permissions: PERMISSIONS.slice(15, 19).map(({ key, label, scoped }) => ({
         key,
         label,
         scoped,
@@ -244,7 +244,7 @@ export const CATALOGUE: PermissionCatalogue = {
     },
     {
       name: 'Approvals',
-      permissions: PERMISSIONS.slice(18, 20).map(({ key, label, scoped }) => ({
+      permissions: PERMISSIONS.slice(19, 21).map(({ key, label, scoped }) => ({
         key,
         label,
         scoped,
@@ -252,7 +252,7 @@ export const CATALOGUE: PermissionCatalogue = {
     },
     {
       name: 'Global budgets',
-      permissions: PERMISSIONS.slice(20, 22).map(({ key, label, scoped }) => ({
+      permissions: PERMISSIONS.slice(21, 23).map(({ key, label, scoped }) => ({
         key,
         label,
         scoped,
@@ -260,7 +260,7 @@ export const CATALOGUE: PermissionCatalogue = {
     },
     {
       name: 'Administration',
-      permissions: PERMISSIONS.slice(22).map(({ key, label, scoped }) => ({ key, label, scoped })),
+      permissions: PERMISSIONS.slice(23).map(({ key, label, scoped }) => ({ key, label, scoped })),
     },
   ],
 };
