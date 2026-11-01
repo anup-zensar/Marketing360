@@ -11,11 +11,9 @@ import (
 	"time"
 )
 
-// The .xlsx file (Office Open XML SpreadsheetML) as a zip archive of XML parts: the content types, the
-// package relationships, the workbook with its relationships, the styles and one worksheet per sheet. Text is
-// written as inline strings, so no shared-string table is needed.
+// The .xlsx file is a zip of XML parts — content types, relationships, workbook, styles, one worksheet per sheet —
+// with text as inline strings, so no shared-string table is needed.
 
-// The styles of xl/styles.xml, by their index in cellXfs.
 const (
 	styleNormal   = 0
 	styleBold     = 1
@@ -24,13 +22,11 @@ const (
 	styleDateTime = 4 // dd mmm yyyy hh:mm
 )
 
-// maxSheetName is the longest sheet name Excel accepts.
 const maxSheetName = 31
 
 // excelEpoch is day 0 of Excel's date numbers (for dates from 1 March 1900 on).
 var excelEpoch = time.Date(1899, time.December, 30, 0, 0, 0, 0, time.UTC)
 
-// WriteXLSX writes wb to w as an .xlsx file.
 func WriteXLSX(w io.Writer, wb Workbook) error {
 	z := zip.NewWriter(w)
 	names := sheetNames(wb.Sheets)
@@ -64,10 +60,8 @@ func WriteXLSX(w io.Writer, wb Workbook) error {
 	return z.Close()
 }
 
-// xmlHeader starts every XML part.
 const xmlHeader = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` + "\n"
 
-// contentTypes returns [Content_Types].xml for n worksheets.
 func contentTypes(n int) []byte {
 	var b strings.Builder
 	b.WriteString(xmlHeader + `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
@@ -82,7 +76,6 @@ func contentTypes(n int) []byte {
 	return []byte(b.String())
 }
 
-// workbookXML returns xl/workbook.xml with the sheets named names.
 func workbookXML(names []string) []byte {
 	var b strings.Builder
 	b.WriteString(xmlHeader + `<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ` +
@@ -166,9 +159,10 @@ func columnName(i int) string {
 	return name
 }
 
-// sheetNames returns names Excel accepts: without : \ / ? * [ ], at most 31 characters, never empty.
+// sheetNames gives names Excel accepts: no : \ / ? * [ ], at most 31 characters, never empty, unique ignoring case.
 func sheetNames(sheets []Sheet) []string {
 	names := make([]string, len(sheets))
+	used := map[string]bool{}
 	for i, s := range sheets {
 		name := strings.Map(func(r rune) rune {
 			if strings.ContainsRune(`:\/?*[]`, r) {
@@ -182,9 +176,24 @@ func sheetNames(sheets []Sheet) []string {
 		if strings.TrimSpace(name) == "" {
 			name = fmt.Sprintf("Sheet%d", i+1)
 		}
-		names[i] = name
+		names[i] = uniqueName(name, used)
 	}
 	return names
+}
+
+// uniqueName adds " (2)", " (3)" … to a name already used, shortening it to keep within 31 characters.
+func uniqueName(name string, used map[string]bool) string {
+	candidate := name
+	for n := 2; used[strings.ToLower(candidate)]; n++ {
+		suffix := fmt.Sprintf(" (%d)", n)
+		runes := []rune(name)
+		if keep := maxSheetName - len(suffix); len(runes) > keep {
+			runes = runes[:keep]
+		}
+		candidate = strings.TrimRight(string(runes), " ") + suffix
+	}
+	used[strings.ToLower(candidate)] = true
+	return candidate
 }
 
 // escape returns s with the characters XML gives a meaning escaped, and those XML cannot hold replaced.
