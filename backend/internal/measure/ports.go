@@ -1,0 +1,39 @@
+package measure
+
+import (
+	"context"
+
+	"mapp/internal/allwork"
+	"mapp/internal/platform/date"
+)
+
+type Transactor interface {
+	Read(ctx context.Context, fn func(ctx context.Context) error) error
+	Write(ctx context.Context, fn func(ctx context.Context) error) error
+}
+
+// Planning is All work's source (010): the year's plans in the person's plans.view scope, with the values the
+// owning features work out, and the Settings and people data the filter panel offers.
+type Planning interface {
+	Years(ctx context.Context) ([]int, error)
+	Year(ctx context.Context, year int, today date.Date, columns []string) (allwork.YearData, error)
+	Choices(ctx context.Context, personID string) (allwork.Choices, error)
+	Attributes(ctx context.Context) ([]allwork.Attribute, error)
+	Currency(ctx context.Context, personID string) (allwork.Currency, error)
+	RatesUsed(ctx context.Context) ([]string, error)
+}
+
+// Plans gives the IDs of the plans in the person's reports.view scope, read by the scoped plan store (R2).
+type Plans interface {
+	InReportsScope(ctx context.Context) ([]string, error)
+}
+
+type Currency struct {
+	Code string `json:"code"`
+	Name string `json:"name"`
+}
+
+// Currencies lists the active currencies a report may be shown in, by code.
+type Currencies interface {
+	Active(ctx context.Context) ([]Currency, error)
+}

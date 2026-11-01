@@ -31,7 +31,7 @@ describe('038 FR-045 (L-17): every permission in the words of 014 Table A', () =
     );
     expect(permissionLabel('purchaseRequests.list')).toBe('See the Purchase requests page');
     const keys = PERMISSIONS.map((permission) => permission.key);
-    expect(keys.slice(13, 18)).toEqual([
+    expect(keys.slice(14, 19)).toEqual([
       'finance.import',
       'purchaseRequests.edit',
       'purchaseRequests.delete',

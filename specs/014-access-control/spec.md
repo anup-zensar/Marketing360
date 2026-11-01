@@ -484,6 +484,7 @@ starts the refusal message ("<Noun> isn't part of your role …").
 | | `activities.delete` | Delete activities and line items | Yes | Deleting activities and line items |
 | | `activities.submit` | Submit activities for approval and recall them | Yes | Submitting activities |
 | | `data.export` | Export from All work | Yes | Exporting |
+| | `reports.view` | See reports (039, D-367) | Yes | Seeing reports |
 | Financial data | `finance.view` | See financial data | Yes | Seeing financial data |
 | | `finance.link` | Link financial transactions to line items | Yes | Linking financial transactions |
 | | `finance.import` | Import GSAP extracts | No | Importing GSAP extracts |
