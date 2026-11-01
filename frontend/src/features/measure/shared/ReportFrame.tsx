@@ -21,6 +21,7 @@ import { DEFAULT_ADDRESS, isRestricted, resetFilters, writeAddress } from './rep
 import type { ReportAddress, Show } from './report-address';
 import { chipsOf, coverageText, inViewText, leftOutText, withoutChip } from './report-text';
 import { CurrencyControl, InViewLine, PeriodControl, ShowControl } from './ReportControls';
+import { SavedViewsMenu } from './SavedViewsMenu';
 import { useReportAddress } from './useReportAddress';
 import styles from './ReportFrame.module.css';
 
@@ -73,11 +74,14 @@ export function ReportFrame({ report, period, show, children, comingSoon }: Repo
         meta={data && `${data.filter.year} · Figures as of ${dateTime(data.generatedAt)}`}
         actions={
           data && (
-            <ExportMenu
-              label="Export"
-              formats={['xlsx']}
-              download={(format) => downloadReport(report, address, format)}
-            />
+            <>
+              <SavedViewsMenu report={report} />
+              <ExportMenu
+                label="Export"
+                formats={['xlsx']}
+                download={(format) => downloadReport(report, address, format)}
+              />
+            </>
           )
         }
       />

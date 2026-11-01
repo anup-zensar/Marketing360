@@ -164,7 +164,7 @@ views as one person; another person never sees them.
 - [X] T033 [P] [US2] `TestPostgresStoreReportViewsPersonIsolation_039_FR025` in
   `backend/internal/measure/store_postgres_test.go` (`TEST_DATABASE_URL`; skipped with `-short`)
 - [X] T034 [P] [US2] Contract tests of the four view operations in `backend/internal/measure/handler_test.go`
-- [ ] T035 [P] [US2] `frontend/src/features/measure/shared/SavedViewsMenu.test.tsx` with vitest-axe: list with
+- [X] T035 [P] [US2] `frontend/src/features/measure/shared/SavedViewsMenu.test.tsx` with vitest-axe: list with
   star and active mark, Save current filters, replace-name confirmation, "Modified" with Update view (confirm)
   and Save as new view, star moves, rename, delete with the Undo toast re-creating the view, default applied when
   the address has no filters, left-out note, the "changed in another tab" message on 409, Escape and focus
@@ -182,7 +182,7 @@ views as one person; another person never sees them.
   `backend/internal/app/history_access.go` show `reportView` entries to their actor and to `activityLog.viewAll`,
   test first `TestHistoryAccess_ReportView_039_FR028` in `history_access_test.go`
 - [X] T038 [US2] Handler operations for views; remove them from `notYetServed`
-- [ ] T039 [US2] `frontend/src/features/measure/shared/api.ts` view hooks and mutations;
+- [X] T039 [US2] `frontend/src/features/measure/shared/api.ts` view hooks and mutations;
   `shared/SavedViewsMenu.tsx`; `ReportFrame` applies the default view when the address has no filters
 - [ ] T040 [US2] `frontend/e2e/measure.spec.ts` US2: save, star, reopen on the default, modify and update,
   rename, delete and Undo; a second persona sees none of them
