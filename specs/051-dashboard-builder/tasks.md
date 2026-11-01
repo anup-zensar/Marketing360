@@ -411,27 +411,27 @@ Pages (each F0 stub exports a component with no props): `DashboardBuilderPage` (
 
 ## Phase 6: Lane F1 — `charts/` (US1, US2, US5)
 
-- [ ] T043 [P] [F1] [US1] `theme.ts` (`useChartTheme`: tokens by `getComputedStyle`, re-read on theme change) and
+- [x] T043 [P] [F1] [US1] `theme.ts` (`useChartTheme`: tokens by `getComputedStyle`, re-read on theme change) and
   `format.ts` (`formatValue`: number, money with currency, percent, compact, decimals; date buckets in the person's
   date format) — `format.test.ts`
-- [ ] T044 [F1] [US1] Tests first then `build-option.ts` dispatching to `build-axis.ts` (bar, line, area, combo,
+- [x] T044 [F1] [US1] Tests first then `build-option.ts` dispatching to `build-axis.ts` (bar, line, area, combo,
   scatter, heatmap with piecewise 5-bin visualMap), `build-round.ts` (pie, donut, funnel, gauge), `build-tree.ts`
   (treemap, radar): palettes, decals, legend, labels, axis titles, gridlines, smooth, stack (100 % from `share`),
   orientation, zoom, reference line, measure styles, `aria`, `tooltip` with `confine: true` and a DOM formatter
   (`tooltip.ts`, `textContent` only) — `build-option.test.ts` (one block per type and option, FR-024, FR-025),
   `tooltip.test.ts` (no HTML strings)
-- [ ] T045 [F1] [US2] `EChart.tsx` (`echarts/core`, registered parts of ADR-0020, SVG renderer, locale EN,
+- [x] T045 [F1] [US2] `EChart.tsx` (`echarts/core`, registered parts of ADR-0020, SVG renderer, locale EN,
   ResizeObserver, dispose, `onReady` handle) and `png.ts` (SVG → canvas ×2 on `--surface` → PNG; file name) —
   `EChart.test.tsx` (init options, dispose; ECharts mocked), `png.test.ts`
-- [ ] T046 [F1] [US2] `describe.ts` (`describeWidget`) and `WidgetTable.tsx` (caption, headers, formatted values,
+- [x] T046 [F1] [US2] `describe.ts` (`describeWidget`) and `WidgetTable.tsx` (caption, headers, formatted values,
   totals row, chosen columns) — `describe.test.ts`, `WidgetTable.test.tsx` (axe)
-- [ ] T047 [F1] [US1] `api.ts`: `useDataSources`, `useWidgetData` (debounce, keys of `keys.ts`), `widgetDataRequest`
+- [x] T047 [F1] [US1] `api.ts`: `useDataSources`, `useWidgetData` (debounce, keys of `keys.ts`), `widgetDataRequest`
   — `api.test.ts` (MSW)
-- [ ] T048 [F1] [US2] `WidgetView.tsx`, `WidgetStates.tsx`, `KeyFigure.tsx`, `TextNote.tsx`: every state of
+- [x] T048 [F1] [US2] `WidgetView.tsx`, `WidgetStates.tsx`, `KeyFigure.tsx`, `TextNote.tsx`: every state of
   contracts/ui.md (loading, error + Retry, no data, no access for 403 and dataset 404, gone for the owner, incomplete
   in edit mode, chart, table view, key figure with comparison, text note), widget menu (Show as table, Download as
   PNG) and notes — `WidgetView.test.tsx` (one test per state, FR-039; axe)
-- [ ] T049 [F1] Replace F0's stub `charts/index.ts` with the real exports; `pnpm run check`
+- [x] T049 [F1] Replace F0's stub `charts/index.ts` with the real exports; `pnpm run check`
 
 ## Phase 7: Lane F2 — `builder/` (US1, US4, US5)
 
