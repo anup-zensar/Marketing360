@@ -30,7 +30,7 @@ var managedBy = map[string]authz.Permission{
 	"person": authz.PeopleManage, "team": authz.PeopleManage, "teamMembership": authz.PeopleManage,
 	"approvalWorkflow": authz.WorkflowsManage, "role": authz.AccessManage, "accessRules": authz.AccessManage,
 	"globalBudget": authz.GlobalBudgetsManage, "approvalDelegation": authz.WorkflowsManage,
-	"exchangeRate": authz.ExchangeRatesManage, "rateImport": authz.ExchangeRatesManage, "fieldHelp": authz.SettingsManage,
+	"exchangeRate": authz.ExchangeRatesManage, "rateImport": authz.ExchangeRatesManage, "fieldHelp": authz.SettingsManage, "attributionSettings": authz.SettingsManage,
 	kindFinancialImport: authz.FinanceImport, kindFinancialTransaction: authz.FinanceImport, kindSwbsRun: authz.FinanceImport,
 }
 
