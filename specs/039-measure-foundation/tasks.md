@@ -66,7 +66,7 @@ rules, the wiring hub with one stub per report, the migration, the routes and st
   in `frontend/src/app/pages.tsx` and `router.tsx` (or a `measure-routes.tsx` beside `dashboard-routes.tsx` if
   `router.tsx` is at its line limit); `frontend/src/features/measure/index.ts` exporting `ReportsPage` and one
   stub page per report from `features/measure/<report>/<Name>Report.tsx`
-- [ ] T012 Checkpoint: `go test -race -short ./...`, `pnpm run check`; open the pull request of Phase 2 into
+- [X] T012 Checkpoint: `go test -race -short ./...`, `pnpm run check`; open the pull request of Phase 2 into
   `measure-module` and merge it, so lanes C and D build on the hub (build guide §3 step 2)
 
 **Checkpoint**: the permission, migration, `measure` types, registry, rules, wiring stubs, routes and stub pages
@@ -87,28 +87,28 @@ compare "In view" with All work's counts.
 
 ### Tests (first)
 
-- [ ] T015 [P] [US1] `TestMatch_EqualsAllWorkCounts_039_FR012` in `backend/internal/allwork/match_test.go`: for
+- [X] T015 [P] [US1] `TestMatch_EqualsAllWorkCounts_039_FR012` in `backend/internal/allwork/match_test.go`: for
   every filter kind (plan, plan type, team, owner, activity type, activity status, attribute value, Not filled
   in, % split share above 0, value hidden by a business-unit condition, line-item attribute) and a fixed-seed
   random mix, `Match` counts equal `Service.Query`'s summary on All work's fixture
-- [ ] T016 [P] [US1] `TestParseFilter_FR008_FR030` and `TestCanonicalQuery_FR024` in
+- [X] T016 [P] [US1] `TestParseFilter_FR008_FR030` and `TestCanonicalQuery_FR024` in
   `backend/internal/measure/filter_test.go` (defaults; All work's parameters; `period` month|quarter, `show`
   plan|campaign|initiative|activity, `currency` ISO code, `table` widget keys; canonical order, sorted values,
   defaults omitted)
-- [ ] T017 [P] [US1] `backend/internal/measure/frame_test.go` on fakes: `TestFrame_InView_FR007` (line items of
+- [X] T017 [P] [US1] `backend/internal/measure/frame_test.go` on fakes: `TestFrame_InView_FR007` (line items of
   matching activities only), `TestFrame_OnlyReportsScope_FR003`, `TestFrame_FinanceCoverage_FR004`,
   `TestFrame_LeftOutCountedNotNamed_FR015`
-- [ ] T018 [P] [US1] `TestChoices_FR008_FR011` in `backend/internal/measure/choices_test.go` (years with plans in
+- [X] T018 [P] [US1] `TestChoices_FR008_FR011` in `backend/internal/measure/choices_test.go` (years with plans in
   scope plus the current; plans of the year; owners and activity types of the selected plans; one group per
   active choice or yes/no attribute per level, never merged by label; inactive values only when used; no text,
   long-text or number attributes; Not filled in as `none`; plans of another year dropped and counted)
-- [ ] T019 [P] [US1] Contract tests in `backend/internal/measure/handler_test.go` (`package measure_test`,
+- [X] T019 [P] [US1] Contract tests in `backend/internal/measure/handler_test.go` (`package measure_test`,
   `apitest`): `GET /api/v1/reports` and `GET /api/v1/reports/frame` — `TestReportsFrame_ScopePerPersona_SC002`
   (every demo persona: no plan, owner, team or value of another market), 400 for a malformed filter, 404 for an
   unknown report, 403 without `reports.view`
-- [ ] T020 [P] [US1] `frontend/src/features/measure/shared/report-address.test.ts`: fast-check round trip of
+- [X] T020 [P] [US1] `frontend/src/features/measure/shared/report-address.test.ts`: fast-check round trip of
   `ReportFilter` ↔ address; malformed values dropped; canonical query equals the API's
-- [ ] T021 [P] [US1] Component tests with vitest-axe: `FilterPanel.test.tsx` (order of FR-008, counters, search
+- [X] T021 [P] [US1] Component tests with vitest-axe: `FilterPanel.test.tsx` (order of FR-008, counters, search
   above ten values, Select all / Clear all per group and per tab, "Changes not applied yet", Apply, Escape closes
   without change, Filters (n) below 1024 px), `ReportFrame.test.tsx` (header and meta row, In view line, chips,
   remove a chip, Reset filters, Period/Show/Currency apply at once, left-out note),
@@ -117,26 +117,26 @@ compare "In view" with All work's counts.
 
 ### Implementation
 
-- [ ] T022 [US1] `backend/internal/allwork/match.go`: exported `Match(nodes []Node, q Query, attributes
+- [X] T022 [US1] `backend/internal/allwork/match.go`: exported `Match(nodes []Node, q Query, attributes
   []Attribute, c Choices) Matched` running `knownValues`, `resolveAttrs`, `buildTree`, `applyFilters`; `Matched`
   holds the IDs per level (shown and matching), the live line items of matching activities and `LeftOut`
-- [ ] T023 [US1] `backend/internal/measure/filter.go`: `ParseFilter(url.Values)` over `allwork.ParseQuery` plus
+- [X] T023 [US1] `backend/internal/measure/filter.go`: `ParseFilter(url.Values)` over `allwork.ParseQuery` plus
   `period`, `show`, `currency`, `table`; `Canonical(Filter) string`
-- [ ] T024 [US1] `backend/internal/measure/choices.go`: the choices of contracts/api.md `ReportChoices`
-- [ ] T025 [US1] `backend/internal/measure/frame.go`: `Service.Frame(ctx, a, report, f)` in one `Read`: year
+- [X] T024 [US1] `backend/internal/measure/choices.go`: the choices of contracts/api.md `ReportChoices`
+- [X] T025 [US1] `backend/internal/measure/frame.go`: `Service.Frame(ctx, a, report, f)` in one `Read`: year
   nodes narrowed to `Plans.InReportsScope`, `allwork.Match`, In view, finance coverage from
   `Choices.FinancePlans`, left out as a count, choices, display currency, `generatedAt`, `financeAsOf`
-- [ ] T026 [US1] `backend/internal/measure/handler.go`: `GET /api/v1/reports` and `/reports/frame`; remove both
+- [X] T026 [US1] `backend/internal/measure/handler.go`: `GET /api/v1/reports` and `/reports/frame`; remove both
   from `notYetServed`
-- [ ] T027 [P] [US1] `frontend/src/features/measure/shared/report-address.ts` (Zod) and `shared/api.ts`
+- [X] T027 [P] [US1] `frontend/src/features/measure/shared/report-address.ts` (Zod) and `shared/api.ts`
   (`useReportCatalogue`, `useReportFrame`; keys of contracts/ui.md)
-- [ ] T028 [US1] `frontend/src/features/measure/ReportsPage.tsx` (catalogue, purposes, Coming soon) with its
+- [X] T028 [US1] `frontend/src/features/measure/ReportsPage.tsx` (catalogue, purposes, Coming soon) with its
   CSS module
-- [ ] T029 [US1] `frontend/src/features/measure/shared/`: `FilterPanel.tsx` (+ `FilterGroup.tsx`,
+- [X] T029 [US1] `frontend/src/features/measure/shared/`: `FilterPanel.tsx` (+ `FilterGroup.tsx`,
   `LevelTabs.tsx`), `FilterChips.tsx`, `InViewLine.tsx`, `PeriodControl.tsx`, `ShowControl.tsx`,
   `CurrencyControl.tsx`, `ReportFrame.tsx`, `ReportFrame.module.css` — tokens only, sentence case, no primary
   button (design system §2.8), every file within 300 lines
-- [ ] T030 [US1] Stub pages `frontend/src/features/measure/<report>/<Name>Report.tsx` render `ReportFrame` with
+- [X] T030 [US1] Stub pages `frontend/src/features/measure/<report>/<Name>Report.tsx` render `ReportFrame` with
   "Coming soon — this report arrives with feature 0NN"
 - [ ] T031 [US1] `frontend/e2e/measure.spec.ts` US1 with axe: Reports after Dashboards; the Reports page; a report
   opens on the defaults with "In view" equal to All work's counts; tick a value, "Changes not applied yet",
@@ -153,7 +153,7 @@ views as one person; another person never sees them.
 
 ### Tests (first)
 
-- [ ] T032 [P] [US2] `TestViews_FR024_FR029` in `backend/internal/measure/views_test.go` on fakes: name trimmed,
+- [X] T032 [P] [US2] `TestViews_FR024_FR029` in `backend/internal/measure/views_test.go` on fakes: name trimmed,
   "Enter a name for the view.", "Use 60 characters or fewer.", "You already have a view called '%s'." per person
   and report ignoring case; the same name allowed on another report; query validated ("The view can't be saved —
   reload the page and try again.") and canonicalised, at most 4,000 characters; starring unstars the other view
@@ -161,10 +161,10 @@ views as one person; another person never sees them.
   report the person may no longer open stays theirs (edge case); `TestViews_VersionAndLog_FR028`: a stale
   version refused with 409 `version_conflict` and "This view was changed in another tab — reload it to see the
   latest", one log entry of kind `reportView` per create, update, star and delete, in the same write
-- [ ] T033 [P] [US2] `TestPostgresStoreReportViewsPersonIsolation_039_FR025` in
+- [X] T033 [P] [US2] `TestPostgresStoreReportViewsPersonIsolation_039_FR025` in
   `backend/internal/measure/store_postgres_test.go` (`TEST_DATABASE_URL`; skipped with `-short`)
-- [ ] T034 [P] [US2] Contract tests of the four view operations in `backend/internal/measure/handler_test.go`
-- [ ] T035 [P] [US2] `frontend/src/features/measure/shared/SavedViewsMenu.test.tsx` with vitest-axe: list with
+- [X] T034 [P] [US2] Contract tests of the four view operations in `backend/internal/measure/handler_test.go`
+- [X] T035 [P] [US2] `frontend/src/features/measure/shared/SavedViewsMenu.test.tsx` with vitest-axe: list with
   star and active mark, Save current filters, replace-name confirmation, "Modified" with Update view (confirm)
   and Save as new view, star moves, rename, delete with the Undo toast re-creating the view, default applied when
   the address has no filters, left-out note, the "changed in another tab" message on 409, Escape and focus
@@ -172,17 +172,17 @@ views as one person; another person never sees them.
 
 ### Implementation
 
-- [ ] T036 [US2] `backend/internal/measure/store.go` (`Store`: `ListViews(person, report)`, `GetView`,
+- [X] T036 [US2] `backend/internal/measure/store.go` (`Store`: `ListViews(person, report)`, `GetView`,
   `PutView`, `DeleteView`), `store_postgres.go` over the T005 queries, the fake in
   `store_fake_test.go` and `backend/internal/measure/measuretest/`; add the store to `internal/stores`; the view
   embeds `record.Meta`
-- [ ] T037 [US2] `backend/internal/measure/views.go`: list, create, update, delete as 010's `allwork/views.go`,
+- [X] T037 [US2] `backend/internal/measure/views.go`: list, create, update, delete as 010's `allwork/views.go`,
   per report, with `record.CheckVersion` and `Touch` on update and one `history.Log` per change in the same
   `Write`; register `history.Kind` "reportView" ("saved report view") in `backend/internal/app/measure.go`; in
   `backend/internal/app/history_access.go` show `reportView` entries to their actor and to `activityLog.viewAll`,
   test first `TestHistoryAccess_ReportView_039_FR028` in `history_access_test.go`
-- [ ] T038 [US2] Handler operations for views; remove them from `notYetServed`
-- [ ] T039 [US2] `frontend/src/features/measure/shared/api.ts` view hooks and mutations;
+- [X] T038 [US2] Handler operations for views; remove them from `notYetServed`
+- [X] T039 [US2] `frontend/src/features/measure/shared/api.ts` view hooks and mutations;
   `shared/SavedViewsMenu.tsx`; `ReportFrame` applies the default view when the address has no filters
 - [ ] T040 [US2] `frontend/e2e/measure.spec.ts` US2: save, star, reopen on the default, modify and update,
   rename, delete and Undo; a second persona sees none of them
@@ -196,13 +196,13 @@ a widget to its table, export it, export the report, compare every value with th
 
 ### Tests (first)
 
-- [ ] T041 [P] [US3] `TestExport_FR022` in `backend/internal/measure/export_test.go`: Excel sheets in order — the
+- [X] T041 [P] [US3] `TestExport_FR022` in `backend/internal/measure/export_test.go`: Excel sheets in order — the
   report's sheets, **In view**, **About this export** (report, year, filters in words, period, currency,
   exporter, date and time, rates used); CSV needs a widget and carries the notes first; unknown widget refused;
   file names "SP&A One – <report> [– <widget>] – <year> – <date>"; a stub report exports In view and About only
-- [ ] T042 [P] [US3] `TestReportsExport_FR022` in `handler_test.go`: `.xlsx` and `.csv` answers with
+- [X] T042 [P] [US3] `TestReportsExport_FR022` in `handler_test.go`: `.xlsx` and `.csv` answers with
   `Content-Disposition`, 400 for CSV without a widget, 403 without `data.export`
-- [ ] T043 [P] [US3] `frontend/src/features/measure/shared/ReportWidget.test.tsx`, `ReportTable.test.tsx`,
+- [X] T043 [P] [US3] `frontend/src/features/measure/shared/ReportWidget.test.tsx`, `ReportTable.test.tsx`,
   `ExportMenu.test.tsx` with vitest-axe: title and ⓘ tip, Chart/Table switch kept in the address, table labels
   and totals row, widget export menu (CSV, Excel), skeleton, error with Try again without blanking others, "—"
   with its reason, "Covers N of M plans", export unavailable with "Exporting isn't part of your role";
@@ -211,10 +211,10 @@ a widget to its table, export it, export the report, compare every value with th
 
 ### Implementation
 
-- [ ] T044 [US3] `backend/internal/measure/export.go`: `Export(ctx, a, report, f, format, widget)` with
+- [X] T044 [US3] `backend/internal/measure/export.go`: `Export(ctx, a, report, f, format, widget)` with
   `platform/sheet` (`WriteXLSX`, `WriteCSV`), In view and About sheets, `allwork.ContentDisposition` file names
-- [ ] T045 [US3] Handler `GET /api/v1/reports/{report}/export`; remove it from `notYetServed`
-- [ ] T046 [US3] `frontend/src/features/measure/shared/ReportWidget.tsx`, `ReportTable.tsx`, `ExportMenu.tsx`
+- [X] T045 [US3] Handler `GET /api/v1/reports/{report}/export`; remove it from `notYetServed`
+- [X] T046 [US3] `frontend/src/features/measure/shared/ReportWidget.tsx`, `ReportTable.tsx`, `ExportMenu.tsx`
   (whole report) using `src/api/download.ts`; chart tokens of D-345 only; `shared/periods.ts` (period state from
   the plan year and today) and the labelled **Today** marker every time chart of 040–050 draws (FR-019)
 - [ ] T047 [P] [US3] Gallery entries for `ReportWidget` and `ReportTable` in
