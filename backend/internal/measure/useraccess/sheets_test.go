@@ -92,3 +92,19 @@ func TestSheets_RejectsUnknownParameters(t *testing.T) {
 		t.Error("Sheets() with status=gone: no error, want the parameter refused")
 	}
 }
+
+func TestDescribe_SearchTeamStatus_US2(t *testing.T) {
+	t.Parallel()
+	o := newOffice()
+	s := NewService(fakeTx{}, o, o, func() time.Time { return now })
+
+	got, err := s.Describe(t.Context(), actor.Actor{}, url.Values{"q": {"lub"}, "team": {"T-1001", "T-1999"},
+		"status": {"inactive"}})
+	want := [][2]string{{"Search", "lub"}, {"Team", "Lubricants Europe, T-1999"}, {"Status", "Inactive"}}
+	if diff := cmp.Diff(want, got); err != nil || diff != "" {
+		t.Errorf("Describe (-want +got):\n%s %v", diff, err)
+	}
+	if got, err = s.Describe(t.Context(), actor.Actor{}, nil); err != nil || len(got) != 1 || got[0] != [2]string{"Status", "Active"} {
+		t.Errorf("Describe with no parameter = %v, %v; want only Status Active", got, err)
+	}
+}

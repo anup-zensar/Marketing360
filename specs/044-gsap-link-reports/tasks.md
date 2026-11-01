@@ -110,6 +110,6 @@ T001 → T002 – T006 → US1 (T007 – T016) → US2 → US3 → US4 → Polis
   `waitingColumns` and `orderColumns`, and the headings sort
 - [X] T030 [plan: access rules] `TestGsapLinkExport_NeedsDataExport` in `gsaplink/handler_test.go`: a person with
   `reports.view` and no `data.export` is refused the report's export
-- [ ] T031 [FR-019, 039 hand-off] The contract's `exportReport` takes `tab` (`GsapLinkTab`) and 044's `sort` values
+- [X] T031 [FR-019, 039 hand-off] The contract's `exportReport` takes `tab` (`GsapLinkTab`) and 044's `sort` values
   (`GsapLinkSort`) — lane A, `openapi.yaml`; then `TestGsapLinkExport_OwnParameters_FR019` drops
   `SkipRequestValidation`. **Hand-off to lane A.**
