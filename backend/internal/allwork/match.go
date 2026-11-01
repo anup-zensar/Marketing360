@@ -1,5 +1,7 @@
 package allwork
 
+import "cmp"
+
 // Matched are the records a filter set matches in a year as All work shows and counts them (039 R1): the shown and
 // matching records of each level in the year's order, the line items of the matching activities and what was left out.
 type Matched struct {
@@ -61,3 +63,8 @@ func (m *Matched) add(n *tnode) {
 	case LevelLineItem, LevelUnassigned:
 	}
 }
+
+// PlanTypeWord and ActivityStatusWord name a plan type and an activity status as All work shows them (039 FR-022).
+func PlanTypeWord(code string) string { return cmp.Or(planTypeWords[code], code) }
+
+func ActivityStatusWord(code string) string { return cmp.Or(activityStatuses[code].label, code) }

@@ -6,6 +6,7 @@ import (
 
 	"mapp/internal/allwork"
 	"mapp/internal/platform/actor"
+	"mapp/internal/platform/date"
 )
 
 const msgNoReport = "There is no such report."
@@ -21,7 +22,7 @@ func (s *Service) Frame(ctx context.Context, a actor.Actor, report string, f Fil
 		if err != nil {
 			return err
 		}
-		years, err := s.deps.Planning.Years(ctx)
+		years, err := s.deps.Plans.YearsInReportsScope(ctx)
 		if err != nil {
 			return err
 		}
@@ -30,7 +31,7 @@ func (s *Service) Frame(ctx context.Context, a actor.Actor, report string, f Fil
 			return err
 		}
 		display, err := s.deps.Planning.Currency(ctx, a.ID)
-		frame = Frame{Report: report, Filter: applied(f, sc), Choices: choicesOf(sc, f, withYear(years, sc.Year), currencies),
+		frame = Frame{Report: report, Filter: applied(f, sc), Choices: choicesOf(sc, f, withYear(years, sc.Year, date.Today(s.now()).Year()), currencies),
 			InView: inViewOf(sc.Matched), Finance: financeOf(sc), LeftOut: len(sc.Matched.LeftOut),
 			DisplayCurrency: display.Code, GeneratedAt: s.now().UTC(), FinanceAsOf: sc.FinanceAsOf}
 		return err
@@ -43,10 +44,10 @@ func (s *Service) Frame(ctx context.Context, a actor.Actor, report string, f Fil
 
 // applied is the filter as the report uses it: this year by default, left-out values dropped, the resolved currency.
 func applied(f Filter, sc Scope) AppliedFilter {
-	q, left := f.Query, sc.Matched.LeftOut
-	a := AppliedFilter{Year: sc.Year, Plans: kept(q.Plans, "plan", left), PlanTypes: orEmpty(q.PlanTypes),
-		Teams: kept(q.Teams, "team", left), Owners: kept(q.Owners, "owner", left),
-		ActivityTypes: kept(q.ActivityTypes, "activityType", left), ActivityStatuses: orEmpty(q.ActivityStatuses),
+	q := sc.Query
+	a := AppliedFilter{Year: sc.Year, Plans: orEmpty(q.Plans), PlanTypes: orEmpty(q.PlanTypes),
+		Teams: orEmpty(q.Teams), Owners: orEmpty(q.Owners),
+		ActivityTypes: orEmpty(q.ActivityTypes), ActivityStatuses: orEmpty(q.ActivityStatuses),
 		Attributes: q.Attributes, Period: f.Period, Currency: sc.Currency.Code, Tables: orEmpty(f.Tables)}
 	if a.Attributes == nil {
 		a.Attributes = []allwork.AttrFilter{}
@@ -58,12 +59,6 @@ func applied(f Filter, sc Scope) AppliedFilter {
 	return a
 }
 
-func kept(values []string, filter string, left []allwork.LeftOut) []string {
-	return slices.DeleteFunc(slices.Clone(orEmpty(values)), func(id string) bool {
-		return slices.Contains(left, allwork.LeftOut{Filter: filter, ID: id})
-	})
-}
-
 func orEmpty(values []string) []string {
 	if values == nil {
 		return []string{}
@@ -71,9 +66,9 @@ func orEmpty(values []string) []string {
 	return values
 }
 
-// withYear is the years with plans in scope and the year shown, in order (FR-011).
-func withYear(years []int, year int) []int {
-	all := append(slices.Clone(years), year)
+// withYear is the years with plans in scope, the year shown and the current year, in order (FR-008, FR-011).
+func withYear(years []int, shown, current int) []int {
+	all := append(slices.Clone(years), shown, current)
 	slices.Sort(all)
 	return slices.Compact(all)
 }

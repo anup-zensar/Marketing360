@@ -42,4 +42,20 @@ runs its own unit tests, lint and type-check.
 
 - [X] T012 `frontend/e2e/measure-plan-budget.spec.ts` (US1, US2) with axe
 - [X] T013 Plan budget cases in `BenchmarkReportsFrame`; record in plan.md (SC-002)
-- [ ] T014 Comment budget and length of every touched file; quickstart by hand; spec status Built
+- [X] T014 Comment budget and length of every touched file; quickstart by hand; spec status Built
+
+## Phase 7: Converge (2026-11-02)
+
+Found by `/speckit-converge` and the quickstart walkthrough; each fixed test first.
+
+- [X] T015 The ranked list reaches page 10 and keeps a search for "none" (FR-014; converge F2)
+- [X] T016 Planned cost without dates and in other years tested in Go and on screen (FR-005; F1)
+- [X] T017 Unspent, Budget spent, Not yet committed and % committed use only plans whose finance the person sees
+  (FR-006; F3)
+- [X] T018 The Ranked list sheet has each group's totals (FR-016, SC-005; F4)
+- [X] T019 The summary cards export on their own (FR-016; F6)
+- [X] T020 The chart's table labels the current period "in progress" (039 FR-019; F7)
+- [X] T021 Walkthrough: card amounts shortened with the full amount in the tooltip, as All work's cards
+- [ ] T022 When 049 starts, with its owner: ranking, grouping and paging as exported functions over entries whose
+  figures the caller supplies, so 049 ranks by revenue and stages (FR-017, research R7; F5). The web part
+  (`RankedList`) is already generic

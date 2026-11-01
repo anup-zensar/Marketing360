@@ -1,5 +1,5 @@
 import { screen, waitFor, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { expectNoAxeViolations } from '@/testing/axe';
 import { nth } from '@/testing/dom';
 import { planBudgetRanked, planBudgetReport } from '@/testing/fixtures/plan-budget';
@@ -22,6 +22,7 @@ function renderPage(
     reply('GET /api/v1/reports/{report}/views', { body: { items: [], total: 0 } }),
     reply('GET /api/v1/reports/plan-budget', report),
     reply('GET /api/v1/reports/plan-budget/ranked', { body: planBudgetRanked() }),
+    reply('GET /api/v1/reports/{report}/export', () => new Response('file')),
   ]);
   const rendered = renderWithProviders(<PlanBudgetReport />, {
     route,
@@ -67,6 +68,20 @@ describe('PlanBudgetReport (040 US1)', () => {
     await expectNoAxeViolations();
   });
 
+  it('shortens a large amount on its card and keeps the full amount at hand (FR-002)', async () => {
+    const usd = (amount: string) => ({ amount, currency: 'USD' });
+    renderPage({
+      body: planBudgetReport({
+        cards: { ...planBudgetReport().cards, budget: usd('2000000.00') },
+      }),
+    });
+
+    const cards = await screen.findByLabelText('Summary');
+    expect(
+      within(cards).getByRole('button', { name: /^\$2(\.0)?M \(\$2,000,000\.00\)$/ }),
+    ).toBeInTheDocument();
+  });
+
   it('charts spend by month with today marked, and lists every period in the table (FR-004, FR-007)', async () => {
     const { user } = renderPage();
 
@@ -77,6 +92,39 @@ describe('PlanBudgetReport (040 US1)', () => {
     const table = screen.getByRole('table', { name: /Spend by month/ });
     expect(within(table).getAllByRole('row')).toHaveLength(14);
     expect(within(table).getByText('Total')).toBeInTheDocument();
+    expect(within(table).getAllByText(/\(in progress\)$/)).toHaveLength(1);
+  });
+
+  it('names planned cost without dates and in other years under the chart (FR-005)', async () => {
+    const usd = (amount: string) => ({ amount, currency: 'USD' });
+    const notes = {
+      notPhased: null,
+      noDates: usd('70.00'),
+      otherYears: usd('40.00'),
+      actualOtherYears: null,
+    };
+    renderPage({ body: planBudgetReport({ notes }) });
+
+    expect(
+      await screen.findByText(
+        'Planned cost without dates: $70.00. Planned cost in other years: $40.00.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('exports the summary cards on their own (FR-016)', async () => {
+    URL.createObjectURL = () => 'blob:export';
+    URL.revokeObjectURL = () => {};
+    const save = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const { user, api } = renderPage();
+
+    await user.click(await screen.findByRole('button', { name: 'Export summary' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'CSV (.csv)' }));
+
+    await waitFor(() => expect(asked(api, '/api/v1/reports/plan-budget/export')).toHaveLength(1));
+    const sent = nth(asked(api, '/api/v1/reports/plan-budget/export'), 0);
+    expect([sent.get('widget'), sent.get('format')]).toEqual(['cards', 'csv']);
+    save.mockRestore();
   });
 
   it('asks for quarters when the period changes (FR-004)', async () => {

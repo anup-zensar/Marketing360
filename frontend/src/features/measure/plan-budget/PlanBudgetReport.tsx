@@ -1,7 +1,7 @@
 import { useFormatters } from '@/format/useFormatters';
 import { ErrorState } from '@/ui/ErrorState/ErrorState';
 import { Skeleton } from '@/ui/Skeleton/Skeleton';
-import { RankedList, ReportFrame, useRankedState } from '../shared';
+import { downloadReport, ExportMenu, RankedList, ReportFrame, useRankedState } from '../shared';
 import type { RankedColumn, ReportAddress, ReportFrameData } from '../shared';
 import { usePlanBudget, usePlanBudgetRanked } from './api';
 import type { PlanBudgetFigures, RankedParams } from './api';
@@ -48,6 +48,15 @@ function PlanBudgetBody({ frame, address }: { frame: ReportFrameData; address: R
     <div className={styles.body}>
       {report.data ? (
         <>
+          <div className={styles.summaryActions}>
+            <ExportMenu
+              label="Export summary"
+              formats={['xlsx', 'csv']}
+              download={(format) =>
+                downloadReport('planBudget', address, format, { widget: 'cards' })
+              }
+            />
+          </div>
           <BudgetCards cards={report.data.cards} />
           <PacingChart report={report.data} />
         </>

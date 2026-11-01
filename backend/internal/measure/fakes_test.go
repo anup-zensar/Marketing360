@@ -91,9 +91,14 @@ func (f fakePlanning) Currency(context.Context, string) (allwork.Currency, error
 
 func (f fakePlanning) RatesUsed(context.Context) ([]string, error) { return nil, nil }
 
-type fakePlans []string
+type fakePlans struct {
+	ids   []string
+	years []int
+}
 
-func (f fakePlans) InReportsScope(context.Context) ([]string, error) { return f, nil }
+func (f fakePlans) InReportsScope(context.Context) ([]string, error) { return f.ids, nil }
+
+func (f fakePlans) YearsInReportsScope(context.Context) ([]int, error) { return f.years, nil }
 
 type fakeCurrencies struct{}
 
@@ -126,5 +131,5 @@ func frameService(planning fakePlanning) *measure.Service {
 	if planning.nodes == nil {
 		planning.nodes = frameNodes()
 	}
-	return measure.NewService(history.Tools{Tx: fakeTx{}, Now: func() time.Time { return time.Date(2026, 10, 18, 14, 5, 0, 0, time.UTC) }}, measure.Deps{Planning: planning, Plans: fakePlans{"P-1"}, Currencies: fakeCurrencies{}}, measure.NewRegistry())
+	return measure.NewService(history.Tools{Tx: fakeTx{}, Now: func() time.Time { return time.Date(2026, 10, 18, 14, 5, 0, 0, time.UTC) }}, measure.Deps{Planning: planning, Plans: fakePlans{ids: []string{"P-1"}, years: planning.years}, Currencies: fakeCurrencies{}}, measure.NewRegistry())
 }

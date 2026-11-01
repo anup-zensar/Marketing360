@@ -6,9 +6,13 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
+
+	"mapp/internal/history"
 
 	"github.com/google/go-cmp/cmp"
 
+	"mapp/internal/allwork"
 	"mapp/internal/measure"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
@@ -85,6 +89,33 @@ func TestFrame_LeftOutCountedNotNamed_FR015(t *testing.T) {
 	}
 }
 
+func TestFrame_OutOfScopeAndUnknownValuesLeftOut_FR015(t *testing.T) {
+	t.Parallel()
+	frame := frameOf(t, frameService(fakePlanning{}), url.Values{"owner": {"U-3", "U-9"}, "team": {"T-2"},
+		"currency": {"XYZ"}, "attr": {"SA-B:SO-HX,SO-404", "SA-404:SO-X", "SA-OFF:SO-X"}})
+
+	type applied struct {
+		LeftOut       int
+		Owners, Teams []string
+		Attributes    []allwork.AttrFilter
+		Currency      string
+	}
+	got := applied{frame.LeftOut, frame.Filter.Owners, frame.Filter.Teams, frame.Filter.Attributes, frame.Filter.Currency}
+	want := applied{6, []string{"U-3"}, []string{}, []allwork.AttrFilter{{AttributeID: "SA-B", Values: []string{"SO-HX"}}}, "GBP"}
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("Wei (another market), T-2, SO-404, SA-404, inactive SA-OFF and XYZ left out (-want +got):\n%s", diff)
+	}
+	body, err := json.Marshal(frame)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, id := range []string{"U-9", "T-2", "SO-404", "SA-404", "SA-OFF", "XYZ"} {
+		if strings.Contains(string(body), `"`+id+`"`) {
+			t.Errorf("the frame names %s, which was left out", id)
+		}
+	}
+}
+
 func TestFrame_AppliedFilterAndCurrency_FR018_FR030(t *testing.T) {
 	t.Parallel()
 	s := frameService(fakePlanning{})
@@ -125,6 +156,28 @@ func TestFrame_NoPlansInYear_FR031(t *testing.T) {
 	}
 	if diff := cmp.Diff([]int{2025, 2026, 2027}, frame.Choices.Years); diff != "" {
 		t.Errorf("years to choose: the ones that have plans and the year shown (-want +got):\n%s", diff)
+	}
+}
+
+func TestFrame_YearsOfferTheCurrentYear_FR008(t *testing.T) {
+	t.Parallel()
+	frame := frameOf(t, frameService(fakePlanning{years: []int{2024}}), url.Values{"year": {"2024"}})
+
+	if diff := cmp.Diff([]int{2024, 2026}, frame.Choices.Years); diff != "" {
+		t.Errorf("years to choose on 2024 with plans only in 2024, today in 2026 (-want +got):\n%s", diff)
+	}
+}
+
+func TestFrame_YearsOfTheReportsScope_FR008(t *testing.T) {
+	t.Parallel()
+	s := measure.NewService(history.Tools{Tx: fakeTx{}, Now: func() time.Time { return time.Date(2026, 10, 18, 0, 0, 0, 0, time.UTC) }},
+		measure.Deps{Planning: fakePlanning{nodes: frameNodes(), years: []int{2024, 2025}},
+			Plans: fakePlans{ids: []string{"P-1"}, years: []int{2025}}, Currencies: fakeCurrencies{}}, measure.NewRegistry())
+
+	frame := frameOf(t, s, url.Values{"year": {"2025"}})
+
+	if diff := cmp.Diff([]int{2025, 2026}, frame.Choices.Years); diff != "" {
+		t.Errorf("2024 has plans Priya may plan but not report on (-want +got):\n%s", diff)
 	}
 }
 

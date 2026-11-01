@@ -80,20 +80,19 @@ func (s sums) times(part *money.Percent) sums {
 		return s
 	}
 	scale := func(a money.Amount) money.Amount { return money.FromCents(part.OfWhole(a.Cents())) }
-	out := sums{planned: scale(s.planned), committed: scale(s.committed), actual: scale(s.actual), financed: s.financed}
-	if s.budget != nil {
-		budget := scale(*s.budget)
-		out.budget = &budget
+	scaled := func(a *money.Amount) *money.Amount {
+		if a == nil {
+			return nil
+		}
+		part := scale(*a)
+		return &part
 	}
-	return out
+	return sums{planned: scale(s.planned), committed: scale(s.committed), actual: scale(s.actual), financed: s.financed,
+		budget: scaled(s.budget), finBudget: scaled(s.finBudget), finPlanned: scale(s.finPlanned)}
 }
 
 func (s sums) plus(t sums) sums {
-	out := sums{planned: s.planned.Add(t.planned), committed: s.committed.Add(t.committed),
-		actual: s.actual.Add(t.actual), financed: s.financed || t.financed, budget: s.budget}
-	if t.budget != nil {
-		budget := orZero(s.budget).Add(*t.budget)
-		out.budget = &budget
-	}
-	return out
+	return sums{planned: s.planned.Add(t.planned), committed: s.committed.Add(t.committed),
+		actual: s.actual.Add(t.actual), financed: s.financed || t.financed, budget: addAmount(s.budget, t.budget),
+		finBudget: addAmount(s.finBudget, t.finBudget), finPlanned: s.finPlanned.Add(t.finPlanned)}
 }

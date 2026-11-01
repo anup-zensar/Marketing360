@@ -48,7 +48,7 @@ func exportService(t *testing.T, report ...measure.Report) *measure.Service {
 	if err := registry.Register(report[0]); err != nil {
 		t.Fatal(err)
 	}
-	return measure.NewService(history.Tools{Tx: fakeTx{}, Now: func() time.Time { return time.Date(2026, 10, 18, 14, 5, 0, 0, time.UTC) }}, measure.Deps{Planning: fakePlanning{nodes: frameNodes()}, Plans: fakePlans{"P-1"},
+	return measure.NewService(history.Tools{Tx: fakeTx{}, Now: func() time.Time { return time.Date(2026, 10, 18, 14, 5, 0, 0, time.UTC) }}, measure.Deps{Planning: fakePlanning{nodes: frameNodes()}, Plans: fakePlans{ids: []string{"P-1"}},
 		Currencies: fakeCurrencies{}}, registry)
 }
 
@@ -158,5 +158,40 @@ func TestExport_ReportSaysItsOwnParameters_FR022(t *testing.T) {
 	want := []string{"Report: Plan details", "Year: 2026", "Filters: None", "Search: planner", "Status: Active"}
 	if diff := cmp.Diff(want, lines); diff != "" {
 		t.Errorf("About this export, first lines (-want +got):\n%s", diff)
+	}
+}
+
+func TestExport_LeftOutValuesNotNamed_FR015(t *testing.T) {
+	t.Parallel()
+	file, err := exportOf(t, measure.KeyPlanDetails, url.Values{"owner": {"U-9"}, "team": {"T-2"}}, measure.ExportRequest{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	tables, err := sheet.ReadXLSX(file.Body, 50)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, row := range tables[len(tables)-1].Rows {
+		if row.Cells[0] == "Filters" && row.Cells[1] != "None" {
+			t.Errorf("Filters = %q, want None: Wei Zhang and Mobility China are outside Priya's reports scope", row.Cells[1])
+		}
+	}
+}
+
+func TestExport_FiltersInWords_FR022(t *testing.T) {
+	t.Parallel()
+	file, err := exportOf(t, measure.KeyPlanDetails, url.Values{"planType": {"crossMarket"}, "activityStatus": {"inProgress"}},
+		measure.ExportRequest{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	tables, err := sheet.ReadXLSX(file.Body, 50)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, row := range tables[len(tables)-1].Rows {
+		if row.Cells[0] == "Filters" && row.Cells[1] != "Plan type: Cross-market; Activity status: In progress" {
+			t.Errorf("Filters = %q, want the plan type and status as the screen words them", row.Cells[1])
+		}
 	}
 }

@@ -11,6 +11,14 @@ export interface RankedState {
 }
 
 const SIZES = [10, 25, 50] as const;
+const DEFAULTS = new Map<string, unknown>([
+  ['order', 'desc'],
+  ['group', 'none'],
+  ['size', 10],
+  ['page', 1],
+  ['q', ''],
+  ['drill', ''],
+]);
 
 function sizeOf(text: string | null): RankedState['size'] {
   return SIZES.find((size) => String(size) === text) ?? 10;
@@ -32,9 +40,8 @@ export function useRankedState(defaultSort: string) {
   const change = (patch: Partial<RankedState>) => {
     const next = new URLSearchParams(params);
     for (const [name, value] of Object.entries({ ...patch, page: patch.page ?? 1 })) {
-      const unset =
-        value === '' || value === 'none' || value === 1 || value === 10 || value === 'desc';
-      if (unset || (name === 'sort' && value === defaultSort)) {
+      const unset = value === (name === 'sort' ? defaultSort : DEFAULTS.get(name));
+      if (unset) {
         next.delete(name);
       } else {
         next.set(name, String(value));

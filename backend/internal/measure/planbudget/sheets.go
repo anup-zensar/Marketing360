@@ -94,6 +94,9 @@ func rankedSheet(r Ranked) sheet.Sheet {
 	rows := [][]sheet.Cell{boldRow("Group", "Level", "Name", "Budget", "Planned cost", "Committed", "Actual",
 		"Left to plan", "Unspent budget", "Over-allocated")}
 	for _, g := range r.Groups {
+		if g.Label != "" {
+			rows = append(rows, totalsRow(g))
+		}
 		for _, e := range g.Entries {
 			rows = append(rows, entryRow(g.Label, e, ""))
 			for _, child := range e.Children {
@@ -102,6 +105,12 @@ func rankedSheet(r Ranked) sheet.Sheet {
 		}
 	}
 	return sheet.Sheet{Name: "Ranked list", Rows: rows}
+}
+
+func totalsRow(g Group) []sheet.Cell {
+	f := g.Totals
+	return []sheet.Cell{sheet.Bold(g.Label), sheet.Bold("Total"), sheet.Text(""), moneyCell(f.Budget), moneyCell(f.Planned),
+		moneyCell(f.Committed), moneyCell(f.Actual), moneyCell(f.LeftToPlan), moneyCell(f.Unspent), sheet.Text("")}
 }
 
 func entryRow(group string, e Entry, indent string) []sheet.Cell {

@@ -23,6 +23,8 @@ export interface ReportWidgetProps {
   table: ReportTableData;
   /** A line under the title: "Covers 1 of 2 plans", "8 activities where it does not apply are not counted". */
   note?: string;
+  /** "No data yet: …" naming what would fill it, shown instead of a chart of zeros (FR-031). */
+  empty?: string;
   loading?: boolean;
   failed?: boolean;
   onRetry?: () => void;
@@ -30,7 +32,7 @@ export interface ReportWidgetProps {
 
 /** A widget with its tip, Chart · Table switch in the address, export, and its own loading and failure (FR-020 – FR-023). */
 export function ReportWidget(props: ReportWidgetProps) {
-  const { report, widget, title, tip, chart, table, note, loading, failed, onRetry } = props;
+  const { report, widget, title, tip, chart, table, note, empty, loading, failed, onRetry } = props;
   const [address, setAddress] = useReportAddress();
   const [params] = useSearchParams();
   const asTable = address.tables.includes(widget);
@@ -77,6 +79,8 @@ export function ReportWidget(props: ReportWidgetProps) {
         </div>
       ) : loading ? (
         <Skeleton lines={5} height="20px" />
+      ) : empty ? (
+        <p className={styles.empty}>{empty}</p>
       ) : asTable ? (
         <ReportTable title={title} data={table} />
       ) : (

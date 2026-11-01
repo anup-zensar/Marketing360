@@ -15,7 +15,6 @@ type Transactor interface {
 
 // Planning is All work's source (010): the year's plans in the person's plans.view scope.
 type Planning interface {
-	Years(ctx context.Context) ([]int, error)
 	Year(ctx context.Context, year int, today date.Date, columns []string) (allwork.YearData, error)
 	Choices(ctx context.Context, personID string) (allwork.Choices, error)
 	Attributes(ctx context.Context) ([]allwork.Attribute, error)
@@ -23,9 +22,10 @@ type Planning interface {
 	RatesUsed(ctx context.Context) ([]string, error)
 }
 
-// Plans gives the IDs of the plans in the person's reports.view scope, read by the scoped plan store (R2).
+// Plans gives the IDs and the years of the plans in the person's reports.view scope, read by the scoped plan store (R2).
 type Plans interface {
 	InReportsScope(ctx context.Context) ([]string, error)
+	YearsInReportsScope(ctx context.Context) ([]int, error)
 }
 
 type Currency struct {

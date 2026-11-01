@@ -68,3 +68,11 @@
 .total td {
   font-weight: var(--weight-bold);
 }
+
+.empty {
+  margin: 0;
+  padding: var(--space-6) 0;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  text-align: center;
+}

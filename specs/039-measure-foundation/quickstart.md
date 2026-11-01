@@ -10,8 +10,8 @@ cd backend && go run ./cmd/seed -reset && go run ./cmd/api
 cd frontend && pnpm run dev
 ```
 
-Sign in as a demo person (docs/product/demo-users-and-data.md): one with every market, one with Lubricants
-Europe only, one without financial access.
+Sign in as a demo person (docs/product/demo-users-and-data.md): Alex (every market) and Priya (Lubricants
+Europe only).
 
 ## Check
 
@@ -26,7 +26,9 @@ Europe only, one without financial access.
 5. **Saved views**: save, star, reload `/reports/plan-budget` without a query (the view applies), change a
    filter ("Modified"), update, rename, delete and **Undo** (FR-024–FR-029).
 6. **Export**: the Excel file holds **In view** and **About this export** with the filters in words (FR-022).
-7. As the person without financial access: "You can't see financial data" where money would show (FR-004).
+7. Without financial access, "You can't see the financial data of these plans" shows where money would (FR-004).
+   Every demo role with `reports.view` also has `finance.view`, so to see it give someone a role without Finance
+   view in Settings › Roles and access; `ReportFrame.test.tsx` and `TestFrame_FinanceCoverage_FR004` prove it.
 
 ## Tests
 
