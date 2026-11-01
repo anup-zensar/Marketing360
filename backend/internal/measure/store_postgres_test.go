@@ -36,9 +36,9 @@ func TestPostgresStoreReportViewsPersonIsolation_039_FR025(t *testing.T) {
 	}
 
 	err = db.Read(ctx, func(ctx context.Context) error {
-		priyas, err := store.ListViews(ctx, "U-1002", measure.KeyPlanBudget)
-		if err != nil {
-			return err
+		priyas, listErr := store.ListViews(ctx, "U-1002", measure.KeyPlanBudget)
+		if listErr != nil {
+			return listErr
 		}
 		if len(priyas) != 1 || priyas[0].ID != "RV-1001" || priyas[0].Query != "year=2026" {
 			t.Errorf("Priya's Plan budget views = %+v, want RV-1001 only", priyas)

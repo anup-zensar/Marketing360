@@ -8,7 +8,10 @@ import (
 	"mapp/internal/platform/actor"
 )
 
-const labelDefaultView = "Default view"
+const (
+	labelDefaultView = "Default view"
+	labelFilters     = "Filters"
+)
 
 func (s *Service) logView(ctx context.Context, a actor.Actor, v StoredView, action history.Action) error {
 	_, err := s.log.Log(ctx, a, history.LogInput{Kind: KindReportView, RecordID: v.ID, RecordName: v.Name, Action: action})
@@ -60,7 +63,7 @@ func describeView(_ context.Context, field string, value any) (string, string, e
 		}
 		return labelDefaultView, "No", nil
 	case "query":
-		return "Filters", "", nil
+		return labelFilters, "", nil
 	}
 	return "", "", nil
 }

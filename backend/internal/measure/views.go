@@ -65,7 +65,7 @@ func (s *Service) CreateView(ctx context.Context, a actor.Actor, report string, 
 		var problems errs.Problems
 		name := checkViewName(&problems, in.Name, own, "")
 		query := checkViewQuery(&problems, in.Query, s.paramsOf(report))
-		if err := problems.Err(); err != nil {
+		if err = problems.Err(); err != nil {
 			return err
 		}
 		id, err := s.ids.Next(ctx, ids.PrefixReportView)

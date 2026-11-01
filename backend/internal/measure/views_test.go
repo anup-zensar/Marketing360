@@ -45,9 +45,14 @@ func viewService(t *testing.T, reports ...measure.Report) (*measure.Service, *hi
 	return s, log
 }
 
-func create(t *testing.T, s *measure.Service, a actor.Actor, report string, in measure.ViewCreate) measure.ReportView {
+type viewIn struct {
+	report string
+	measure.ViewCreate
+}
+
+func create(t *testing.T, s *measure.Service, a actor.Actor, in viewIn) measure.ReportView {
 	t.Helper()
-	v, err := s.CreateView(t.Context(), a, report, in)
+	v, err := s.CreateView(t.Context(), a, in.report, in.ViewCreate)
 	if err != nil {
 		t.Fatalf("CreateView(%+v): %v", in, err)
 	}
@@ -79,8 +84,7 @@ func manyValues() string {
 func TestViews_NameAndQuery_FR024_FR027(t *testing.T) {
 	t.Parallel()
 	s, _ := viewService(t)
-	saved := create(t, s, priyaSaves, measure.KeyPlanBudget,
-		measure.ViewCreate{Name: "  Europe  ", Query: "owner=U-1003&year=2026&owner=U-1002"})
+	saved := create(t, s, priyaSaves, viewIn{measure.KeyPlanBudget, measure.ViewCreate{Name: "  Europe  ", Query: "owner=U-1003&year=2026&owner=U-1002"}})
 	if saved.Name != "Europe" || saved.Query != "year=2026&owner=U-1002&owner=U-1003" || saved.Version != 1 {
 		t.Errorf("saved %+v: want the name trimmed and the canonical query", saved)
 	}
@@ -112,9 +116,9 @@ func TestViews_PersonalWithOneDefault_FR025_FR026(t *testing.T) {
 	t.Parallel()
 	s, _ := viewService(t)
 	ctx := t.Context()
-	europe := create(t, s, priyaSaves, measure.KeyPlanBudget, measure.ViewCreate{Name: "europe", IsDefault: true})
-	create(t, s, priyaSaves, measure.KeyPlanBudget, measure.ViewCreate{Name: "Asia", IsDefault: true})
-	create(t, s, priyaSaves, measure.KeyApprovals, measure.ViewCreate{Name: "Mine", IsDefault: true})
+	europe := create(t, s, priyaSaves, viewIn{measure.KeyPlanBudget, measure.ViewCreate{Name: "europe", IsDefault: true}})
+	create(t, s, priyaSaves, viewIn{measure.KeyPlanBudget, measure.ViewCreate{Name: "Asia", IsDefault: true}})
+	create(t, s, priyaSaves, viewIn{measure.KeyApprovals, measure.ViewCreate{Name: "Mine", IsDefault: true}})
 
 	page, err := s.ListViews(ctx, priyaSaves, measure.KeyPlanBudget)
 	if err != nil {
@@ -140,12 +144,11 @@ func TestViews_PersonalWithOneDefault_FR025_FR026(t *testing.T) {
 	}
 }
 
-func TestViews_VersionAndLog_FR028(t *testing.T) {
+func TestViews_VersionChecked_FR028(t *testing.T) {
 	t.Parallel()
-	s, log := viewService(t)
+	s, _ := viewService(t)
 	ctx := t.Context()
-	europe := create(t, s, priyaSaves, measure.KeyPlanBudget, measure.ViewCreate{Name: "Europe", IsDefault: true})
-	asia := create(t, s, priyaSaves, measure.KeyPlanBudget, measure.ViewCreate{Name: "Asia", IsDefault: true})
+	asia := create(t, s, priyaSaves, viewIn{measure.KeyPlanBudget, measure.ViewCreate{Name: "Asia"}})
 	asiaRef := measure.ViewRef{Report: measure.KeyPlanBudget, ID: asia.ID}
 	renamed := "Asia Pacific"
 
@@ -162,6 +165,20 @@ func TestViews_VersionAndLog_FR028(t *testing.T) {
 	if !errors.As(err, &conflict) || conflict.Code != errs.CodeVersionConflict ||
 		conflict.Message != "This view was changed in another tab — reload it to see the latest" {
 		t.Errorf("a stale version: %v, want the version conflict", err)
+	}
+}
+
+func TestViews_EveryChangeLogged_FR028(t *testing.T) {
+	t.Parallel()
+	s, log := viewService(t)
+	ctx := t.Context()
+	europe := create(t, s, priyaSaves, viewIn{measure.KeyPlanBudget, measure.ViewCreate{Name: "Europe", IsDefault: true}})
+	asia := create(t, s, priyaSaves, viewIn{measure.KeyPlanBudget, measure.ViewCreate{Name: "Asia", IsDefault: true}})
+	renamed := "Asia Pacific"
+	_, err := s.UpdateView(ctx, priyaSaves, measure.ViewRef{Report: measure.KeyPlanBudget, ID: asia.ID},
+		measure.ViewUpdate{Version: 1, Name: &renamed})
+	if err != nil {
+		t.Fatalf("rename: %v", err)
 	}
 	deleted, err := s.DeleteView(ctx, priyaSaves, measure.ViewRef{Report: measure.KeyPlanBudget, ID: europe.ID})
 	if err != nil || deleted.Name != "Europe" || deleted.IsDefault {
@@ -203,8 +220,8 @@ func TestViews_KeepTheReportsOwnParameters_039_B4(t *testing.T) {
 	s, _ := viewService(t, sortedReport{})
 	query := "status=open&page=3&sort=name&status=declined&owner=U-1002&junk=1"
 
-	approvals := create(t, s, priyaSaves, measure.KeyApprovals, measure.ViewCreate{Name: "Open", Query: query})
-	budget := create(t, s, priyaSaves, measure.KeyPlanBudget, measure.ViewCreate{Name: "Open", Query: query})
+	approvals := create(t, s, priyaSaves, viewIn{measure.KeyApprovals, measure.ViewCreate{Name: "Open", Query: query}})
+	budget := create(t, s, priyaSaves, viewIn{measure.KeyPlanBudget, measure.ViewCreate{Name: "Open", Query: query}})
 
 	if want := "owner=U-1002&sort=name&status=declined&status=open"; approvals.Query != want {
 		t.Errorf("Approvals view query = %q, want %q: its own parameters kept, page and unknown ones dropped", approvals.Query, want)
