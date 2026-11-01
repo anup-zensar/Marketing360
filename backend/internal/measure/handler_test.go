@@ -64,6 +64,28 @@ func TestReportsFrame_ScopePerPersona_SC002(t *testing.T) {
 	}
 }
 
+func TestReportsExport_FR022(t *testing.T) {
+	t.Parallel()
+	server := apitest.New(t)
+	carlos := server.SignIn(t, carlosEmail)
+
+	excel := call(t, carlos, "/api/v1/reports/plan-budget/export?year=2026", http.StatusOK)
+
+	if !strings.Contains(excel.Header.Get("Content-Disposition"), "SP%26A%20One%20%E2%80%93%20Plan%20budget") {
+		t.Errorf("Content-Disposition = %q, want the report's file name", excel.Header.Get("Content-Disposition"))
+	}
+	call(t, carlos, "/api/v1/reports/plan-budget/export?format=csv", http.StatusBadRequest)
+	call(t, carlos, "/api/v1/reports/plan-budget/export?format=csv&widget=statusCount", http.StatusBadRequest)
+
+	admin := server.SignIn(t, alexEmail)
+	var created struct{ ID string }
+	admin.Do(t, http.MethodPost, "/api/v1/roles", map[string]any{"name": "No export", "defaultScope": "myTeams",
+		"permissions": []string{"plans.view", "reports.view"}}).Decode(t, &created)
+	admin.Do(t, http.MethodPut, "/api/v1/people/U-1004/roles", map[string]any{"version": 1,
+		"roles": []map[string]any{{"roleId": created.ID, "scope": map[string]any{"type": "myTeams"}}}})
+	call(t, server.SignIn(t, "mei.lin@shell.com"), "/api/v1/reports/plan-budget/export", http.StatusForbidden)
+}
+
 func TestReportsFrame_Refusals(t *testing.T) {
 	t.Parallel()
 	server := apitest.New(t)
