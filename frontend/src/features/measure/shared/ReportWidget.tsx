@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useSearchParams } from 'react-router';
 import { Button } from '@/ui/Button/Button';
 import { Card } from '@/ui/Card/Card';
 import { InfoTip } from '@/ui/InfoTip/InfoTip';
@@ -31,6 +32,7 @@ export interface ReportWidgetProps {
 export function ReportWidget(props: ReportWidgetProps) {
   const { report, widget, title, tip, chart, table, note, loading, failed, onRetry } = props;
   const [address, setAddress] = useReportAddress();
+  const [params] = useSearchParams();
   const asTable = address.tables.includes(widget);
   const show = (tableView: boolean) =>
     setAddress({
@@ -59,7 +61,7 @@ export function ReportWidget(props: ReportWidgetProps) {
       <ExportMenu
         label="Export"
         formats={['csv', 'xlsx']}
-        download={(format) => downloadReport(report, address, format, { widget })}
+        download={(format) => downloadReport(report, address, format, { widget, own: params })}
       />
     </div>
   );
