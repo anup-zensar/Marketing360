@@ -43,6 +43,7 @@ func (s *Service) ModelImpact(ctx context.Context, _ actor.Actor, id string, upd
 		removed := filter(m.ActivityTypeIDs, func(typeID string) bool { return !slices.Contains(changed.ActivityTypeIDs, typeID) })
 		warnings, err := s.typeRemovedWarnings(ctx, removed, refs, plans)
 		impact.Warnings = append(impact.Warnings, warnings...)
+		impact.Warnings = append(impact.Warnings, stageRemovedWarnings(m, changed, refs)...)
 		return err
 	})
 	return impact, err

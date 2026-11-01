@@ -262,6 +262,7 @@ type ChangeEffects struct {
 type References struct {
 	PlanID, Name           string
 	ModelID                string
+	GoalStage              GoalStage
 	OwnerID                string
 	DefaultFinanceBudgetID string
 	TeamIDs                []string

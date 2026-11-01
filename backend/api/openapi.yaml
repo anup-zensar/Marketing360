@@ -13099,6 +13099,9 @@ components:
         - mqlToDealRate
         - averageDealSize
         - activityTypes
+        - inqToMqlVelocityMonths
+        - mqlToDealVelocityMonths
+        - allowedGoalStages
         - active
         - usage
         - version
@@ -13124,6 +13127,20 @@ components:
           description: The allowed activity types, sorted by name.
           items:
             $ref: "#/components/schemas/SettingRef"
+        inqToMqlVelocityMonths:
+          type: integer
+          minimum: 0
+          maximum: 24
+          description: Whole months a conversion takes (047-C1).
+        mqlToDealVelocityMonths:
+          type: integer
+          minimum: 0
+          maximum: 24
+        allowedGoalStages:
+          type: array
+          minItems: 1
+          description: The stages a goal may be set against, in funnel order (047-C2).
+          items: { type: string, enum: [inq, mql, revenue] }
         active:
           type: boolean
         usage:
@@ -13182,6 +13199,20 @@ components:
           type: array
           items:
             type: string
+        inqToMqlVelocityMonths:
+          type: integer
+          minimum: 0
+          maximum: 24
+          description: Whole months; 0 when left out (047-C2).
+        mqlToDealVelocityMonths:
+          type: integer
+          minimum: 0
+          maximum: 24
+        allowedGoalStages:
+          type: array
+          minItems: 1
+          description: Every stage when left out (047-C2).
+          items: { type: string, enum: [inq, mql, revenue] }
     ModelUpdate:
       type: object
       additionalProperties: false
@@ -13195,6 +13226,18 @@ components:
           type: string
         mqlToDealRate:
           type: string
+        inqToMqlVelocityMonths:
+          type: integer
+          minimum: 0
+          maximum: 24
+        mqlToDealVelocityMonths:
+          type: integer
+          minimum: 0
+          maximum: 24
+        allowedGoalStages:
+          type: array
+          minItems: 1
+          items: { type: string, enum: [inq, mql, revenue] }
         averageDealSize:
           oneOf:
             - $ref: "#/components/schemas/MoneyInput"

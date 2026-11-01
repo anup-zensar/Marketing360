@@ -62,6 +62,7 @@ const (
 const (
 	ImpactGoalsRecalculated   = "goalsRecalculated"
 	ImpactActivityTypeRemoved = "activityTypeRemoved"
+	ImpactGoalStageRemoved    = "goalStageRemoved"
 	ImpactBecomesIncomplete   = "becomesIncomplete"
 	ImpactOptionsRemoved      = "optionsRemoved"
 	ImpactAmountsRecalculated = "amountsRecalculated"
@@ -121,14 +122,17 @@ func (o *OptionalMoney) UnmarshalJSON(data []byte) error {
 
 // ModelView is a model as the API returns it (contract Model).
 type ModelView struct {
-	ID              string        `json:"id"`
-	Name            string        `json:"name"`
-	InqToMqlRate    money.Percent `json:"inqToMqlRate"`
-	MqlToDealRate   money.Percent `json:"mqlToDealRate"`
-	AverageDealSize money.Money   `json:"averageDealSize"`
-	ActivityTypes   []SettingRef  `json:"activityTypes"` // the allowed types, by name
-	Active          bool          `json:"active"`
-	Usage           Usage         `json:"usage"`
+	ID                      string        `json:"id"`
+	Name                    string        `json:"name"`
+	InqToMqlRate            money.Percent `json:"inqToMqlRate"`
+	MqlToDealRate           money.Percent `json:"mqlToDealRate"`
+	AverageDealSize         money.Money   `json:"averageDealSize"`
+	ActivityTypes           []SettingRef  `json:"activityTypes"` // the allowed types, by name
+	InqToMqlVelocityMonths  int           `json:"inqToMqlVelocityMonths"`
+	MqlToDealVelocityMonths int           `json:"mqlToDealVelocityMonths"`
+	AllowedGoalStages       []string      `json:"allowedGoalStages"`
+	Active                  bool          `json:"active"`
+	Usage                   Usage         `json:"usage"`
 	record.Meta
 }
 
@@ -141,21 +145,27 @@ type ModelPage struct {
 // ModelInput is the body of POST /api/v1/models (contract ModelCreate). Rates are percent texts ("" when not
 // filled in) and the deal size a money input (nil when not filled in), so problems become field messages.
 type ModelInput struct {
-	Name            string       `json:"name"`
-	InqToMqlRate    string       `json:"inqToMqlRate"`
-	MqlToDealRate   string       `json:"mqlToDealRate"`
-	AverageDealSize *money.Input `json:"averageDealSize"`
-	ActivityTypeIDs []string     `json:"activityTypeIds"`
+	Name                    string       `json:"name"`
+	InqToMqlRate            string       `json:"inqToMqlRate"`
+	MqlToDealRate           string       `json:"mqlToDealRate"`
+	AverageDealSize         *money.Input `json:"averageDealSize"`
+	ActivityTypeIDs         []string     `json:"activityTypeIds"`
+	InqToMqlVelocityMonths  *int         `json:"inqToMqlVelocityMonths"`  // nil = 0 (047-C2)
+	MqlToDealVelocityMonths *int         `json:"mqlToDealVelocityMonths"` // nil = 0
+	AllowedGoalStages       []string     `json:"allowedGoalStages"`       // nil = every stage
 }
 
 // ModelUpdate is the body of PATCH /api/v1/models/{modelId} and of its impact check (contract ModelUpdate).
 type ModelUpdate struct {
-	Name            *string       `json:"name"`
-	InqToMqlRate    *string       `json:"inqToMqlRate"`
-	MqlToDealRate   *string       `json:"mqlToDealRate"`
-	AverageDealSize OptionalMoney `json:"averageDealSize"`
-	ActivityTypeIDs *[]string     `json:"activityTypeIds"`
-	Version         *int          `json:"version"`
+	Name                    *string       `json:"name"`
+	InqToMqlRate            *string       `json:"inqToMqlRate"`
+	MqlToDealRate           *string       `json:"mqlToDealRate"`
+	AverageDealSize         OptionalMoney `json:"averageDealSize"`
+	ActivityTypeIDs         *[]string     `json:"activityTypeIds"`
+	InqToMqlVelocityMonths  *int          `json:"inqToMqlVelocityMonths"`
+	MqlToDealVelocityMonths *int          `json:"mqlToDealVelocityMonths"`
+	AllowedGoalStages       *[]string     `json:"allowedGoalStages"`
+	Version                 *int          `json:"version"`
 }
 
 // Activity types.

@@ -14,7 +14,10 @@ import (
 
 // Model returns the model id, and false when there is none.
 func (s *Service) Model(ctx context.Context, id string) (Model, bool, error) {
-	return get(ctx, s, func(ctx context.Context) (Model, bool, error) { return s.repo.GetModel(ctx, id) })
+	return get(ctx, s, func(ctx context.Context) (Model, bool, error) {
+		m, found, err := s.repo.GetModel(ctx, id)
+		return m.Normalised(), found, err
+	})
 }
 
 // Models returns every model, active and inactive, by name ignoring letter case.

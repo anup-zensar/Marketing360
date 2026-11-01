@@ -6626,6 +6626,11 @@ export interface components {
             averageDealSize: components["schemas"]["Money"];
             /** @description The allowed activity types, sorted by name. */
             activityTypes: components["schemas"]["SettingRef"][];
+            /** @description Whole months a conversion takes (047-C1). */
+            inqToMqlVelocityMonths: number;
+            mqlToDealVelocityMonths: number;
+            /** @description The stages a goal may be set against, in funnel order (047-C2). */
+            allowedGoalStages: ("inq" | "mql" | "revenue")[];
             active: boolean;
             usage: components["schemas"]["Usage"];
             version: number;
@@ -6652,12 +6657,20 @@ export interface components {
             /** @description USD; null when not filled in. */
             averageDealSize: components["schemas"]["MoneyInput"] | null;
             activityTypeIds: string[];
+            /** @description Whole months; 0 when left out (047-C2). */
+            inqToMqlVelocityMonths?: number;
+            mqlToDealVelocityMonths?: number;
+            /** @description Every stage when left out (047-C2). */
+            allowedGoalStages?: ("inq" | "mql" | "revenue")[];
         };
         /** @description Only the fields to change, and the version. Also the body of the impact check. */
         ModelUpdate: {
             name?: string;
             inqToMqlRate?: string;
             mqlToDealRate?: string;
+            inqToMqlVelocityMonths?: number;
+            mqlToDealVelocityMonths?: number;
+            allowedGoalStages?: ("inq" | "mql" | "revenue")[];
             averageDealSize?: components["schemas"]["MoneyInput"] | null;
             activityTypeIds?: string[];
             version: number;

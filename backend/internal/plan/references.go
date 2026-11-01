@@ -57,7 +57,7 @@ func ReferencesFromSnapshot(data json.RawMessage) (References, error) {
 func referencesOf(p Plan, inBin bool) References {
 	p = p.Normalised() // a snapshot of before 016 has no currency
 	refs := References{
-		PlanID: p.ID, Name: p.Name, ModelID: p.ModelID, OwnerID: p.OwnerID, DefaultFinanceBudgetID: p.DefaultFinanceBudgetID,
+		PlanID: p.ID, Name: p.Name, ModelID: p.ModelID, GoalStage: p.GoalStage, OwnerID: p.OwnerID, DefaultFinanceBudgetID: p.DefaultFinanceBudgetID,
 		TeamIDs: slices.Clone(p.TeamIDs), Attributes: maps.Clone(p.Attributes), InRecycleBin: inBin, Currency: p.Currency,
 	}
 	if p.Budget != nil {

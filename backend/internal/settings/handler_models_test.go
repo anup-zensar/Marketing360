@@ -56,6 +56,7 @@ func lubricants2Body(version int, meta string) string {
 	return `{"id":"MOD-1003","name":"Lubricants 2.0","inqToMqlRate":"2.00","mqlToDealRate":"5.00",` +
 		`"averageDealSize":{"amount":"10000.00","currency":"USD"},"activityTypes":[` +
 		`{"id":"AT-1003","name":"Digital media","active":true},{"id":"AT-1002","name":"Event","active":true}],` +
+		`"inqToMqlVelocityMonths":0,"mqlToDealVelocityMonths":0,"allowedGoalStages":["inq","mql","revenue"],` +
 		`"active":true,"usage":` + unusedBody + `,"version":` + itoa(version) + `,` + meta + `}`
 }
 

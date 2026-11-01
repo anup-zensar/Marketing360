@@ -115,6 +115,12 @@ func (s *Service) describeModel(ctx context.Context, field string, value any) (s
 			return t.Name, found, err
 		})
 		return "Allowed activity types", text, err
+	case "inqToMqlVelocityMonths":
+		return "INQ→MQL velocity", monthsText(value), nil
+	case "mqlToDealVelocityMonths":
+		return "MQL→deal velocity", monthsText(value), nil
+	case "allowedGoalStages":
+		return "Allowed goal stages", stagesText(value), nil
 	case "active":
 		return "Status", statusText(value), nil
 	}

@@ -75,8 +75,31 @@ type Model struct {
 	MqlToDealRate   money.Percent `json:"mqlToDealRate"`   // above 0 and at most 100.00
 	AverageDealSize money.Money   `json:"averageDealSize"` // USD, above 0 and at most 100,000,000.00
 	ActivityTypeIDs []string      `json:"activityTypeIds"` // at least one; in the order of the activity-type list (by name)
-	Active          bool          `json:"active"`
+	// The velocities are whole months per transition, 0–24 (047-C1); the allowed goal stages a non-empty
+	// subset of inq · mql · revenue in funnel order (047-C2).
+	InqToMqlVelocityMonths  int      `json:"inqToMqlVelocityMonths"`
+	MqlToDealVelocityMonths int      `json:"mqlToDealVelocityMonths"`
+	AllowedGoalStages       []string `json:"allowedGoalStages"`
+	Active                  bool     `json:"active"`
 	record.Meta
+}
+
+// The goal stages, in funnel order.
+const (
+	GoalStageINQ     = "inq"
+	GoalStageMQL     = "mql"
+	GoalStageRevenue = "revenue"
+)
+
+func allGoalStages() []string { return []string{GoalStageINQ, GoalStageMQL, GoalStageRevenue} }
+
+// Normalised fills what a model saved before 047 lacks — a bin snapshot, a fixture — with the migration's
+// own backfill: zero lag, every stage allowed.
+func (m Model) Normalised() Model {
+	if len(m.AllowedGoalStages) == 0 {
+		m.AllowedGoalStages = allGoalStages()
+	}
+	return m
 }
 
 // Allows reports whether the model allows the activity type activityTypeID (R7).

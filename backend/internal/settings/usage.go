@@ -21,6 +21,7 @@ type Reference struct {
 	ActivityID          string            // an activity: its own id; a line item: its activity; "" otherwise
 	Attributes          AttributeValues   // its Shell attribute values; nil when none
 	ModelID             string            // plans
+	GoalStage           string            // plans: the stage their goal is set at (047)
 	ActivityTypeID      string            // activities
 	Currency            string            // line items: their currency; people: their display currency; plans: their plan currency (016)
 	PlannedCost         *money.Amount     // line items: planned cost in Currency
