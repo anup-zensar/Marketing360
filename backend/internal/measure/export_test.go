@@ -160,3 +160,20 @@ func TestExport_ReportSaysItsOwnParameters_FR022(t *testing.T) {
 		t.Errorf("About this export, first lines (-want +got):\n%s", diff)
 	}
 }
+
+func TestExport_LeftOutValuesNotNamed_FR015(t *testing.T) {
+	t.Parallel()
+	file, err := exportOf(t, measure.KeyPlanDetails, url.Values{"owner": {"U-9"}, "team": {"T-2"}}, measure.ExportRequest{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	tables, err := sheet.ReadXLSX(file.Body, 50)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, row := range tables[len(tables)-1].Rows {
+		if row.Cells[0] == "Filters" && row.Cells[1] != "None" {
+			t.Errorf("Filters = %q, want None: Wei Zhang and Mobility China are outside Priya's reports scope", row.Cells[1])
+		}
+	}
+}

@@ -43,10 +43,10 @@ func (s *Service) Frame(ctx context.Context, a actor.Actor, report string, f Fil
 
 // applied is the filter as the report uses it: this year by default, left-out values dropped, the resolved currency.
 func applied(f Filter, sc Scope) AppliedFilter {
-	q, left := f.Query, sc.Matched.LeftOut
-	a := AppliedFilter{Year: sc.Year, Plans: kept(q.Plans, "plan", left), PlanTypes: orEmpty(q.PlanTypes),
-		Teams: kept(q.Teams, "team", left), Owners: kept(q.Owners, "owner", left),
-		ActivityTypes: kept(q.ActivityTypes, "activityType", left), ActivityStatuses: orEmpty(q.ActivityStatuses),
+	q := sc.Query
+	a := AppliedFilter{Year: sc.Year, Plans: orEmpty(q.Plans), PlanTypes: orEmpty(q.PlanTypes),
+		Teams: orEmpty(q.Teams), Owners: orEmpty(q.Owners),
+		ActivityTypes: orEmpty(q.ActivityTypes), ActivityStatuses: orEmpty(q.ActivityStatuses),
 		Attributes: q.Attributes, Period: f.Period, Currency: sc.Currency.Code, Tables: orEmpty(f.Tables)}
 	if a.Attributes == nil {
 		a.Attributes = []allwork.AttrFilter{}
@@ -56,12 +56,6 @@ func applied(f Filter, sc Scope) AppliedFilter {
 		a.Show = &show
 	}
 	return a
-}
-
-func kept(values []string, filter string, left []allwork.LeftOut) []string {
-	return slices.DeleteFunc(slices.Clone(orEmpty(values)), func(id string) bool {
-		return slices.Contains(left, allwork.LeftOut{Filter: filter, ID: id})
-	})
 }
 
 func orEmpty(values []string) []string {

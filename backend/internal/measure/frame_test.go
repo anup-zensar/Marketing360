@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
+	"mapp/internal/allwork"
 	"mapp/internal/measure"
 	"mapp/internal/platform/actor"
 	"mapp/internal/platform/errs"
@@ -82,6 +83,33 @@ func TestFrame_LeftOutCountedNotNamed_FR015(t *testing.T) {
 	}
 	if diff := cmp.Diff([]string{"P-1"}, frame.Filter.Plans); diff != "" {
 		t.Errorf("applied plans (-want +got):\n%s", diff)
+	}
+}
+
+func TestFrame_OutOfScopeAndUnknownValuesLeftOut_FR015(t *testing.T) {
+	t.Parallel()
+	frame := frameOf(t, frameService(fakePlanning{}), url.Values{"owner": {"U-3", "U-9"}, "team": {"T-2"},
+		"currency": {"XYZ"}, "attr": {"SA-B:SO-HX,SO-404", "SA-404:SO-X", "SA-OFF:SO-X"}})
+
+	type applied struct {
+		LeftOut       int
+		Owners, Teams []string
+		Attributes    []allwork.AttrFilter
+		Currency      string
+	}
+	got := applied{frame.LeftOut, frame.Filter.Owners, frame.Filter.Teams, frame.Filter.Attributes, frame.Filter.Currency}
+	want := applied{6, []string{"U-3"}, []string{}, []allwork.AttrFilter{{AttributeID: "SA-B", Values: []string{"SO-HX"}}}, "GBP"}
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("Wei (another market), T-2, SO-404, SA-404, inactive SA-OFF and XYZ left out (-want +got):\n%s", diff)
+	}
+	body, err := json.Marshal(frame)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, id := range []string{"U-9", "T-2", "SO-404", "SA-404", "SA-OFF", "XYZ"} {
+		if strings.Contains(string(body), `"`+id+`"`) {
+			t.Errorf("the frame names %s, which was left out", id)
+		}
 	}
 }
 

@@ -36,6 +36,7 @@ func (s *Service) Catalogue(ctx context.Context) ReportCatalogue {
 type Scope struct {
 	Year        int
 	Nodes       []allwork.Node
+	Query       allwork.Query
 	Matched     allwork.Matched
 	Choices     allwork.Choices
 	Attributes  []allwork.Attribute
@@ -67,8 +68,8 @@ func (s *Service) Scope(ctx context.Context, a actor.Actor, f Filter, columns []
 	nodes := slices.DeleteFunc(slices.Clone(data.Nodes), func(n allwork.Node) bool {
 		return !slices.Contains(inScope, n.PlanID)
 	})
-	return Scope{Year: year, Nodes: nodes, Matched: allwork.Match(nodes, f.Query, attributes, choices), Choices: choices,
-		Attributes: attributes, Currency: currency, FinanceAsOf: data.FinanceAsOf}, err
+	return narrowed(Scope{Year: year, Nodes: nodes, Choices: choices, Attributes: attributes, Currency: currency,
+		FinanceAsOf: data.FinanceAsOf}, f), err
 }
 
 // currency is the chosen active currency at its current rate, or else the person's display currency (FR-018).

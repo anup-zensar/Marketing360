@@ -14,7 +14,7 @@ import (
 // in words, the period, the currency, and who exported it and when; the rates used follow.
 func (s *Service) notes(a actor.Actor, report string, f Filter, sc Scope) [][2]string {
 	now := s.now().UTC()
-	return [][2]string{{"Report", report}, {"Year", strconv.Itoa(sc.Year)}, {labelFilters, filterWords(f, sc)},
+	return [][2]string{{"Report", report}, {"Year", strconv.Itoa(sc.Year)}, {labelFilters, filterWords(sc)},
 		{"Period", map[string]string{PeriodMonth: "Months", PeriodQuarter: "Quarters"}[f.Period]},
 		{"Currency", sc.Currency.Code}, {"Exported by", a.Name},
 		{"Exported at", date.Format(date.Today(now)) + " " + now.Format("15:04") + " UTC"}}
@@ -35,8 +35,8 @@ func rateNotes(rates []string) [][2]string {
 }
 
 // filterWords names every restricted filter with its values' names, never an ID left out (FR-015): "None" for none.
-func filterWords(f Filter, sc Scope) string {
-	q := f.Query
+func filterWords(sc Scope) string {
+	q := sc.Query
 	plans := map[string]string{}
 	for _, n := range sc.Nodes {
 		if n.Level == allwork.LevelPlan {
