@@ -15,6 +15,8 @@ import (
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/database"
 	"mapp/internal/platform/database/dbtest"
+	"mapp/internal/platform/date"
+	"mapp/internal/platform/money"
 	"mapp/internal/purchaserequest"
 	"mapp/internal/stores"
 	"mapp/seed"
@@ -102,9 +104,9 @@ func TestStore_ScopeIsolation(t *testing.T) {
 	db := seededDB(t)
 	store := gsaplink.NewPostgresStore(db)
 	activities, lineItems := allIDs(t, db)
-	t.Run("approvals", func(t *testing.T) { assertApprovalsIsolated(t, store, activities) })
-	t.Run("transactions", func(t *testing.T) { assertTransactionsIsolated(t, store, lineItems) })
-	t.Run("waiting", func(t *testing.T) { assertWaitingIsolated(t, store, lineItems) })
+	t.Run("approvals", func(t *testing.T) { t.Parallel(); assertApprovalsIsolated(t, store, activities) })
+	t.Run("transactions", func(t *testing.T) { t.Parallel(); assertTransactionsIsolated(t, store, lineItems) })
+	t.Run("waiting", func(t *testing.T) { t.Parallel(); assertWaitingIsolated(t, store, lineItems) })
 }
 
 func assertApprovalsIsolated(tb testing.TB, store *gsaplink.PostgresStore, activities []string) {
@@ -130,7 +132,7 @@ func assertTransactionsIsolated(tb testing.TB, store *gsaplink.PostgresStore, li
 	for _, id := range lineItems {
 		want := slices.DeleteFunc(slices.Clone(all), func(x gsaplink.Transaction) bool { return x.LineItemID != id })
 		got, oneErr := store.OrderTransactions(tb.Context(), []string{id})
-		if diff := cmp.Diff(want, got); oneErr != nil || diff != "" {
+		if diff := cmp.Diff(want, got, exact()); oneErr != nil || diff != "" {
 			tb.Errorf("transactions of %s only (-want +got):\n%s %v", id, diff, oneErr)
 		}
 	}
@@ -185,7 +187,7 @@ func TestStore_LatestApprovalAndRouting(t *testing.T) {
 		t.Errorf("latest approvals (-want +got):\n%s %v", diff, err)
 	}
 
-	assertRouting(t, store, lineItems, gsaplink.RoutingOriginal, routedAt)
+	assertRouting(t, store, lineItems, gsaplink.Request{Routing: gsaplink.RoutingOriginal, RoutedAt: routedAt})
 	modified := routedAt.Add(72 * time.Hour)
 	requests := purchaserequest.NewPostgresStore(db)
 	if err = db.Write(t.Context(), func(ctx context.Context) error {
@@ -193,7 +195,7 @@ func TestStore_LatestApprovalAndRouting(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	assertRouting(t, store, lineItems, gsaplink.RoutingModification, modified)
+	assertRouting(t, store, lineItems, gsaplink.Request{Routing: gsaplink.RoutingModification, RoutedAt: modified})
 }
 
 // latestApprovals works out each activity's latest approval from 013's rounds.
@@ -214,13 +216,19 @@ func latestApprovals(tb testing.TB, db *database.DB) map[string]time.Time {
 }
 
 // assertRouting checks the routing GSAP has not answered: Resend PR form never restarts it (FR-009).
-func assertRouting(tb testing.TB, store *gsaplink.PostgresStore, lineItems []string, kind string, at time.Time) {
+func assertRouting(tb testing.TB, store *gsaplink.PostgresStore, lineItems []string, want gsaplink.Request) {
 	tb.Helper()
 	list, err := store.WaitingForGsap(tb.Context(), lineItems)
 	if err != nil || len(list) != 1 {
 		tb.Fatalf("waiting: %v, %v", list, err)
 	}
-	if got := list[0]; got.Routing != kind || !got.RoutedAt.Equal(at) {
-		tb.Errorf("routing = %s at %v; want %s at %v", got.Routing, got.RoutedAt, kind, at)
+	if got := list[0]; got.Routing != want.Routing || !got.RoutedAt.Equal(want.RoutedAt) {
+		tb.Errorf("routing = %s at %v; want %s at %v", got.Routing, got.RoutedAt, want.Routing, want.RoutedAt)
 	}
+}
+
+// exact compares amounts and dates by value: their fields are unexported.
+func exact() cmp.Option {
+	return cmp.Options{cmp.Comparer(func(x, y money.Amount) bool { return x.Cmp(y) == 0 }),
+		cmp.Comparer(func(x, y date.Date) bool { return x.Compare(y) == 0 })}
 }

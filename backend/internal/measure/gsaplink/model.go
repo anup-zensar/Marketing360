@@ -1,3 +1,4 @@
+// Package gsaplink is the GSAP link report (feature 044): SWBS not received, Waiting for GSAP, Purchase orders.
 package gsaplink
 
 import (

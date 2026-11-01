@@ -55,7 +55,7 @@ Write each test first and see it fail.
 - [X] T012 [US1] `handler.go`: `GET /api/v1/reports/gsap-link` with 039's filter and `tab`, `sort`, `page`,
   `pageSize` (allowlisted, 400 otherwise); `routes_test.go` on the handler, with `TestRoutes_ReadOnly_FR002` (only
   GET is mounted)
-- [ ] T013 [US1] `backend/internal/app/measure_gsaplink.go`: `registerGsapLink` registers the report and mounts the
+- [X] T013 [US1] `backend/internal/app/measure_gsaplink.go`: `registerGsapLink` registers the report and mounts the
   handler (adapters over `w.reports` and the store); remove `GET /api/v1/reports/gsap-link` from `notYetServed`;
   contract tests in `gsaplink/handler_test.go`: `TestGsapLink_Contract`, `TestGsapLink_NoReportsView_FR003`,
   `TestReport_OnlyPlansInScope_FR003`

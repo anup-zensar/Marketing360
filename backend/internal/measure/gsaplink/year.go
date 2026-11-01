@@ -81,6 +81,7 @@ func (y year) path(n allwork.Node) Path {
 			p.Initiative = n.Name
 		case allwork.LevelActivity:
 			p.ActivityID, p.Activity = n.ID, n.Name
+		case allwork.LevelLineItem, allwork.LevelUnassigned:
 		}
 	}
 	return p

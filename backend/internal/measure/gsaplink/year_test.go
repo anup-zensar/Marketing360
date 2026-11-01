@@ -46,28 +46,25 @@ func twoPlans(tb testing.TB) *world {
 		currency: allwork.Currency{Code: money.BaseCurrency, Rate: money.One}, approved: map[string]time.Time{}}
 	priya := &allwork.Owner{ID: "U-1002", Name: "Priya Raman"}
 	w.add(allwork.LevelPlan, ukPlan, "", "UK plan").add(allwork.LevelCampaign, "C-1", ukPlan, "Launch").
-		add(allwork.LevelInitiative, "I-1", "C-1", "Retail").
-		add(allwork.LevelActivity, ukActivity, "I-1", "Stand", func(n *allwork.Node) {
-			n.Owner, n.Attrs = priya, map[string]allwork.AttrValue{companyAttr: {OptionIDs: []string{companyGB01}}}
-		}).
-		add(allwork.LevelLineItem, "L-1", ukActivity, "Stand build", ready).
-		add(allwork.LevelLineItem, "L-2", ukActivity, "Venue hire", ready)
+		add(allwork.LevelInitiative, "I-1", "C-1", "Retail").add(allwork.LevelActivity, ukActivity, "I-1", "Stand").
+		add(allwork.LevelLineItem, "L-1", ukActivity, "Stand build").
+		add(allwork.LevelLineItem, "L-2", ukActivity, "Venue hire")
 	w.add(allwork.LevelPlan, dePlan, "", "Germany plan").add(allwork.LevelCampaign, "C-2", dePlan, "Fleet").
-		add(allwork.LevelInitiative, "I-2", "C-2", "Trucks").
-		add(allwork.LevelActivity, deActivity, "I-2", "Expo").
-		add(allwork.LevelLineItem, "L-3", deActivity, "Booth", ready)
-	return w
+		add(allwork.LevelInitiative, "I-2", "C-2", "Trucks").add(allwork.LevelActivity, deActivity, "I-2", "Expo").
+		add(allwork.LevelLineItem, "L-3", deActivity, "Booth")
+	return w.on(ukActivity, func(n *allwork.Node) {
+		n.Owner, n.Attrs = priya, map[string]allwork.AttrValue{companyAttr: {OptionIDs: []string{companyGB01}}}
+	})
 }
 
-func ready(n *allwork.Node) { n.Swbs = swbsReady }
-
-func (w *world) add(level allwork.Level, id, parentID, name string, changes ...func(*allwork.Node)) *world {
+// add adds a node under parentID; a line item is Ready to send to GSAP until a test changes it.
+func (w *world) add(level allwork.Level, id, parentID, name string) *world {
 	n := allwork.Node{Level: level, ID: id, ParentID: parentID, PlanID: id, Name: name, PlanYear: testYear}
 	if parentID != "" {
 		n.PlanID = w.node(parentID).PlanID
 	}
-	for _, change := range changes {
-		change(&n)
+	if level == allwork.LevelLineItem {
+		n.Swbs = swbsReady
 	}
 	w.nodes = append(w.nodes, n)
 	return w
@@ -111,6 +108,7 @@ func (w *world) scope() measure.Scope {
 			m.Activities = append(m.Activities, n.ID)
 		case allwork.LevelLineItem:
 			m.LineItems = append(m.LineItems, n.ID)
+		case allwork.LevelCampaign, allwork.LevelInitiative, allwork.LevelUnassigned:
 		}
 	}
 	company := allwork.Attribute{ID: companyAttr, Label: "Company code", Level: allwork.LevelActivity,
@@ -179,18 +177,4 @@ func rate(tb testing.TB, s string) money.Rate {
 		tb.Fatalf("ParseRate(%q) error = %v", s, err)
 	}
 	return r
-}
-
-func usd(tb testing.TB, s string) money.Money {
-	tb.Helper()
-	return inCode(tb, s, money.BaseCurrency)
-}
-
-func inCode(tb testing.TB, s, code string) money.Money {
-	tb.Helper()
-	a, err := money.ParseAmount(s)
-	if err != nil {
-		tb.Fatalf("ParseAmount(%q) error = %v", s, err)
-	}
-	return money.Money{Amount: a, Currency: code}
 }

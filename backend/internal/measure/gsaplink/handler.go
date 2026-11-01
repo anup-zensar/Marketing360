@@ -29,13 +29,12 @@ func (h *Handler) RegisterRoutes(r gin.IRoutes) {
 }
 
 func (h *Handler) report(c *gin.Context) {
-	values := c.Request.URL.Query()
-	f, err := measure.ParseFilter(values)
+	f, err := measure.ParseFilter(c.Request.URL.Query())
 	if err != nil {
 		web.RespondError(c, err)
 		return
 	}
-	t, err := ParseTable(values)
+	t, err := ParseTable(f.Own)
 	if err != nil {
 		web.RespondError(c, err)
 		return
@@ -49,15 +48,16 @@ func (h *Handler) report(c *gin.Context) {
 	web.Respond(c, http.StatusOK, r)
 }
 
-// ParseTable reads tab, sort, page and pageSize from an address, each against its allowed values (FR-015).
+// ParseTable reads tab, sort, page and pageSize from the report's own parameters (measure.Filter.Own), each against
+// its allowed values (FR-015); the export gives the same parameters to Sheets.
 func ParseTable(values url.Values) (Table, error) {
 	var problems errs.Problems
-	t := Table{Tab: values.Get("tab"), Sort: values.Get("sort")}
+	t := Table{Tab: values.Get(paramTab), Sort: values.Get(paramSort)}
 	if t.Tab != "" && t.Tab != TabSwbs && t.Tab != TabWaiting && t.Tab != TabOrders {
-		problems.Add("tab", "Choose swbs, waiting or orders.")
+		problems.Add(paramTab, "Choose swbs, waiting or orders.")
 	}
 	if tab := cmp.Or(t.Tab, TabSwbs); t.Sort != "" && !ValidSort(tab, t.Sort) {
-		problems.Add("sort", "Sort by one of: "+strings.Join(SortKeys(tab), ", ")+"; a minus sign first for descending.")
+		problems.Add(paramSort, "Sort by one of: "+strings.Join(SortKeys(tab), ", ")+"; a minus sign first for descending.")
 	}
 	t.Page = whole(values, "page", 1, &problems)
 	t.PageSize = whole(values, "pageSize", MinPageSize, &problems)

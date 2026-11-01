@@ -30,7 +30,8 @@ func TestSwbs_ReadyToSendOnly_FR005(t *testing.T) {
 		on("L-2", func(n *allwork.Node) { n.Swbs = "received" }).
 		on("L-3", func(n *allwork.Node) { n.Swbs = "waitingForApproval" }).
 		on(ukActivity, func(n *allwork.Node) { n.Status = "inProgress" }).
-		add(allwork.LevelLineItem, "L-4", ukActivity, "Catering", func(n *allwork.Node) { n.Swbs = "notRequested" })
+		add(allwork.LevelLineItem, "L-4", ukActivity, "Catering").
+		on("L-4", func(n *allwork.Node) { n.Swbs = "notRequested" })
 	w.approved[ukActivity] = now.Add(-time.Hour)
 	if diff := cmp.Diff([]string{"L-1"}, swbsIDs(swbsOf(w).Rows)); diff != "" {
 		t.Errorf("rows (-want +got):\n%s", diff)
