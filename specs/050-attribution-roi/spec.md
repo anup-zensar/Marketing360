@@ -75,7 +75,7 @@ model each activity receives its share; a conversion without a journey is credit
 
 1. **Given** touches on 1, 10 and 20 March and a conversion on 25 March of 1,000.00, **When** the model is first
    touch, last touch, equally distributed, linear time decay or U-shaped, **Then** the credits are (1,000/0/0),
-   (0/0/1,000), (333.33/333.33/333.34), (166.67/333.33/500.00) and (400.00/200.00/400.00) as FR-003 defines.
+   (0/0/1,000), (333.33/333.33/333.34), (166.66/333.33/500.01) and (400.00/200.00/400.00) as FR-003 defines.
 2. **Given** a touch dated after the conversion, **When** revenue is credited, **Then** that touch gets nothing.
 3. **Given** a revenue fact without a journey reference, **When** revenue is credited, **Then** its own activity gets
    100% under every model.
