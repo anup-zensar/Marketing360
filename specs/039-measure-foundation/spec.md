@@ -39,6 +39,19 @@ log at the end of wave A (build guide §4.5).
   Dashboards; the Executive and Regional dashboards are unchanged, so nothing built and tested in 036 moves
   (FR-034; answers Q-031).
 
+### Session 2026-11-02 (converge)
+
+Decided by lane A while converging the built code with this spec; for the product owner to confirm when the
+integrator moves them into the decision log.
+
+- **039-C4** Q: Does the no-access page name the missing permission? → A: no. Reports uses 014's standard
+  no-access page (014 FR-012), which names nothing, like every other gated page (US1 scenario 2).
+- **039-C5** Q: What does a money figure say when the person may see the finance of none of its plans? → A: "—"
+  with "You can't see the financial data of these plans", which says whose data is missing (FR-004).
+- **039-C6** Q: Can an address name a saved view? → A: no. Applying a view writes its filters into the address,
+  so a shared link shows the sharer's filters (US1 scenario 7) and nobody can open another person's view
+  (FR-025, US2 scenario 6).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Open a report and narrow it to what I care about (Priority: P1)
@@ -64,8 +77,8 @@ filters and compare the "In view" counts with All work's counts for the same yea
    sidebar shows **Reports**, the page lists the reports of this release with their one-line purpose, and every
    report not yet available shows "Coming soon" without a link.
 2. **Given** a person without `reports.view` in any plan, **When** they look at the sidebar or type the Reports
-   address, **Then** the sidebar has no Reports item and the address shows the standard "no access" page naming
-   the missing permission.
+   address, **Then** the sidebar has no Reports item and the address shows the standard "no access" page
+   (014 FR-012, 039-C4).
 3. **Given** Priya opens a report for the first time, **When** the page loads, **Then** the year is the current
    year, every plan of that year in her scope is selected, every value of every group is ticked including **Not
    filled in**, the period is **Months**, the currency is her display currency, and the "In view" line counts
@@ -118,8 +131,8 @@ another person never sees them.
    it disappears at once and the toast offers **Undo**, which restores it with its star.
 5. **Given** a view that names a plan or value that no longer exists or is no longer in Priya's scope, **When** she
    opens it, **Then** the rest applies and the report says what was left out.
-6. **Given** Carlos and Priya, **When** Carlos opens the Saved views menu, **Then** he never sees Priya's views,
-   and an address that names one of her views opens with Carlos's own default instead.
+6. **Given** Carlos and Priya, **When** Carlos opens the Saved views menu, **Then** he never sees Priya's views;
+   a link Priya shares shows him her filters, not her view (039-C6).
 
 ---
 
@@ -211,7 +224,7 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
   never be named or counted (404-style invisibility, constitution VII).
 - **FR-004**: Money figures MUST cover only the plans where the person holds `finance.view` (D-301, D-343); a money
   figure that covers fewer plans than are in view MUST say "Covers N of M plans", and one that covers none MUST be
-  "—" with "You can't see financial data".
+  "—" with "You can't see the financial data of these plans" (039-C5).
 - **FR-005**: Reports MUST be read-only: opening, filtering, switching views and exporting change no record and
   write nothing; the only things a person keeps are their saved views (FR-024–FR-029).
 
@@ -292,8 +305,8 @@ year, filters that exclude everything, no data yet, or figures she is not allowe
 - **FR-024**: A person MUST be able to save a report's whole address — its applied filters, period, currency, Show
   and each widget's chart or table choice — under a name of at most 60 characters, unique for that person and that report ignoring letter case; a view belongs
   to one report (039-C2); saving under a name in use asks before replacing it.
-- **FR-025**: Saved views MUST be personal: nobody else sees them, and an address naming another person's view
-  opens the reader's own default instead.
+- **FR-025**: Saved views MUST be personal: nobody else sees them. An address carries a view's filters, never the
+  view itself (039-C6).
 - **FR-026**: The Saved views menu MUST list the person's views of the report, mark the active one, and show
   "Modified" with **Update view** and **Save as new view** when the state differs from it; **Update view** asks
   before overwriting.
