@@ -7,6 +7,11 @@ export const modelSchema = z.object({
   mqlToDealRate: z.string(),
   averageDealSize: z.string(),
   activityTypeIds: z.array(z.string()),
+  inqToMqlVelocityMonths: z.string(),
+  mqlToDealVelocityMonths: z.string(),
+  allowedGoalStages: z.array(z.enum(['inq', 'mql', 'revenue'])),
 });
 
 export type ModelValues = z.infer<typeof modelSchema>;
+
+export type GoalStage = ModelValues['allowedGoalStages'][number];

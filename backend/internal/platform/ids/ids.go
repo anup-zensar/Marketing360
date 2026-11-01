@@ -17,6 +17,7 @@ const (
 
 	PrefixModel             = "MOD"
 	PrefixActivityType      = "AT"
+	PrefixActivityCategory  = "ACAT"
 	PrefixShellAttribute    = "SA"
 	PrefixShellOption       = "SO"
 	PrefixFinanceBudget     = "FB"
@@ -75,7 +76,7 @@ const (
 
 var Prefixes = []string{
 	PrefixPerson, PrefixLogEntry, PrefixBinEntry, PrefixSampleFolder, PrefixSampleNote,
-	PrefixModel, PrefixActivityType, PrefixShellAttribute, PrefixShellOption, PrefixFinanceBudget, PrefixFinanceBudgetItem,
+	PrefixModel, PrefixActivityType, PrefixActivityCategory, PrefixShellAttribute, PrefixShellOption, PrefixFinanceBudget, PrefixFinanceBudgetItem,
 	PrefixTeam, PrefixTeamMembership,
 	PrefixPlan, PrefixCampaign, PrefixInitiative, PrefixActivity, PrefixLineItem,
 	PrefixApprovalWorkflow, PrefixApprovalRound, PrefixApprovalAction, PrefixNotification,

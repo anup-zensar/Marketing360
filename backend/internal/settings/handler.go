@@ -41,6 +41,8 @@ func (h *Handler) RegisterRoutes(r gin.IRoutes) {
 	r.POST("/activity-types/:activityTypeId/impact", h.activityTypeImpact)
 	r.POST("/activity-types/:activityTypeId/status", h.setActivityTypeStatus)
 
+	h.activityCategoryRoutes(r) // 047 US3
+
 	h.attributeRoutes(r)
 
 	r.GET("/currencies", h.listCurrencies)

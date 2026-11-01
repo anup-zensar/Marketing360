@@ -19,6 +19,9 @@ export function startValues(mode: ModelFormMode): ModelValues {
       mqlToDealRate: '',
       averageDealSize: '',
       activityTypeIds: [],
+      inqToMqlVelocityMonths: '0',
+      mqlToDealVelocityMonths: '0',
+      allowedGoalStages: [...ALL_GOAL_STAGES],
     };
   }
   const { model } = mode;
@@ -31,7 +34,18 @@ export function startValues(mode: ModelFormMode): ModelValues {
     activityTypeIds: model.activityTypes
       .filter((type) => mode.kind === 'edit' || type.active)
       .map((type) => type.id),
+    inqToMqlVelocityMonths: String(model.inqToMqlVelocityMonths),
+    mqlToDealVelocityMonths: String(model.mqlToDealVelocityMonths),
+    allowedGoalStages: [...model.allowedGoalStages],
   };
+}
+
+/** The stages a goal may be set against, in funnel order (047 FR-002). */
+export const ALL_GOAL_STAGES = ['inq', 'mql', 'revenue'] as const;
+
+/** A typed velocity as the API takes it: whole months, or NaN left for the API to refuse. */
+function velocity(text: string): number {
+  return Number.parseInt(text.trim(), 10);
 }
 
 export function createBody(values: ModelValues): ModelCreate {
@@ -41,6 +55,9 @@ export function createBody(values: ModelValues): ModelCreate {
     mqlToDealRate: rateText(values.mqlToDealRate),
     averageDealSize: dealSizeInput(values.averageDealSize),
     activityTypeIds: values.activityTypeIds,
+    inqToMqlVelocityMonths: velocity(values.inqToMqlVelocityMonths),
+    mqlToDealVelocityMonths: velocity(values.mqlToDealVelocityMonths),
+    allowedGoalStages: values.allowedGoalStages,
   };
 }
 
@@ -67,6 +84,15 @@ export function changedFields(
   if (!sameIds(values.activityTypeIds, start.activityTypeIds)) {
     body.activityTypeIds = values.activityTypeIds;
   }
+  if (values.inqToMqlVelocityMonths !== start.inqToMqlVelocityMonths) {
+    body.inqToMqlVelocityMonths = velocity(values.inqToMqlVelocityMonths);
+  }
+  if (values.mqlToDealVelocityMonths !== start.mqlToDealVelocityMonths) {
+    body.mqlToDealVelocityMonths = velocity(values.mqlToDealVelocityMonths);
+  }
+  if (!sameIds(values.allowedGoalStages, start.allowedGoalStages)) {
+    body.allowedGoalStages = values.allowedGoalStages;
+  }
   return Object.keys(body).length > 1 ? body : null;
 }
 
@@ -76,7 +102,8 @@ export function affectsOthers(body: ModelUpdate): boolean {
     body.inqToMqlRate !== undefined ||
     body.mqlToDealRate !== undefined ||
     body.averageDealSize !== undefined ||
-    body.activityTypeIds !== undefined
+    body.activityTypeIds !== undefined ||
+    body.allowedGoalStages !== undefined
   );
 }
 

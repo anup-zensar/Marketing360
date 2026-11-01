@@ -15,6 +15,7 @@ import styles from '@/ui/settings-table.module.css';
 import { ImpactDialog } from '../ImpactDialog';
 import { saveFailureOf } from '../save-failure';
 import { ActivityTypesField } from './ActivityTypesField';
+import { GoalStagesField } from './GoalStagesField';
 import { checkModelImpact, fetchModel, useCreateModel, useUpdateModel } from './api';
 import type { ChangeImpact, Model, ModelUpdate } from './api';
 import { affectsOthers, changedFields, createBody, startValues } from './model-values';
@@ -29,6 +30,9 @@ const FIELDS = [
   'mqlToDealRate',
   'averageDealSize',
   'activityTypeIds',
+  'inqToMqlVelocityMonths',
+  'mqlToDealVelocityMonths',
+  'allowedGoalStages',
 ] as const;
 
 export interface ModelFormProps {
@@ -195,6 +199,31 @@ export function ModelForm({ mode, onView, onClose }: ModelFormProps) {
             render={(field) => (
               <MoneyField label="Average deal size" marking="Required" currency="USD" {...field} />
             )}
+          />
+          <FormField
+            control={form.control}
+            name="inqToMqlVelocityMonths"
+            render={(field) => (
+              <DecimalField
+                label="INQ→MQL velocity"
+                decimals={0}
+                suffix="months"
+                note="How long a conversion takes, so a projection lands in the right month."
+                {...field}
+              />
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="mqlToDealVelocityMonths"
+            render={(field) => (
+              <DecimalField label="MQL→deal velocity" decimals={0} suffix="months" {...field} />
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="allowedGoalStages"
+            render={(field) => <GoalStagesField {...field} />}
           />
           <FormField
             control={form.control}
