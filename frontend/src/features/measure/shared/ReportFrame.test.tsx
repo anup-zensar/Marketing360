@@ -13,6 +13,7 @@ type Frame = ReturnType<typeof reportFrame>;
 function renderFrame(frame: Frame | 'forbidden', route = '/reports/plan-budget') {
   const api = mockApi([
     reply('GET /api/v1/me', { body: testUser() }),
+    reply('GET /api/v1/reports/{report}/views', { body: { items: [], total: 0 } }),
     reply(
       'GET /api/v1/reports/frame',
       frame === 'forbidden'
@@ -97,6 +98,38 @@ describe('ReportFrame (039 FR-006 – FR-019, FR-031)', () => {
 
     expect(await screen.findByText('Your filters exclude everything')).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Reset filters' }).length).toBeGreaterThan(0);
+  });
+
+  it('says there are no plans for the year before blaming the filters (FR-031)', async () => {
+    const frame = reportFrame({ inView: empty });
+    renderFrame(
+      { ...frame, choices: { ...frame.choices, plans: [] } },
+      '/reports/plan-budget?planType=crossMarket',
+    );
+
+    expect(await screen.findByText('No plans you may see for 2026')).toBeInTheDocument();
+    expect(screen.queryByText('Your filters exclude everything')).not.toBeInTheDocument();
+  });
+
+  it("says when none of the figures' plans may be seen (FR-004)", async () => {
+    renderFrame(reportFrame({ finance: { plans: 0, of: 2 } }));
+
+    expect(
+      await screen.findByText("You can't see the financial data of these plans"),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps the report's own parameters when a control changes (039 B4)", async () => {
+    const { user, router } = renderFrame(
+      reportFrame(),
+      '/reports/plan-budget?tab=waiting&sort=age',
+    );
+
+    await user.click(await screen.findByRole('button', { name: 'Quarters' }));
+
+    await waitFor(() => expect(search(router).get('period')).toBe('quarter'));
+    expect(search(router).get('tab')).toBe('waiting');
+    expect(search(router).get('sort')).toBe('age');
   });
 
   it('shows the standard no-access page without "See reports"', async () => {

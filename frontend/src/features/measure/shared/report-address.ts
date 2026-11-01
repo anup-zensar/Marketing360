@@ -34,6 +34,22 @@ export interface ReportAddress {
   tables: string[];
 }
 
+/** The parameters the frame owns; any other belongs to the report. */
+export const FRAME_PARAMS: readonly string[] = [
+  'year',
+  'plan',
+  'planType',
+  'team',
+  'owner',
+  'activityType',
+  'activityStatus',
+  'attr',
+  'period',
+  'show',
+  'currency',
+  'table',
+];
+
 export const DEFAULT_ADDRESS: ReportAddress = {
   year: null,
   plans: [],

@@ -7,20 +7,25 @@ import (
 	"time"
 
 	"mapp/internal/allwork"
+	"mapp/internal/history"
 	"mapp/internal/platform/actor"
+	"mapp/internal/platform/clock"
 	"mapp/internal/platform/date"
+	"mapp/internal/platform/ids"
 )
 
 // Service is what every report shares: the catalogue, the year a report covers and the report frame.
 type Service struct {
 	tx       Transactor
+	ids      *ids.Generator
+	log      *history.Service
 	deps     Deps
 	registry *Registry
-	now      func() time.Time
+	now      clock.Clock
 }
 
-func NewService(tx Transactor, deps Deps, registry *Registry, now func() time.Time) *Service {
-	return &Service{tx: tx, deps: deps, registry: registry, now: now}
+func NewService(tools history.Tools, deps Deps, registry *Registry) *Service {
+	return &Service{tx: tools.Tx, ids: tools.IDs, log: tools.Log, deps: deps, registry: registry, now: tools.Now}
 }
 
 func (s *Service) Catalogue(ctx context.Context) ReportCatalogue {

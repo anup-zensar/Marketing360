@@ -38,7 +38,7 @@ func TestParseFilter_FR008_FR030(t *testing.T) {
 	}
 
 	want := measure.Filter{Period: measure.PeriodQuarter, Show: measure.ShowCampaign, Currency: "EUR",
-		Tables: []string{"attr12Count", "statusCount"}}
+		Tables: []string{"attr12Count", "statusCount"}, Own: url.Values{"view": {"budget"}, "search": {"launch"}}}
 	if diff := cmp.Diff(want, f, cmpopts.IgnoreFields(measure.Filter{}, "Query")); diff != "" {
 		t.Errorf("controls (-want +got):\n%s", diff)
 	}
@@ -58,7 +58,7 @@ func TestParseFilter_NoParameterRestrictsNothing_FR030(t *testing.T) {
 		t.Fatalf("ParseFilter() error = %v", err)
 	}
 
-	want := measure.Filter{Period: measure.PeriodMonth, Tables: []string{}}
+	want := measure.Filter{Period: measure.PeriodMonth, Tables: []string{}, Own: url.Values{}}
 	if diff := cmp.Diff(want, f, cmpopts.IgnoreFields(measure.Filter{}, "Query")); diff != "" ||
 		reportQueryOf(f.Query).Year != 0 || len(f.Query.Plans)+len(f.Query.Attributes) != 0 {
 		t.Errorf("every value, months, the person's currency, charts (-want +got):\n%s", diff)
@@ -106,5 +106,17 @@ func TestCanonicalQuery_FR024(t *testing.T) {
 	again, err := measure.ParseFilter(values)
 	if err != nil || measure.Canonical(again) != got {
 		t.Errorf("round trip = %q, %v; want the same query", measure.Canonical(again), err)
+	}
+}
+
+func TestParseFilter_KeepsTheReportsOwnParameters_039_B4(t *testing.T) {
+	t.Parallel()
+	values, _ := url.ParseQuery("year=2026&report=gsapLink&tab=waiting&sort=-age&owner=U-1002")
+	f, err := measure.ParseFilter(values)
+	if err != nil {
+		t.Fatalf("ParseFilter() error = %v", err)
+	}
+	if diff := cmp.Diff(url.Values{"tab": {"waiting"}, "sort": {"-age"}}, f.Own); diff != "" {
+		t.Errorf("the report's own parameters (-want +got):\n%s", diff)
 	}
 }

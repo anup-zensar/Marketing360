@@ -30,8 +30,8 @@ func TestChoices_FR008_FR011(t *testing.T) {
 	}
 	type sizes struct{ Teams, Currencies, Statuses, PlanTypes int }
 	got := sizes{len(choices.Teams), len(choices.Currencies), len(choices.ActivityStatuses), len(choices.PlanTypes)}
-	if diff := cmp.Diff(sizes{2, 2, 6, 3}, got); diff != "" || !choices.Teams[0].Mine {
-		t.Errorf("teams (the person's marked), currencies, statuses and plan types (-want +got):\n%s", diff)
+	if diff := cmp.Diff(sizes{1, 2, 6, 3}, got); diff != "" || !choices.Teams[0].Mine {
+		t.Errorf("teams of the plans in scope only (the person's marked), currencies, statuses and plan types (-want +got):\n%s", diff)
 	}
 }
 

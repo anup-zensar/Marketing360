@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
 
+	"mapp/internal/history"
 	"mapp/internal/measure"
 	"mapp/internal/platform/authz"
 	"mapp/internal/platform/money"
@@ -16,8 +17,12 @@ import (
 // measure_<report>.go, so the lane that builds a report changes only that file (D-369).
 func (w *wiring) measureArea() error {
 	registry := measure.NewRegistry()
-	w.reports = measure.NewService(w.set.Tx, measure.Deps{Planning: w.allWork, Plans: reportPlans{repo: w.set.Plans},
-		Currencies: reportCurrencies{settings: w.settings}}, registry, w.now)
+	tools := history.Tools{Tx: w.set.Tx, IDs: w.generator, Log: w.history, Now: w.now}
+	w.reports = measure.NewService(tools, measure.Deps{Planning: w.allWork, Plans: reportPlans{repo: w.set.Plans},
+		Currencies: reportCurrencies{settings: w.settings}, Views: w.set.Measure}, registry)
+	if err := w.history.Register(w.reports.ViewKind()); err != nil {
+		return err
+	}
 	registers := []func(*wiring, *measure.Registry) error{
 		registerPlanBudget, registerApprovals, registerPurchaseRequests, registerPlanDetails, registerGsapLink,
 		registerUserAccess, registerSummary, registerRevenue, registerFunnel,

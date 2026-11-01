@@ -17,10 +17,11 @@ import type { ReportFrame as Frame } from './api';
 import { downloadReport } from './api';
 import { ExportMenu } from './ExportMenu';
 import { FilterPanel } from './FilterPanel';
-import { isRestricted, resetFilters, writeAddress } from './report-address';
+import { DEFAULT_ADDRESS, isRestricted, resetFilters, writeAddress } from './report-address';
 import type { ReportAddress, Show } from './report-address';
 import { chipsOf, coverageText, inViewText, leftOutText, withoutChip } from './report-text';
 import { CurrencyControl, InViewLine, PeriodControl, ShowControl } from './ReportControls';
+import { SavedViewsMenu } from './SavedViewsMenu';
 import { useReportAddress } from './useReportAddress';
 import styles from './ReportFrame.module.css';
 
@@ -47,6 +48,12 @@ function appliedAddress(address: ReportAddress, frame: Frame): ReportAddress {
   };
 }
 
+/** The panel starts a new draft when the applied filters change, not when Period, Show or Currency do. */
+function panelKey(applied: ReportAddress): string {
+  const { period, show, currency, tables } = DEFAULT_ADDRESS;
+  return writeAddress({ ...applied, period, show, currency, tables }).toString();
+}
+
 /** What every report page shares (039 FR-006 – FR-019, FR-031; contracts/ui.md). */
 export function ReportFrame({ report, period, show, children, comingSoon }: ReportFrameProps) {
   const name = REPORT_ROUTES.find((r) => r.key === report)?.name ?? 'Report';
@@ -67,18 +74,21 @@ export function ReportFrame({ report, period, show, children, comingSoon }: Repo
         meta={data && `${data.filter.year} · Figures as of ${dateTime(data.generatedAt)}`}
         actions={
           data && (
-            <ExportMenu
-              label="Export"
-              formats={['xlsx']}
-              download={(format) => downloadReport(report, address, format)}
-            />
+            <>
+              <SavedViewsMenu report={report} />
+              <ExportMenu
+                label="Export"
+                formats={['xlsx']}
+                download={(format) => downloadReport(report, address, format)}
+              />
+            </>
           )
         }
       />
       {data ? (
         <div className={styles.layout} aria-busy={frame.isFetching || undefined}>
           <FilterPanel
-            key={writeAddress(appliedAddress(address, data)).toString()}
+            key={panelKey(appliedAddress(address, data))}
             choices={data.choices}
             applied={appliedAddress(address, data)}
             year={data.filter.year}
@@ -160,7 +170,7 @@ interface FrameBodyProps {
 
 /** The widgets, or why there are none (FR-031). */
 function FrameBody({ data, address, onReset, comingSoon, children }: FrameBodyProps) {
-  if (data.inView.plans === 0 && isRestricted(address)) {
+  if (data.choices.plans.length > 0 && data.inView.plans === 0 && isRestricted(address)) {
     return (
       <EmptyState
         icon={<ChartColumnIncreasing />}
