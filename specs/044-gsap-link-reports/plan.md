@@ -140,7 +140,9 @@ lay them out, wired through 039's stubs.
 | Web: one test per tab state; tab, sort and page in the address; row opens the record (FR-001, FR-016, FR-018) | `features/measure/gsap-link` | `GsapLinkReport.test.tsx`, `SwbsTab.test.tsx`, `WaitingTab.test.tsx`, `OrdersTab.test.tsx` (axe in each) |
 | US1 end to end on the demo data, axe (spec US1) | e2e | `measure-gsap-link.spec.ts` |
 
-Benchmark result: _recorded here after implementation_.
+Benchmark result (2026-11-01, `BenchmarkGsapLink_SC001`, a 14-thread Windows developer machine, the 028 volume through
+fakes): SWBS not received 32 ms, Waiting for GSAP 44 ms, Purchase orders 89 ms per request, each with its sort and
+first page; all under the 300 ms the tab may add to the year read (R6).
 
 ## Dependencies and hand-offs
 

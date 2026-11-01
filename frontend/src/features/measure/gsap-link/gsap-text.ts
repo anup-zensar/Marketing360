@@ -35,7 +35,6 @@ export const ROUTING_LABELS: Record<GsapWaitingRow['routing'], string> = {
   modification: 'Modification',
 };
 
-/** Plan › campaign › initiative › activity, leaving out a level the record has not. */
 export function pathText(path: GsapPath): string {
   return [path.plan, path.campaign, path.initiative, path.activity].filter(Boolean).join(' › ');
 }

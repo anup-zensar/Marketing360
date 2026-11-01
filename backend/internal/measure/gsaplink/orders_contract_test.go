@@ -16,8 +16,7 @@ type financialRow struct {
 	AmountDisplay *money.Money `json:"amountDisplay"`
 }
 
-// TestOrders_EqualLineItemFinancials_SC003: every row's PO amount, invoiced and paid equal the sums of that PO's
-// transactions on the line item's Financials, to the cent, with both in US dollars.
+// TestOrders_EqualLineItemFinancials_SC003: each row equals its PO's sums on the line item's Financials, to the cent.
 func TestOrders_EqualLineItemFinancials_SC003(t *testing.T) {
 	t.Parallel()
 	carlosSees := apitest.New(t).SignIn(t, carlos)
