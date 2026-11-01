@@ -3,7 +3,7 @@ package performance
 import (
 	"encoding/base64"
 	"net/http"
-	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -78,13 +78,53 @@ func (h *Handler) pull(c *gin.Context) {
 
 func (h *Handler) imports(c *gin.Context) {
 	a, _ := actor.From(c.Request.Context())
-	limit, _ := strconv.Atoi(c.Query("limit"))
-	found, err := h.service.Imports(c.Request.Context(), a, c.Query("sourceId"), limit)
+	filter, err := importFilterOf(c)
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
+	found, err := h.service.Imports(c.Request.Context(), a, filter)
 	if err != nil {
 		web.RespondError(c, err)
 		return
 	}
 	web.Respond(c, http.StatusOK, ImportList{Items: found})
+}
+
+func importFilterOf(c *gin.Context) (ImportFilter, error) {
+	since, until, err := dateRangeOf(c)
+	if err != nil {
+		return ImportFilter{}, err
+	}
+	return ImportFilter{
+		SourceID: c.Query("sourceId"), Search: c.Query("search"), Status: c.Query("status"),
+		Since: since, Until: until, Limit: intQuery(c, "limit"),
+	}, nil
+}
+
+// dateRangeOf reads since and until as calendar dates, every fault reported at once; until extends to the
+// day's last instant, so a range includes its whole final day.
+func dateRangeOf(c *gin.Context) (since, until *time.Time, err error) {
+	var faults []errs.FieldError
+	since, faults = dayQuery(c, "since", 0, faults)
+	until, faults = dayQuery(c, "until", 1, faults)
+	if len(faults) > 0 {
+		return nil, nil, errs.Validation(faults...)
+	}
+	return since, until, nil
+}
+
+func dayQuery(c *gin.Context, name string, extraDays int, faults []errs.FieldError) (*time.Time, []errs.FieldError) {
+	raw := c.Query(name)
+	if raw == "" {
+		return nil, faults
+	}
+	day, err := time.Parse(time.DateOnly, raw)
+	if err != nil {
+		return nil, append(faults, errs.FieldError{Field: name, Message: msgDateInvalid})
+	}
+	at := day.AddDate(0, 0, extraDays).Add(-time.Duration(extraDays) * time.Nanosecond)
+	return &at, faults
 }
 
 func (h *Handler) importByID(c *gin.Context) {

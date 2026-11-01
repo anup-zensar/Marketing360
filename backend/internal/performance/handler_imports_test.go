@@ -105,3 +105,21 @@ func TestUploadPerformanceFile_PersonalDataRefused_Contract_FR012(t *testing.T) 
 		t.Fatalf("a personal-data file = %d %s, want 409 naming the column (SC-007)", refused.Status, refused.Body)
 	}
 }
+
+func TestListImports_FiltersTranslate_Contract_FR016_FR023(t *testing.T) {
+	t.Parallel()
+	alex := apitest.New(t).SignIn(t, alexsEmail)
+
+	dated := alex.Do(t, http.MethodGet, "/api/v1/performance/review-rows?since=2026-01-01&until=2026-12-31", nil)
+	if dated.Status != http.StatusOK {
+		t.Errorf("review rows by date = %d %s, want 200", dated.Status, dated.Body)
+	}
+	empty := decoded[struct {
+		Items []importAnswer `json:"items"`
+	}](t, alex.Do(t, http.MethodGet,
+		"/api/v1/performance/imports?status=failed&search=nobody&since=2026-01-01&until=2026-01-02", nil),
+		http.StatusOK)
+	if len(empty.Items) != 0 {
+		t.Errorf("a filter nothing satisfies returned %d loads, want none", len(empty.Items))
+	}
+}

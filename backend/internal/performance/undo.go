@@ -88,7 +88,7 @@ func (s *Service) restoreReplaced(ctx context.Context, a actor.Actor, facts, rep
 }
 
 func (s *Service) importByID(ctx context.Context, importID string) (Import, error) {
-	found, err := s.repo.ListImports(ctx, importID, "", 1)
+	found, err := s.repo.ListImports(ctx, ImportFilter{ID: importID, Limit: 1})
 	if err != nil {
 		return Import{}, err
 	}

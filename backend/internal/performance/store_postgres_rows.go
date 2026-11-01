@@ -22,9 +22,10 @@ func rowLimit(limit int) int32 {
 	return int32(limit)
 }
 
-func (s *PostgresStore) ListImports(ctx context.Context, id, sourceID string, limit int) ([]Import, error) {
+func (s *PostgresStore) ListImports(ctx context.Context, f ImportFilter) ([]Import, error) {
 	rows, err := s.db.Queries(ctx).ListPerformanceImports(ctx, sqlcdb.ListPerformanceImportsParams{
-		ID: optional(id), SourceID: optional(sourceID), MaxImports: rowLimit(limit),
+		ID: optional(f.ID), SourceID: optional(f.SourceID), Status: optional(f.Status),
+		Search: optional(f.Search), Since: f.Since, Until: f.Until, MaxImports: rowLimit(f.Limit),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("select performance imports: %w", err)

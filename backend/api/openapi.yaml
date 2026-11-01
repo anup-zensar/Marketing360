@@ -8011,12 +8011,30 @@ paths:
     get:
       tags: [Performance data]
       operationId: listPerformanceImports
-      summary: The uploads, newest first, findable by source (needs performance.import) (046 FR-016)
+      summary: The uploads, newest first, findable by file, uploader, source, status and date (needs performance.import) (046 FR-016)
       parameters:
         - name: sourceId
           in: query
           required: false
           schema: { type: string, pattern: "^PS-[0-9]+$" }
+        - name: search
+          in: query
+          required: false
+          description: Matches the file name and the uploader's name.
+          schema: { type: string, maxLength: 200 }
+        - name: status
+          in: query
+          required: false
+          schema: { type: string, enum: [completed, failed, undone] }
+        - name: since
+          in: query
+          required: false
+          schema: { type: string, format: date }
+        - name: until
+          in: query
+          required: false
+          description: Inclusive; the range covers this whole day.
+          schema: { type: string, format: date }
         - name: limit
           in: query
           required: false
@@ -8177,6 +8195,9 @@ paths:
         - { name: importId, in: query, required: false, schema: { type: string, pattern: "^PIM-[0-9]+$" } }
         - { name: reason, in: query, required: false, schema: { type: string, maxLength: 200 } }
         - { name: key, in: query, required: false, schema: { type: string, maxLength: 200 } }
+        - { name: since, in: query, required: false, schema: { type: string, format: date } }
+        - { name: until, in: query, required: false, schema: { type: string, format: date },
+            description: "Inclusive; the range covers this whole day." }
         - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 500 } }
       responses:
         "200":

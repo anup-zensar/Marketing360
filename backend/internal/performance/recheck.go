@@ -100,7 +100,7 @@ func (s *Service) openBatch(ctx context.Context, sourceID string, seen map[strin
 }
 
 func (s *Service) undoneImports(ctx context.Context, sourceID string) (map[string]bool, error) {
-	imports, err := s.repo.ListImports(ctx, "", sourceID, maxRows)
+	imports, err := s.repo.ListImports(ctx, ImportFilter{SourceID: sourceID, Limit: maxRows})
 	if err != nil {
 		return nil, err
 	}

@@ -35,10 +35,10 @@ Every test name mentions the requirement ID it proves.
 
 **⚠️ CRITICAL**: no user story may begin until this phase is complete.
 
-- [X] T005 Write migration `backend/internal/platform/database/migrations/00030_performance_sources.sql` for `performance_sources` and `performance_source_mappings`, with the partial unique index enforcing "at most one **active** source per (model, stage) and per (model, revenue)" (FR-003)
-- [X] T006 Write migration `.../00031_performance_facts.sql` for `performance_imports`, `performance_facts` and `performance_review_rows`, with the CHECK `rows_read = matched + held + unattributed + rejected + unmatched` (FR-022), the unique index on (`source_id`, `source_reference`) among rows not yet replaced (research R3), the index on `held` (research R4), and the CHECK requiring `comment` when `status = 'dismissed'` (FR-024)
-- [X] T007 Write migration `.../00032_media_codes.sql` for `media_codes` (`code` bigint unique, never reused), `activity_external_names` (unique across names **and** aliases, one `is_current` per activity) and `activity_integration_ids` (unique together on `activity_id`, `source_id`)
-- [X] T008 Write `backend/internal/platform/database/queries/performance.sql` with the six queries named in plan.md *Queries*, each carrying its scope filter; run `sqlc generate && sqlc vet`
+- [X] T005 Write migration `backend/internal/platform/database/migrations/00030_performance_sources.sql` for `performance_sources` and `performance_source_mappings`, with the partial unique index enforcing "at most one **active** source per (model, stage) and per (model, revenue)" (FR-003). **As built**: that rule spans two tables, so it moved to the service per ADR-0021; 00030 carries plain non-unique supporting indexes only
+- [X] T006 Write migration `.../00031_performance_facts.sql` for `performance_imports`, `performance_facts` and `performance_review_rows`, with the CHECK `rows_read = matched + held + unattributed + rejected + unmatched` (FR-022), the unique index on (`source_id`, `source_reference`) among rows not yet replaced (research R3), the index on `held` (research R4), and the CHECK requiring `comment` when `status = 'dismissed'` (FR-024). **As amended by 046-C17/046-C21**: status is completed | failed | undone, the reconciliation CHECK applies to completed loads only, and the fact-identity index joins the measure — (source_id, source_reference, stage, web_metric) WHERE replaced_by_id IS NULL
+- [X] T007 Write migration `.../00032_media_codes.sql` for `media_codes` (`code` bigint unique, never reused), `activity_external_names` (unique across names **and** aliases, one `is_current` per activity) — **superseded by 046-C14**: the migration creates `activity_external_name_aliases` (aliases only; the current name stays on `activities.external_name`, owned by feature 006) and `activity_integration_ids` (unique together on `activity_id`, `source_id`)
+- [X] T008 Write `backend/internal/platform/database/queries/performance.sql` with the queries named in plan.md *Queries* (now ~59, grown as 046-C15 and the stories corrected the first cut), each carrying its scope filter; run `sqlc generate && sqlc vet`
 - [X] T009 [P] Write `backend/internal/performance/model.go`: the eight entities of [data-model.md](./data-model.md), each embedding `record.Meta`, with money as integer minor units plus currency (FR-014), never a float
 - [X] T010 [P] Write `backend/internal/performance/store.go` declaring the small `Store` the service calls and its `Transactor`, then `store_postgres.go` implementing it
 - [X] T011 Register the `history.Kind` values for data source, fact, import, review row and media code so every change writes one activity-log entry inside the same `Write` transaction
@@ -46,7 +46,7 @@ Every test name mentions the requirement ID it proves.
 - [X] T013 [P] Write `backend/internal/performance/performancetest/store.go` fully, and add the new `Store` methods to the in-memory set in `backend/internal/stores/`
 - [X] T014 Write the scope-isolation test file `backend/internal/performance/store_postgres_scope_test.go` covering every scoped read in T008 on a fresh PostgreSQL database per test (FR-044): a record outside scope answers as missing, never as a refusal
 - [X] T015 Write `backend/internal/performance/authz_test.go`: every operation refuses without its permission and **fails closed** — `performance.import` for loading, configuration and review actions, `performance.link` for external names, integration IDs and media codes (FR-043). A record outside the actor's scope answers as **missing**, while `forbidden` refuses only an action on a record the actor can see (constitution non-negotiable 7)
-- [X] T016 Write `backend/internal/performance/records_test.go`: one activity-log entry per change on each of the eight record types, a stale update refused with `version_conflict`, and a delete routed to the recycle bin through `history.MoveToBin` (FR-045, CLAUDE.md "Every new record type"). **Partly done** — the activity log and the recycle-bin delete are covered for the data source, and the four activity children are registered as bin kinds. Still missing: the log on the other record types, which arrive with the stories that create them, and the `version_conflict` check
+- [X] T016 Write `backend/internal/performance/records_test.go`: one activity-log entry per change on each of the eight record types, a stale update refused with `version_conflict`, and a delete routed to the recycle bin through `history.MoveToBin` (FR-045, CLAUDE.md "Every new record type"). **Partly done** — the activity log and the recycle-bin delete are covered for the data source, and the four activity children are registered as bin kinds. Still missing: the log on the other record types, which arrive with the stories that create them. The `version_conflict` check is covered — `TestUpdateSource_StaleVersionRefused_FR045` in `records_test.go`
 
 **Checkpoint**: schema, stores and fakes exist; the six stories can now proceed in parallel.
 
@@ -62,10 +62,10 @@ while it holds no facts. No upload needed.
 ### Tests (write first, confirm they fail)
 
 - [X] T017 [P] [US1] Write `backend/internal/performance/source_test.go`: create, find, view, edit (FR-001); one active source per (model, stage) refused naming the conflicting source (FR-003); delete refused while facts exist and Deactivate offered (FR-002); deactivate keeps facts, refuses uploads and updates *Is integrated* at once (FR-004); reactivate · proves SC-005
-- [X] T018 [P] [US1] Write `backend/internal/performance/freshness_test.go`: *Current · Stale · Failed · Inactive* derived from the last import, data-through date and cadence (FR-005), on a fixed clock
+- [X] T018 [P] [US1] Write `backend/internal/performance/freshness_test.go`: *Current · Stale · Failed · Inactive* derived from the last import, data-through date and cadence (FR-005), on a fixed clock. Failed (latest load fell over) is covered by a `TestFreshnessAt_…` case and `TestSources_LatestLoadThatFellOverShowsFailed_FR005`
 - [X] T019 [P] [US1] Write `backend/internal/performance/mapping_test.go`: each `meaning` value accepted; `web_metric` restricted to **sessions, visits, engagement touches** (046-C11); a mapping change affects future loads only (FR-007) (FR-006)
 - [X] T020 [P] [US1] Write `backend/internal/performance/handler_source_test.go` as a contract test (external `package performance_test`, through `internal/platform/apitest`) for every source and mapping operation in [contracts/api.md](./contracts/api.md), including the **409** on delete-with-facts and on the duplicate stage supplier
-- [ ] T021 [P] [US1] Write `frontend/src/features/performance/sources/SourceList.test.tsx` and `SourceForm.test.tsx`: the states data, empty, no access, and all validation errors shown at once
+- [ ] T021 [P] [US1] Write `frontend/src/features/performance/sources/SourceList.test.tsx` and `SourceForm.test.tsx`: the states data, empty, no access, and all validation errors shown at once. Note: list, form and tests were built at the feature root (`SourceListPage.tsx`, `SourceForm.tsx` + tests); outstanding here: the no-access state test
 
 ### Implementation
 
@@ -73,9 +73,9 @@ while it holds no facts. No upload needed.
 - [X] T023 [US1] Implement derived freshness in `backend/internal/performance/freshness.go` — computed, never stored (data-model.md)
 - [X] T024 [US1] Implement mapping rules in `backend/internal/performance/mapping.go`, including the one-active-source-per-stage refusal naming the conflicting source (FR-006, FR-003)
 - [X] T025 [US1] Implement the blank file template in `backend/internal/performance/template.go`, carrying exactly the columns the mappings define (FR-008)
-- [X] T026 [US1] Implement the source and mapping handlers in `backend/internal/performance/handler.go`; add each operation's rule to the access route table. **Blocked on the contract**: `TestEveryOperationHasAnAccessRule_SC001` asserts in both directions, so a rule for an operation `openapi.yaml` does not carry fails CI. `access/routes_performance.go` was written and reverted; it lands the moment the integrator applies the wave B contract (contracts item 1)
+- [X] T026 [US1] Implement the source and mapping handlers in `backend/internal/performance/handler.go`; add each operation's rule to the access route table. Done: `access/routes_performance.go` exists and serves every operation of this feature now that the wave B contract is applied (`TestEveryOperationHasAnAccessRule_SC001` asserts in both directions)
 - [X] T027 [US1] Remove this story's operations from `notYetServed` in `backend/internal/app/app_test.go` (this feature's group only)
-- [ ] T028 [P] [US1] Build `frontend/src/features/performance/sources/` — list, form and the Settings › Performance data route — with React Hook Form + Zod and MSW-typed answers; run `pnpm run api:types` first
+- [ ] T028 [P] [US1] Build `frontend/src/features/performance/sources/` — list, form and the Settings › Performance data route — with React Hook Form + Zod and MSW-typed answers; run `pnpm run api:types` first. Note: `SourceListPage.tsx` and `SourceForm.tsx` are built at the feature root; outstanding here: the integrator's route lines in `pages.tsx`
 - [X] T029 [US1] Run the checks of [quality-gates.md](../../docs/sdd/quality-gates.md) on everything changed
 
 **Checkpoint**: sources and mappings are configurable end to end.
@@ -94,7 +94,7 @@ unchanged; undo it.
 ### Tests (write first, confirm they fail)
 
 - [X] T030 [P] [US2] Write `backend/internal/performance/validate_test.go`: all faults in one row reported together — empty required column, invalid or future date, negative or fractional count, invalid amount or unconfigured currency, unknown stage, missing or repeated reference (FR-011)
-- [X] T031 [P] [US2] Write `backend/internal/performance/personaldata_test.go`: a file with a personal-data column is refused **in full** and **no row is stored** (FR-012) · proves SC-007
+- [X] T031 [P] [US2] Write the personal-data gate tests — they live in `validate_test.go`, `reader_test.go` and `handler_imports_test.go`: a file with a personal-data column is refused **in full** and **no row is stored** (FR-012) · proves SC-007
 - [X] T032 [P] [US2] Write `backend/internal/performance/matcher_test.go` table-driven over the four keys in their strict order — activity ID → media code → integration ID → external name (FR-018) — plus ambiguous, unknown, and **keys disagree** naming both candidates and never guessing (FR-019) · proves SC-006
 - [X] T033 [P] [US2] Write `backend/internal/performance/held_test.go`: a fact on an activity that is Created, Submitted or Declined is held and counts nowhere; Approved, In progress and Complete do not hold (FR-020, FR-028) · proves SC-002
 - [X] T034 [P] [US2] Write `backend/internal/performance/binned_test.go`: a fact matched to a **binned** activity is held until restore **and** approval; a fact matched to a **permanently deleted** activity goes to the review queue (FR-021)
@@ -116,7 +116,7 @@ unchanged; undo it.
 - [X] T047 [US2] Implement the import run and its five-count summary in `backend/internal/performance/importer.go` and `summary.go`. **Deviation**: the counts are accumulated in Go while rows are driven through `Decide`, not computed in SQL. Rejected and unmatched rows never become facts, so SQL has nothing to count them from; accumulating in Go makes the five-sum-to-rows-read invariant hold by construction and provable in a pure property test with no database (T035)
 - [X] T048 [US2] Implement undo in `backend/internal/performance/undo.go`, walking `replaced_by_id` back
 - [X] T049 [US2] Implement the `simulatedfeed` adapter behind its port, labelling everything it produces as simulated (ADR-0020)
-- [X] T050 [US2] Implement the import handlers; add each operation's route rule and report it in the pull request
+- [X] T050 [US2] Implement the import handlers; add each operation's route rule and report it in the pull request. The imports list is findable — sourceId, search (file and uploader name), status, since, until (whole day), limit (FR-016) — proved by `TestImports_FindableByFileUploaderStatusAndDate_FR016`, `TestListImports_FiltersTranslate_Contract_FR016_FR023` and `TestDateRangeOf_*`
 - [X] T051 [US2] Remove this story's operations from `notYetServed` in `backend/internal/app/app_test.go`
 - [ ] T052 [P] [US2] Build `frontend/src/features/performance/imports/` — upload, simulated pull, import list and the summary with its five counts and the undo confirmation stating them (FR-017)
 - [X] T053 [US2] Record the benchmark in [plan.md](./plan.md): a 50,000-row file against 5,000 in-scope activities, confirming a **constant** query count (plan R16) · proves SC-009
@@ -137,7 +137,7 @@ appear with goal, actual and conversion per stage.
 
 - [X] T055 [P] [US3] Write `backend/internal/performance/activityview_test.go`: a non-approved activity returns the stated reason and **no figures** (FR-027); an approved one returns per-stage goal, actual, projected and conversion, and revenue naming its model (FR-029)
 - [X] T056 [P] [US3] Write `backend/internal/performance/facts_list_test.go`: the fact list carries date, source, stage or metric, value, currency, **the key matched on** and the import (FR-030), searchable and exportable
-- [X] T057 [P] [US3] Write `backend/internal/performance/handler_activity_test.go` as a contract test for the four activity performance operations
+- [X] T057 [P] [US3] Write `backend/internal/performance/handler_facts_test.go` as a contract test for the four activity performance operations
 - [X] T058 [P] [US3] Write `frontend/src/features/performance/activity/PerformancePanel.test.tsx` with **one test per state** — not approved, no source, no goal, no data yet, stale, failed (FR-032) — asserting no sample figure appears in any of them · proves SC-008
 - [ ] T059 [P] [US3] Write `frontend/e2e/performance-data.spec.ts` covering US3's journey with axe: Submitted activity shows the gate, approval releases its facts
 
@@ -165,8 +165,8 @@ previous name still matches as an alias.
 ### Tests (write first, confirm they fail)
 
 - [X] T067 [P] [US4] Write `backend/internal/performance/externalname_test.go`: a row carrying an activity's **current** external name matches it and records `externalName` as the key used (FR-033)
-- [X] T068 [P] [US4] Write `backend/internal/performance/alias_test.go`: a rename keeps the superseded name as an alias, and a row carrying that **old** name still matches the activity (FR-034)
-- [X] T069 [P] [US4] Write `backend/internal/performance/alias_uniqueness_test.go`: an alias repeating another activity's external name or alias is **refused with the reason**, so a key never resolves to two activities (FR-035); and this feature never writes `activities.external_name`, which feature 006 owns (FR-036, 046-C14)
+- [X] T068 [P] [US4] Write the alias tests in `backend/internal/performance/externalname_test.go`: a rename keeps the superseded name as an alias, and a row carrying that **old** name still matches the activity (FR-034)
+- [X] T069 [P] [US4] Write the alias-uniqueness tests in `externalname_test.go` (+ `service_test.go` for FR-035): an alias repeating another activity's external name or alias is **refused with the reason**, so a key never resolves to two activities (FR-035); and this feature never writes `activities.external_name`, which feature 006 owns (FR-036, 046-C14)
 - [X] T070 [P] [US4] Write `backend/internal/performance/integrationid_test.go`: at most one per source, unique within the source, removal confirmed with its effect on matching, every change audited (FR-037)
 - [X] T071 [P] [US4] Write `backend/internal/performance/copy_test.go`: a copied activity carries **no** external name, alias, integration ID, media code or fact (FR-038)
 - [X] T072 [P] [US4] Write `backend/internal/performance/handler_keys_test.go` as a contract test for the five external-name and integration-ID operations, including both **409** cases
@@ -196,7 +196,7 @@ other with a comment and reopen it.
 
 ### Tests (write first, confirm they fail)
 
-- [X] T082 [P] [US5] Write `backend/internal/performance/review_test.go`: every rejected and unmatched row appears with its reason; **no row can be created by hand** (FR-023); find by key, source, reason, upload, date and status · proves SC-003
+- [X] T082 [P] [US5] Write `backend/internal/performance/review_test.go`: every rejected and unmatched row appears with its reason; **no row can be created by hand** (FR-023); find by key, source, reason, upload, date and status · proves SC-003. The date range (since/until) on review-rows is implemented (FR-023), covered with the `TestDateRangeOf_*` cases
 - [X] T083 [P] [US5] Write `backend/internal/performance/correct_test.go`: a corrected row re-checks and becomes *Resolved* on a match; dismissal **requires** a comment; reopening restores it, with both actions in the history (FR-024)
 - [X] T084 [P] [US5] Write `backend/internal/performance/recheck_test.go`: open rows and held facts re-check on demand and automatically at each load from the same source (FR-025), in a **constant** query count regardless of queue size
 - [X] T085 [P] [US5] Write `backend/internal/performance/precedence_test.go`: a later load with the same source and reference replaces a corrected row — **the source wins** (FR-026)
@@ -205,7 +205,7 @@ other with a comment and reopen it.
 
 ### Implementation
 
-- [ ] T088 [US5] Implement the review queue reads and filters in `backend/internal/performance/review.go`, gated by `performance.import` and **filtering each row's `candidates` to the activities in the reader's scope** (046-C15): a row whose candidates all lie outside it still appears with its reason and names none of them
+- [X] T088 [US5] Implement the review queue reads and filters in `backend/internal/performance/review.go`, gated by `performance.import` and **filtering each row's `candidates` to the activities in the reader's scope** (046-C15). Done: `review.go` and `review_test.go`'s `TestReviewRows_CandidatesAreFilteredToTheReadersScope_046C15` implement and prove it. Note: candidates filter **all-or-none** per the amended 046-C15 — a reader who can see every candidate sees the list, otherwise none, so a partial list never leaks counts
 - [X] T089 [US5] Implement correct, dismiss (comment required) and reopen, each writing its history entry
 - [X] T090 [US5] Implement on-demand and automatic re-check in `backend/internal/performance/recheck.go`, reusing the set-based matcher of T044 rather than looping rows
 - [X] T091 [US5] Implement source-wins precedence over a correction
@@ -228,8 +228,8 @@ to delete it after a fact has used it.
 ### Tests (write first, confirm they fail)
 
 - [X] T096 [P] [US6] Write `backend/internal/performance/mediacode_test.go`: codes are system-generated, unique and **never reused**, from a configurable starting number (FR-042); generation succeeds at **any** activity status
-- [X] T097 [P] [US6] Write `backend/internal/performance/mediacode_rules_test.go`: the area appears only where the activity type requires codes and a code never attaches to a line item or any other level (FR-040); every missing required attribute is reported at once (FR-041); delete allowed only while unused, otherwise deactivate
-- [X] T098 [P] [US6] Write `backend/internal/performance/configuration_test.go`: the activity types requiring codes, the attribute catalogue and the start number live in **this feature's** Settings › Performance data configuration, not on the activity type record (046-C12) (FR-039)
+- [X] T097 [P] [US6] Write the media-code rules tests in `backend/internal/performance/mediacode_test.go`: the area appears only where the activity type requires codes and a code never attaches to a line item or any other level (FR-040); every missing required attribute is reported at once (FR-041); delete allowed only while unused, otherwise deactivate
+- [X] T098 [P] [US6] Write the configuration tests in `mediacode_test.go` and `handler_mediacode_test.go`: the activity types requiring codes, the attribute catalogue and the start number live in **this feature's** Settings › Performance data configuration, not on the activity type record (046-C12) (FR-039)
 - [X] T099 [P] [US6] Write `backend/internal/performance/handler_mediacode_test.go` as a contract test for the five media-code operations and the two configuration operations, including the **409** on delete-when-used
 - [X] T100 [P] [US6] Write `frontend/src/features/performance/mediacodes/MediaCodes.test.tsx`: hidden for a type that does not require codes; all missing attributes shown at once; copy code and copy tagged link
 
@@ -251,12 +251,22 @@ to delete it after a fact has used it.
 ## Phase 9: Polish and cross-cutting
 
 - [ ] T109 Extend `frontend/e2e/performance-data.spec.ts` to cover **every P1 story** (US1, US2, US3, US4) with axe included
-- [ ] T110 Seed the wave B demo facts in `backend/seed/measure.go` — **blocked**: that file is lane D's to create and 039 wires its call into `seed.go`. Raise in the pull request if it still does not exist (plan *Risks*)
+- [ ] T110 Seed the wave B demo facts under `backend/cmd/seed/` — **blocked**: the measure seed file is lane D's to create and 039 wires its call in. Raise in the pull request if it still does not exist (plan *Risks*)
 - [X] T111 [P] Confirm every file changed is within 300 non-blank lines and every file's comments are within 5% of its non-blank lines (constitution V, VIII)
 - [X] T112 [P] Confirm every test name carries the requirement ID it proves, and that no test restates the code, tests generated code or exists only for coverage (constitution VI)
 - [X] T113 Check every FR of [spec.md](./spec.md) against plan.md: each has a passing test named with it; tick the tasks above
-- [ ] T114 Run `/speckit-analyze` and fix every CRITICAL finding **before** this feature is considered done
-- [ ] T115 Run `/speckit-converge`; append anything remaining to this file or record "clean"
+- [X] T114 Run `/speckit-analyze` and fix every CRITICAL finding **before** this feature is considered done.
+  Done 2026-11-01: three lenses (spec↔plan, tasks↔reality, spec↔code) raised 6 CRITICAL / 11 HIGH. All
+  CRITICALs fixed: the fact identity, FR-044, 046-C15's all-or-none wording, US1's *Stale*, the contract
+  doc's paths/body/permissions, and FR-016/FR-023 findability — the last **implemented**, not softened
+  (imports list: `search`/`status`/`since`/`until`; review queue: `since`/`until`). HIGHs fixed alongside:
+  FR-005 *Failed* now shows in Settings, FR-011/FR-021/FR-009 scrubbed to C21/C24/C25, C17's refusal
+  carve-out recorded, plan/research/data-model/contracts brought back to the migrations' truth
+- [X] T115 Run `/speckit-converge`. Remaining, all blocked on other lanes: T110 (lane D's seed), T059+T109
+  (e2e; need seed and routes), T021's no-access state test and the Settings pages' routing (the integrator's
+  two `pages.tsx` lines — every Settings-side screen is built and exported). Everything else is done and
+  the documents agree with the code; new clarifications 046-C25 (CSV only) and 046-C26 (matching scope)
+  recorded in spec.md
 - [ ] T116 Open the pull request into `measure-module` with: the feature-map status change, the three integrator items from [contracts/api.md](./contracts/api.md), the ADR-0019 → ADR-0020 renumber, and the `seed/measure.go` dependency
 
 ---

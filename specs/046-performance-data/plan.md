@@ -47,7 +47,7 @@ rows; 6 user stories, 45 functional requirements
 |---|---|
 | **I. Spec-First** | Every item below traces to an FR in [spec.md](./spec.md); test names carry the FR they prove |
 | **II. Plain Language** | Shell vocabulary only: Activity, not Tactic; *data source*, *performance fact*, *row to review*, *media code*. No Hive9 interface terms |
-| **III. Documented Design** | ADR-0020 records the simulated-feed decision; `contracts/api.md` feeds the wave B contract; `data-model.md` covers the eight tables |
+| **III. Documented Design** | ADR-0020 records the simulated-feed decision; `contracts/api.md` feeds the wave B contract; `data-model.md` covers the eleven tables |
 | **IV. Two Parts, Server Authoritative** | Matching, validation and every count happen in the service layer; the web app renders what the API returns and recomputes no figure |
 | **V. Simplicity** | One package `internal/performance` with the standard `model · store · store_postgres · service · handler` split, each file within 300 non-blank lines; no new framework |
 | **VI. Meaningful Tests** | A unit test per rule, a contract test per operation, a scope-isolation test per scoped store read, one test per rendered state, an e2e per P1 story. Fixed clock and seed |
@@ -69,7 +69,7 @@ specs/046-performance-data/
 ├── spec.md
 ├── plan.md              # this file
 ├── research.md          # the four real choices
-├── data-model.md        # eight tables across migrations 00030-00032
+├── data-model.md        # eleven tables across migrations 00030-00032
 ├── contracts/api.md     # operations for the wave B contract
 ├── checklists/requirements.md
 └── tasks.md             # /speckit-tasks output, not created here
@@ -112,7 +112,7 @@ Performance slot in `ActivityPage.tsx`.
 | R3 | A fact on an activity not counting as approved is held, counts nowhere, releases on approval | FR-020, FR-028 | unit for the status set; integration for the release |
 | R3a | **Implementation note**: *In progress* and *Complete* are **derived from the activity's dates**, not stored — `activities.status` holds only `created`, `submitted`, `declined`, `approved` (domain model §2.3). "Counts as approved" is therefore the single test `status = 'approved'`, which covers all three displayed statuses | FR-028 | the same unit test as R3 |
 | R4 | The five outcomes add up to rows read | FR-022 | property test with `fast-check`-style generated files |
-| R5 | Loading is idempotent on (source, source reference); a repeat replaces and audits | FR-013 | unit + contract: same file twice changes nothing |
+| R5 | Loading is idempotent on a fact's identity — (source, source reference, measure), 046-C21 — and a repeat replaces and audits | FR-013 | unit + contract in `idempotent_test.go`: same file twice changes nothing |
 | R6 | A personal-data file is refused whole, before any row is stored | FR-012 | unit: no row persisted after refusal |
 | R7 | Revenue without a rate is stored exactly, marked, excluded with its count | FR-014 | unit on money; view test for the excluded-count text |
 | R8 | A fact counts in the fiscal year of its own date | FR-015 | unit across a multi-year activity |
@@ -123,19 +123,28 @@ Performance slot in `ActivityPage.tsx`.
 | R13 | A copied activity carries no external name, alias, integration ID, media code or fact | FR-038 | integration on copy |
 | R14 | Media codes unique and never reused, from a configurable start | FR-042 | unit on the generator |
 | R15 | Every empty performance view states its reason | FR-032 | one view test per state (six states) |
+| R17 | A load ends completed, failed or undone (046-C17); a file refused before any row is read is not a load and leaves no import record | FR-016 | unit: failed state in `importer_bench_test.go`; a refusal leaves no record, `idempotent_test.go` |
+| R18 | The five-outcome reconciliation applies to completed loads only; a per-measure breakdown accompanies it and deliberately does not sum to the totals (046-C17, 046-C18) | FR-022 | unit in `summary_test.go`; stored with the load in `idempotent_test.go` |
+| R19 | One file row produces one fact per measure column it fills; a fact's identity is (source, source reference, measure) (046-C21) | FR-013 | unit in `importer_test.go` and `summary_test.go` (a row with two measures counts in both) |
+| R20 | An empty measure cell is an absent fact, never a zero; a row filling no measure column at all is rejected (046-C22) | FR-011 | unit in `validate_test.go` (no-measure row refused) and `importer_test.go` (measures parsed once per filled column) |
+| R21 | A key mapping names its key's type — one column per type, tied to meaning `key` (046-C23); the reader never infers a type from a cell | FR-006 | unit in `reader_test.go` (cells land where the mapping says); mapping validation in `mapping_test.go` |
+| R22 | Facts go to the bin with their activity and return **held** on restore; a new row arriving while it is binned, or after permanent deletion, goes unmatched to the review queue (046-C24) | FR-021 | unit in `binned_test.go` (new row waits); bin children in `kinds_children_test.go` |
 
 ## Queries, and their scope filter
 
-Every query below filters by the actor's scope through the plan that owns the activity. A record outside scope
-answers as missing, never as a refusal (constitution non-negotiable 7, FR-044).
+Activity-anchored queries filter by the actor's scope through the plan that owns the activity; a record
+outside scope answers as missing, never as a refusal (constitution non-negotiable 7, FR-044).
+Configuration and import/review reads are not scope-filtered: they are permission-gated per 046-C15, with
+only a review row's candidate list filtered to the reader.
 
 | Query | Scope filter | Notes |
 |---|---|---|
 | `ListSources`, `GetSource` | organisation-wide (configuration, not plan-owned) | freshness computed from the latest import |
 | `ListFactsForActivity` | activity → plan → actor scope | the Performance panel; one query, not one per stage |
 | `MatchRows` | candidate activities restricted to the actor's scope | **set-based**: one query per key type per batch, never one per row (R16 below) |
-| `ListReviewRows` | **none** — gated by `performance.import` (046-C15) | an unmatched row belongs to no activity, so no scope can be derived; the **candidates** it names are filtered to the reader's scope |
+| `ListReviewRows` | **none** — gated by `performance.import` (046-C15) | an unmatched row belongs to no activity, so no scope can be derived; the **candidates** it names are all-or-none: a reader who can see every candidate sees the list, otherwise none — a partial list would leak counts (046-C15) |
 | `SummariseImport` | **none** — gated by `performance.import` (046-C15) | an import records a file, its uploader and its counts; no plan-owned data |
+| `ListImports` | **none** — gated by `performance.import` (046-C15) | findable by `sourceId`, `search` (file and uploader name), `status`, `since`/`until` (until takes its whole day) and `limit` (FR-016) |
 | `ListMediaCodes` | activity → plan → actor scope | |
 
 **R16 (efficiency, constitution B9 and feature 028)**: matching a file of N rows MUST use a constant number of
@@ -145,7 +154,8 @@ queries, independent of N. A per-row lookup is the failure mode this rule exists
 
 | Operation | Permission | Route rule |
 |---|---|---|
-| Upload a file, run a simulated pull, undo an import | `performance.import` | new rule, fails closed |
+| Upload a file, run a simulated pull | `performance.import` | new rule, fails closed |
+| Undo an import | `performance.import` **and** `settings.manage` (046-C16) | the rule carries `performance.import`; the service checks `settings.manage` |
 | Set external name, alias, integration ID; generate or edit a media code | `performance.link` | new rule, fails closed |
 | Create, edit, deactivate or delete a data source or mapping | `performance.import` | configuration is administrator work |
 | View the Performance panel and an activity's facts | existing activity read permission | no new permission; scope still applies |
@@ -162,14 +172,15 @@ Recorded here per issue #39 and constitution B9. Volumes are feature 028's.
 | Measurement | Target |
 |---|---|
 | Match a 50,000-row file against 5,000 in-scope activities | under 10 s, and a **constant** query count (R16) |
-
-**Measured (T053, 2026-11-01)**: `BenchmarkClassify_SC009` classifies and summarises the 50,000-row file
-against 5,000 activities in **~22 ms** per run (Apple M-series, `-benchtime=3x`), and
-`TestRunImport_MatchQueriesStayConstantWhateverTheFileSize_SC009` proves a 10-row and a 1,000-row load issue
-the **same number of matching queries**. Both live in `importer_bench_test.go`.
 | Open the Performance panel of an approved activity with 2,000 facts | under 1 s, matching 028's page target |
 | Summarise an import (the five counts) | one query, under 200 ms |
 | Re-check open review rows after a new import from the same source | constant query count, independent of queue size |
+
+**Measured (T053, 2026-11-01)**: classification was measured on fakes — `BenchmarkClassify_SC009` classifies
+and summarises the 50,000-row file against 5,000 activities in **~22 ms** per run (Apple M-series,
+`-benchtime=3x`) — and `TestRunImport_MatchQueriesStayConstantWhateverTheFileSize_SC009` proves a 10-row and
+a 1,000-row load issue the **same number of matching queries**. Both live in `importer_bench_test.go`. The
+10 s end-to-end figure remains a target, not a measurement.
 
 ## Contract
 

@@ -64,10 +64,14 @@ func TestFreshnessAt_DerivedFromTheLastLoadAndTheCadence_FR005(t *testing.T) {
 		status performance.Status
 		cadenc performance.Cadence
 		loaded time.Time
+		failed bool
 		want   performance.Freshness
 	}{
 		{name: "FR-005 a deactivated source is Inactive whatever it holds", status: performance.StatusInactive,
-			cadenc: performance.CadenceDaily, loaded: now, want: performance.FreshnessInactive},
+			cadenc: performance.CadenceDaily, loaded: now, failed: true, want: performance.FreshnessInactive},
+		{name: "FR-005 a source whose latest load fell over is Failed", status: performance.StatusActive,
+			cadenc: performance.CadenceDaily, loaded: now.Add(-time.Hour), failed: true,
+			want: performance.FreshnessFailed},
 		{name: "FR-005 a source that has never loaded is Stale", status: performance.StatusActive,
 			cadenc: performance.CadenceMonthly, want: performance.FreshnessStale},
 		{name: "FR-005 loaded today on a daily cadence is Current", status: performance.StatusActive,
@@ -86,8 +90,9 @@ func TestFreshnessAt_DerivedFromTheLastLoadAndTheCadence_FR005(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			view := performance.SourceView{
-				Source:       performance.Source{Status: tt.status, Cadence: tt.cadenc},
-				LastLoadedAt: tt.loaded,
+				Source:         performance.Source{Status: tt.status, Cadence: tt.cadenc},
+				LastLoadedAt:   tt.loaded,
+				LastLoadFailed: tt.failed,
 			}
 
 			if got := view.FreshnessAt(now); got != tt.want {

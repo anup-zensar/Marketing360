@@ -136,7 +136,7 @@ func TestRunImport_ALoadThatFellOverIsRecordedAsFailed_046C17(t *testing.T) {
 		t.Fatal("RunImport survived a dead fact store, want the error surfaced")
 	}
 
-	imports, listErr := broken.store.ListImports(t.Context(), "", broken.sourceID, 10)
+	imports, listErr := broken.store.ListImports(t.Context(), performance.ImportFilter{SourceID: broken.sourceID, Limit: 10})
 	if listErr != nil || len(imports) != 1 {
 		t.Fatalf("imports = %d (%v), want the one failed load recorded (046-C17)", len(imports), listErr)
 	}

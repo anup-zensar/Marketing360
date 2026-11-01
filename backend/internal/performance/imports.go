@@ -28,13 +28,14 @@ func viewOfImport(run Import, breakdown []Breakdown) ImportView {
 
 // Imports and ImportByID are permission-gated rather than scoped (046-C15): a load is operational work,
 // not a plan-owned record, so performance.import sees every upload.
-func (s *Service) Imports(ctx context.Context, _ actor.Actor, sourceID string, limit int) ([]ImportView, error) {
+func (s *Service) Imports(ctx context.Context, _ actor.Actor, f ImportFilter) ([]ImportView, error) {
 	if err := authz.Require(ctx, PermissionImport); err != nil {
 		return nil, err
 	}
+	f.ID = ""
 	var views []ImportView
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
-		found, readErr := s.repo.ListImports(ctx, "", sourceID, limit)
+		found, readErr := s.repo.ListImports(ctx, f)
 		if readErr != nil {
 			return readErr
 		}
@@ -53,7 +54,7 @@ func (s *Service) ImportByID(ctx context.Context, _ actor.Actor, id string) (Imp
 	}
 	var views []ImportView
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
-		found, readErr := s.repo.ListImports(ctx, id, "", 1)
+		found, readErr := s.repo.ListImports(ctx, ImportFilter{ID: id, Limit: 1})
 		if readErr != nil {
 			return readErr
 		}

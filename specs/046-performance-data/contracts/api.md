@@ -7,6 +7,9 @@ This lane never edits `openapi.yaml` itself. Paths are under `/api/v1`. One erro
 Remove this feature's operations from `notYetServed` in `internal/app/app_test.go` as each is served — they
 are listed in a group per feature, so the deletions never touch another lane's lines.
 
+Rows marked *activity read* are `signedIn` routes; the service applies the reader's scope to plan-owned
+reads, while sources and mappings are organisation-wide Settings records (FR-044, 046-C15).
+
 ## Data sources
 
 | Method | Path | Permission | Notes |
@@ -33,21 +36,24 @@ are listed in a group per feature, so the deletions never touch another lane's l
 
 | Method | Path | Permission | Notes |
 |---|---|---|---|
-| `POST` | `/performance/sources/{sourceId}/imports` | `performance.import` | multipart file upload; answers the summary with all five counts |
-| `POST` | `/performance/sources/{sourceId}/simulated-pull` | `performance.import` | the explicit trigger (046-C13); same response shape as an upload |
-| `GET` | `/performance/imports` | activity read | find by file, source, uploader, status, date |
-| `GET` | `/performance/imports/{importId}` | activity read | the summary; **no** PATCH — an import is not editable (FR-016) |
-| `POST` | `/performance/imports/{importId}/undo` | `performance.import` | confirmation carries the counts; restores replaced versions; import stays listed as *Undone* |
+| `POST` | `/performance/sources/{sourceId}/uploads` | `performance.import` | JSON body `{fileName, content}` (base64), 3 MB limit; answers the summary with all five counts |
+| `POST` | `/performance/sources/{sourceId}/pull` | `performance.import` | the explicit trigger (046-C13); same response shape as an upload |
+| `GET` | `/performance/imports` | `performance.import` | findable by `search` (file and uploader name), `sourceId`, `status`, `since`/`until` (FR-016) |
+| `GET` | `/performance/imports/{importId}` | `performance.import` | the summary; **no** PATCH — an import is not editable (FR-016) |
+| `POST` | `/performance/imports/{importId}/undo` | `performance.import` + `settings.manage` | confirmation carries the counts; restores replaced versions; import stays listed as *Undone* |
 
-A file carrying personal-data columns is refused **422** in full, naming the offending column, with no row
-stored (FR-012).
+The undo route rule carries `performance.import`; the service enforces `settings.manage`, the same
+documented pattern as the InPlan rules (046-C16).
+
+A file carrying personal-data columns is refused **409** `not_allowed` in full, naming the offending
+column(s), with no row stored (FR-012).
 
 ## Rows to review
 
 | Method | Path | Permission | Notes |
 |---|---|---|---|
-| `GET` | `/performance/review-rows` | activity read | filter by key, source, reason, upload, date, status. **No POST** — rows are never created by hand (FR-023) |
-| `GET` | `/performance/review-rows/{rowId}` | activity read | includes history |
+| `GET` | `/performance/review-rows` | `performance.import` | filter by key, source, reason, upload, status, `since`/`until`. **No POST** — rows are never created by hand (FR-023) |
+| `GET` | `/performance/review-rows/{rowId}` | `performance.import` | includes history |
 | `POST` | `/performance/review-rows/{rowId}/correct` | `performance.import` | re-checks immediately; becomes *Resolved* on a match |
 | `POST` | `/performance/review-rows/{rowId}/dismiss` | `performance.import` | comment **required**; **422** without one |
 | `POST` | `/performance/review-rows/{rowId}/reopen` | `performance.import` | |
@@ -59,7 +65,7 @@ stored (FR-012).
 |---|---|---|---|
 | `GET` | `/activities/{activityId}/performance` | activity read | **gated**: an activity not counting as approved answers the stated reason and no figures (FR-027). Every empty state names its reason (FR-032) |
 | `GET` | `/activities/{activityId}/performance/facts` | activity read | searchable list: date, source, stage or metric, value, currency, key matched on, import |
-| `GET` | `/activities/{activityId}/performance/facts/export` | activity read | |
+| `GET` | `/activities/{activityId}/performance/facts/export` | `data.export` | the same list as a CSV (D-367) |
 | `GET` | `/activities/{activityId}/performance/sources` | activity read | external name and aliases, media-code count, the two flags, per-source integration ID, fact count, last fact date |
 
 ## External names and integration IDs
@@ -91,17 +97,15 @@ stored (FR-012).
 
 ## Cross-feature notes for the integrator
 
-1. **Two new permissions**, `performance.import` and `performance.link` (D-367), each needing a route rule in
-   the shared `routes_measure.go`, which this lane does not edit.
+1. **Two new permissions**, `performance.import` and `performance.link` (D-367), carry their route rules
+   in a dedicated `routes_performance.go`, already in place; the shared `routes_measure.go` is untouched.
 2. **The approvals area must call this feature's release port** when an activity reaches an approved status,
    so held facts are released in the same transaction (research R4). That change is outside this feature's
    folders.
 3. **The activity copy path must not carry** aliases, integration IDs, media codes or facts (FR-038) — a
    change in the activity area, reported here rather than made.
-4. **`app.go` must call `performanceArea()`** once this feature serves its first operation. The wiring file
-   `internal/app/performance.go` is this lane's, but the one line that calls it is in `app.go`, which no lane
-   edits. Until that line exists the wiring function would be unused and fail the linter, so it is written
-   with US1 rather than now.
+4. **`areas.go` already calls `performanceArea()`**: the wiring in `internal/app/performance.go` is built
+   and served. The only remaining integrator work is the frontend routes in `pages.tsx`.
 5. **Generation of the external name on approval** (client 020 FR-030 – FR-036) belongs to feature 006's
    lane: `activities.external_name` is its field, edited today by a person under its own "Edit External
    Name" permission, with a 120-character limit. Making it generated from the model's rule, behind

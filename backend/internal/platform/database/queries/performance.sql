@@ -124,6 +124,12 @@ SELECT sqlc.embed(performance_imports)
 FROM performance_imports
 WHERE (sqlc.narg(id)::text IS NULL OR id = sqlc.narg(id))
     AND (sqlc.narg(source_id)::text IS NULL OR source_id = sqlc.narg(source_id))
+    AND (sqlc.narg(status)::text IS NULL OR status = sqlc.narg(status))
+    AND (sqlc.narg(since)::timestamptz IS NULL OR created_at >= sqlc.narg(since))
+    AND (sqlc.narg(until)::timestamptz IS NULL OR created_at <= sqlc.narg(until))
+    AND (sqlc.narg(search)::text IS NULL
+         OR file_name ILIKE '%' || sqlc.narg(search) || '%'
+         OR created_by_name ILIKE '%' || sqlc.narg(search) || '%')
 ORDER BY created_at DESC, id COLLATE "C"
 LIMIT sqlc.arg(max_imports);
 

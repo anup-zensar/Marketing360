@@ -257,22 +257,43 @@ func (s *Store) ReleaseHeld(ctx context.Context, activityID string, by actor.Act
 	return released, nil
 }
 
-func (s *Store) ListImports(_ context.Context, id, sourceID string, limit int) ([]performance.Import, error) {
+func (s *Store) ListImports(_ context.Context, f performance.ImportFilter) ([]performance.Import, error) {
 	all, err := s.imports.List()
 	if err != nil {
 		return nil, err
 	}
 	found := []performance.Import{}
 	for _, i := range all {
-		if (id != "" && i.ID != id) || (sourceID != "" && i.SourceID != sourceID) {
-			continue
+		if importMatches(i, f) {
+			found = append(found, i)
 		}
-		found = append(found, i)
 	}
-	if limit > 0 && len(found) > limit {
-		found = found[:limit]
+	if f.Limit > 0 && len(found) > f.Limit {
+		found = found[:f.Limit]
 	}
 	return found, nil
+}
+
+func importMatches(i performance.Import, f performance.ImportFilter) bool {
+	identified := (f.ID == "" || i.ID == f.ID) && (f.SourceID == "" || i.SourceID == f.SourceID) &&
+		(f.Status == "" || string(i.Status) == f.Status)
+	return identified && importDated(i, f) && importSearched(i, f.Search)
+}
+
+func importDated(i performance.Import, f performance.ImportFilter) bool {
+	if f.Since != nil && i.CreatedAt.Before(*f.Since) {
+		return false
+	}
+	return f.Until == nil || !i.CreatedAt.After(*f.Until)
+}
+
+func importSearched(i performance.Import, search string) bool {
+	if search == "" {
+		return true
+	}
+	search = strings.ToLower(search)
+	return strings.Contains(strings.ToLower(i.FileName), search) ||
+		strings.Contains(strings.ToLower(i.CreatedBy.Name), search)
 }
 
 func (s *Store) PutImport(ctx context.Context, i performance.Import) error {

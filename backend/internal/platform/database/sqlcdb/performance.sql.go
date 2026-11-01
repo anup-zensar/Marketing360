@@ -1108,13 +1108,23 @@ SELECT performance_imports.id, performance_imports.source_id, performance_import
 FROM performance_imports
 WHERE ($1::text IS NULL OR id = $1)
     AND ($2::text IS NULL OR source_id = $2)
+    AND ($3::text IS NULL OR status = $3)
+    AND ($4::timestamptz IS NULL OR created_at >= $4)
+    AND ($5::timestamptz IS NULL OR created_at <= $5)
+    AND ($6::text IS NULL
+         OR file_name ILIKE '%' || $6 || '%'
+         OR created_by_name ILIKE '%' || $6 || '%')
 ORDER BY created_at DESC, id COLLATE "C"
-LIMIT $3
+LIMIT $7
 `
 
 type ListPerformanceImportsParams struct {
 	ID         *string
 	SourceID   *string
+	Status     *string
+	Since      *time.Time
+	Until      *time.Time
+	Search     *string
 	MaxImports int32
 }
 
@@ -1123,7 +1133,15 @@ type ListPerformanceImportsRow struct {
 }
 
 func (q *Queries) ListPerformanceImports(ctx context.Context, arg ListPerformanceImportsParams) ([]ListPerformanceImportsRow, error) {
-	rows, err := q.db.Query(ctx, listPerformanceImports, arg.ID, arg.SourceID, arg.MaxImports)
+	rows, err := q.db.Query(ctx, listPerformanceImports,
+		arg.ID,
+		arg.SourceID,
+		arg.Status,
+		arg.Since,
+		arg.Until,
+		arg.Search,
+		arg.MaxImports,
+	)
 	if err != nil {
 		return nil, err
 	}

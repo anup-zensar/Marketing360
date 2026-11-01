@@ -4450,7 +4450,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The uploads, newest first, findable by source (needs performance.import) (046 FR-016) */
+        /** The uploads, newest first, findable by file, uploader, source, status and date (needs performance.import) (046 FR-016) */
         get: operations["listPerformanceImports"];
         put?: never;
         post?: never;
@@ -20456,6 +20456,12 @@ export interface operations {
         parameters: {
             query?: {
                 sourceId?: string;
+                /** @description Matches the file name and the uploader's name. */
+                search?: string;
+                status?: "completed" | "failed" | "undone";
+                since?: string;
+                /** @description Inclusive; the range covers this whole day. */
+                until?: string;
                 limit?: number;
             };
             header?: never;
@@ -20707,6 +20713,9 @@ export interface operations {
                 importId?: string;
                 reason?: string;
                 key?: string;
+                since?: string;
+                /** @description Inclusive; the range covers this whole day. */
+                until?: string;
                 limit?: number;
             };
             header?: never;

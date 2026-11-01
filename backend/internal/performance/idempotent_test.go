@@ -142,7 +142,7 @@ func TestRunImport_PersonalDataRefusesTheWholeFile_FR012(t *testing.T) {
 	if facts := f.currentFacts(t, src.ID, "r1"); len(facts) != 0 {
 		t.Errorf("%d facts stored from a refused file, want none (SC-007)", len(facts))
 	}
-	imports, err := f.store.ListImports(t.Context(), "", src.ID, 10)
+	imports, err := f.store.ListImports(t.Context(), performance.ImportFilter{SourceID: src.ID, Limit: 10})
 	if err != nil || len(imports) != 0 {
 		t.Errorf("a refused file left %d imports listed (%v), want none: it never started", len(imports), err)
 	}

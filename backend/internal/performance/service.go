@@ -52,13 +52,33 @@ func (s *Service) Sources(ctx context.Context, _ actor.Actor) ([]SourceView, err
 	var sources []SourceView
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
 		found, readErr := s.repo.ListSources(ctx, "")
-		sources = found
+		if readErr != nil {
+			return readErr
+		}
+		sources, readErr = s.markFailedLoads(ctx, found)
 		return readErr
 	})
 	if err != nil {
 		return nil, fmt.Errorf("list performance sources: %w", err)
 	}
 	return sources, nil
+}
+
+// markFailedLoads overlays each source's latest load, so a feed whose last file fell over shows Failed
+// everywhere, not only on the activity panel (FR-005).
+func (s *Service) markFailedLoads(ctx context.Context, views []SourceView) ([]SourceView, error) {
+	sourceIDs := make([]string, 0, len(views))
+	for _, v := range views {
+		sourceIDs = append(sourceIDs, v.ID)
+	}
+	latest, err := s.repo.LatestImportStatuses(ctx, sourceIDs)
+	if err != nil {
+		return nil, err
+	}
+	for i := range views {
+		views[i].LastLoadFailed = latest[views[i].ID] == string(ImportFailed)
+	}
+	return views, nil
 }
 
 func (s *Service) CreateSource(ctx context.Context, a actor.Actor, in SourceInput) (Source, error) {
@@ -250,8 +270,11 @@ func (s *Service) Source(ctx context.Context, _ actor.Actor, id string) (SourceV
 	}
 	var found []SourceView
 	err := s.tx.Read(ctx, func(ctx context.Context) error {
-		var readErr error
-		found, readErr = s.repo.ListSources(ctx, id)
+		views, readErr := s.repo.ListSources(ctx, id)
+		if readErr != nil {
+			return readErr
+		}
+		found, readErr = s.markFailedLoads(ctx, views)
 		return readErr
 	})
 	if err != nil {

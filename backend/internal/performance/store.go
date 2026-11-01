@@ -15,9 +15,10 @@ type Transactor interface {
 
 type SourceView struct {
 	Source
-	LastLoadedAt time.Time
-	DataThrough  time.Time
-	FactCount    int
+	LastLoadedAt   time.Time
+	DataThrough    time.Time
+	FactCount      int
+	LastLoadFailed bool
 }
 
 type Supplier struct {
@@ -71,8 +72,19 @@ type Facts interface {
 	ReleaseHeld(ctx context.Context, activityID string, by actor.Actor, at time.Time) (int, error)
 }
 
+// ImportFilter is FR-016's findability: by file and uploader (Search), source, status and date.
+type ImportFilter struct {
+	ID       string
+	SourceID string
+	Search   string
+	Status   string
+	Since    *time.Time
+	Until    *time.Time
+	Limit    int
+}
+
 type Imports interface {
-	ListImports(ctx context.Context, id, sourceID string, limit int) ([]Import, error)
+	ListImports(ctx context.Context, f ImportFilter) ([]Import, error)
 	PutImport(ctx context.Context, i Import) error
 	PutBreakdown(ctx context.Context, importID string, groups []Breakdown) error
 	Breakdowns(ctx context.Context, importIDs []string) (map[string][]Breakdown, error)

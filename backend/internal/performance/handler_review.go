@@ -22,7 +22,12 @@ func (h *Handler) registerReviewRoutes(r gin.IRoutes) {
 
 func (h *Handler) reviewRows(c *gin.Context) {
 	a, _ := actor.From(c.Request.Context())
-	found, err := h.service.ReviewRows(c.Request.Context(), a, filterOf(c))
+	filter, err := filterOf(c)
+	if err != nil {
+		web.RespondError(c, err)
+		return
+	}
+	found, err := h.service.ReviewRows(c.Request.Context(), a, filter)
 	if err != nil {
 		web.RespondError(c, err)
 		return
@@ -30,11 +35,16 @@ func (h *Handler) reviewRows(c *gin.Context) {
 	web.Respond(c, http.StatusOK, ReviewRowPage{Items: viewsOfRows(found)})
 }
 
-func filterOf(c *gin.Context) ReviewFilter {
+func filterOf(c *gin.Context) (ReviewFilter, error) {
+	since, until, err := dateRangeOf(c)
+	if err != nil {
+		return ReviewFilter{}, err
+	}
 	return ReviewFilter{
 		Status: c.Query("status"), SourceID: c.Query("sourceId"), ImportID: c.Query("importId"),
-		Reason: c.Query("reason"), KeyText: c.Query("key"), Limit: intQuery(c, "limit"),
-	}
+		Reason: c.Query("reason"), KeyText: c.Query("key"), Since: since, Until: until,
+		Limit: intQuery(c, "limit"),
+	}, nil
 }
 
 func (h *Handler) reviewRow(c *gin.Context) {

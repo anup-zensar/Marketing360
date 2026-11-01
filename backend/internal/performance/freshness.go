@@ -22,6 +22,9 @@ func (v SourceView) FreshnessAt(now time.Time) Freshness {
 	if v.Status == StatusInactive {
 		return FreshnessInactive
 	}
+	if v.LastLoadFailed {
+		return FreshnessFailed
+	}
 	if v.LastLoadedAt.IsZero() {
 		return FreshnessStale
 	}

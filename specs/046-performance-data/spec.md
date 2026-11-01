@@ -143,9 +143,10 @@ these into the decision log at the end of wave B.
   **But one field of a review row is plan-owned**: `candidates`, the activities named when keys disagree
   (FR-019). Naming an activity the reader cannot see would disclose its existence, which constitution
   non-negotiable 7 forbids. So the queue is permission-gated, and the candidate list each reader sees is
-  filtered to the activities within their scope; a row whose candidates are all outside it still appears,
-  with its reason, and names none of them. That satisfies FR-019 without turning the queue into a directory
-  of records the reader may not know about.
+  filtered **all or none**: a reader who can see every candidate sees the list, and a reader who cannot sees
+  none of them — a partly hidden list would leak, through its length, how many activities exist beyond their
+  sight. A row whose candidates are hidden still appears, with its reason. That satisfies FR-019 without
+  turning the queue into a directory of records the reader may not know about.
 
 
 - **046-C16** — Q: Who may undo a load? → A: **An administrator, not everyone who may load.** Client 020
@@ -157,7 +158,9 @@ these into the decision log at the end of wave B.
 - **046-C17** — Q: What states can a load end in? → A: **Completed, failed or undone.** The schema and the
   domain type carried only completed and undone, but client 020 FR-062 requires audit records for "uploads
   (completed, failed, undone)" and FR-063 lists "an upload failed" as a notification event. A load that falls
-  over partway must be recorded as failed rather than vanishing or masquerading as completed.
+  over partway must be recorded as failed rather than vanishing or masquerading as completed. A file
+  **refused before any row is read** — personal data (FR-012), an unknown or inactive source, an unreadable
+  file — is not a load: nothing from it is stored, an import record included.
 
 - **046-C18** — Q: The counts must be reported "by stage or metric" (client 020 FR-014) — does the summary
   need that breakdown? → A: **Yes, and it was dropped.** FR-022 as first written kept only the five totals.
@@ -220,6 +223,19 @@ these into the decision log at the end of wave B.
   unmatched in the review queue, and the re-check (FR-025, US5) matches it after the restore. A row for a
   permanently deleted activity takes the same unmatched path, which is exactly where FR-021 sends it.
 
+- **046-C25** — Q: FR-009 said "a CSV or spreadsheet file" — is a spreadsheet reader in scope? → A: **No,
+  UTF-8 CSV only.** The simulated feed and the downloadable template are both CSV; a spreadsheet parser is a
+  new attack surface and a new dependency for a format the demo never produces. Every tool that writes a
+  spreadsheet exports CSV. The served contract has said "Upload a CSV" from the start.
+
+- **046-C26** — Q: Whose scope does **matching** use? → A: **Load-time matching uses the uploader's**
+  `performance.link` **scope; every re-check matches organisation-wide.** A load is an action by one person,
+  so the rows it can attach to plans are the rows that person may link; a row for an activity beyond their
+  sight is recorded unmatched, exactly as if the key were unknown (no existence is disclosed). The automatic
+  re-check after each load (FR-025) then restates mechanical matching for everyone, so such a row attaches
+  moments later and the queue self-heals; a load's stored counts keep what its uploader saw. Reads stay
+  governed by FR-044 and 046-C15 regardless of how a fact matched.
+
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -243,7 +259,7 @@ upload is needed.
 
 1. **Given** no data sources exist, **When** an administrator creates one with a name, owner, category,
    delivery route, cadence and a model, **Then** it is saved, listed, and shows a freshness status of
-   *Inactive* because it has received nothing yet.
+   *Stale* because it has received nothing yet (*Inactive* is reserved for a deactivated source).
 2. **Given** a source exists, **When** its mappings are set so that one column is the matching key, one the
    fact date and one revenue with a currency, **Then** a blank file template can be downloaded carrying
    exactly those columns.
@@ -425,9 +441,9 @@ is offered.
 
 ### Edge Cases
 
-- A row matches an activity that was moved to the recycle bin: the fact is **held** until the activity is
-  restored and approved; if the activity is permanently deleted, the row goes to the review queue
-  (client 020 FR-013).
+- An activity is moved to the recycle bin: its existing facts go to the bin with it and return **held** on
+  restore, released on approval; a new row arriving while it sits in the bin — or after it is permanently
+  deleted — goes to the review queue unmatched (client 020 FR-013, 046-C24).
 - Two rows in the same file carry the same source reference: the second is rejected as a repeated reference
   rather than silently overwriting its neighbour within one upload.
 - A file is uploaded for a source whose mappings were changed after an earlier upload: the new mappings apply
@@ -471,19 +487,21 @@ is offered.
 
 **Loading data** *(client 020 FR-008 – FR-010, FR-015 – FR-019)*
 
-- **FR-009**: Users with `performance.import` MUST be able to upload a CSV or spreadsheet file for a chosen
-  source.
+- **FR-009**: Users with `performance.import` MUST be able to upload a UTF-8 CSV file for a chosen source
+  (046-C25).
 - **FR-010**: A simulated pull MUST produce rows for a source whose delivery route says so, and those rows
   MUST pass through the same validation, matching and review path as an uploaded file (046-C5). A pull MUST be started only by an explicit
   action on the data source by someone holding `performance.import` (046-C13). No live connector, scheduler
   or external credential is part of this feature.
 - **FR-011**: Every row MUST be validated with **all** of its problems reported together: empty required
   column, invalid or future date, negative or fractional count, invalid amount or unconfigured currency,
-  unknown stage, missing or repeated reference.
+  missing, overlong or repeated reference, or no measure filled at all (a stage never appears in a cell, so
+  none is validated here — the mapping's closed vocabulary owns it, 046-C21).
 - **FR-012**: A file carrying personal-data columns MUST be refused in full before any row is stored, naming
   the offending column; journey rows MUST carry only a pseudonymous reference (046-C6).
-- **FR-013**: Loading MUST be idempotent on the pair (data source, source reference): an identical file MUST
-  change nothing, and a repeated reference MUST replace the earlier fact with both versions audited (046-C4).
+- **FR-013**: Loading MUST be idempotent on a fact's identity (data source, source reference, measure)
+  (046-C21): an identical file MUST change nothing, and a repeated reference MUST replace the earlier fact of
+  the same measure with both versions audited (046-C4).
 - **FR-014**: A revenue fact MUST be stored exactly in its own currency; without a rate it MUST be marked,
   excluded from converted totals with the excluded count shown, and included once a rate exists (046-C7).
 - **FR-015**: A fact MUST count in the fiscal year of its own fact date, including for an activity spanning
@@ -503,8 +521,9 @@ is offered.
   own stated reason. The system MUST NOT guess between candidates.
 - **FR-020**: A fact matched to an activity that does not count as approved MUST be **held**: excluded from
   every figure and released automatically when that activity is approved (046-C1).
-- **FR-021**: A fact matched to a binned activity MUST be held until restore and approval; a fact matched to a
-  permanently deleted activity MUST go to the review queue.
+- **FR-021**: A fact whose activity is binned goes to the bin with it and MUST return **held** on restore,
+  released on approval; a **new** row arriving while the activity sits in the bin, or after it is permanently
+  deleted, MUST go to the review queue unmatched (046-C24).
 - **FR-022**: Every load MUST yield a summary of rows read and rows matched, held, unattributed, rejected and
   unmatched, **and those five broken down by stage or web metric** (client 020 FR-014), and the five totals
   MUST add up to rows read (046-C3).
@@ -573,8 +592,10 @@ is offered.
   and media codes MUST require `performance.link`. **Undoing a load is narrower than loading it**: client 020
   FR-017 gives it to administrators alone, so it MUST additionally require `settings.manage` (046-C16).
   Every operation MUST have a route rule and fail closed.
-- **FR-044**: Every read of performance data MUST be filtered by the signed-in actor's scope: a fact, source,
-  upload, review row or media code outside it MUST answer as a missing one, never as a refusal.
+- **FR-044**: Every read of **plan-owned** performance data — a fact, an activity's totals, a media code —
+  MUST be filtered by the signed-in actor's scope, and a record outside it MUST answer as a missing one, never
+  as a refusal. Sources and mappings are organisation-wide Settings records, and uploads and review rows are
+  administrator work gated by `performance.import` with only a row's candidate list scope-filtered (046-C15).
 
 **Records and traceability** *(constitution, every new record type)*
 
@@ -592,7 +613,7 @@ is offered.
   summary reconciling rows read against matched, held, unattributed, rejected and unmatched. May be undone.
 - **Performance fact**: one measured value — date, source, stage or web metric, value, currency, source
   reference, the activity it matched and the key it matched on, and whether it is held. Identified by
-  (source, source reference).
+  (source, source reference, measure) (046-C21).
 - **Row to review**: a rejected or unmatched row kept for a person to fix — its raw values, reason, source,
   upload, status (*Open*, *Resolved*, *Dismissed*) and history, with a required comment on dismissal.
 - **Media code**: a unique, never-reused generated number on an activity, with its configured attributes and

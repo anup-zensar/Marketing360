@@ -164,11 +164,8 @@ func (s *Service) panelSources(ctx context.Context, activityID string) ([]PanelS
 		if viewErr != nil {
 			return nil, viewErr
 		}
-		freshness := view.FreshnessAt(s.now())
-		if failed[total.SourceID] == string(ImportFailed) {
-			freshness = FreshnessFailed
-		}
-		src := PanelSource{SourceID: total.SourceID, SourceName: total.SourceName, Freshness: freshness}
+		view.LastLoadFailed = failed[total.SourceID] == string(ImportFailed)
+		src := PanelSource{SourceID: total.SourceID, SourceName: total.SourceName, Freshness: view.FreshnessAt(s.now())}
 		if !view.DataThrough.IsZero() {
 			through := view.DataThrough.Format(time.DateOnly)
 			src.DataThrough = &through
