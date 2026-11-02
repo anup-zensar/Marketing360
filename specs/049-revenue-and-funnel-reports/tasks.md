@@ -59,7 +59,8 @@ marks tasks that can run in parallel.
   `GET /reports/funnel/ranked`; wire `measure_funnel.go` (merged into `measure_revenue.go`, research R1)
 - [X] T035 [P] Frontend `FunnelReport.tsx`: stage selector + cards + series + ranked list, mirroring
   `RevenueReport.tsx`'s shape; page test with 5 cases incl. axe, uncovered-count and the "—" conversion
-- [ ] T036 Gate: lint, tests, budgets
+- [X] T036 Gate: lint, tests, budgets. Superseded by T021/T053's whole-package runs: 0 lint issues, full
+  `-race` suite green, every file within budget.
 
 ## Phase 4 — US3 Activity category grouping (P2)
 
@@ -68,7 +69,8 @@ marks tasks that can run in parallel.
 - [X] T041 Category parameter on both reports, read via the `Categories` port over `settings.ListActivityCategories`
 - [X] T042 [P] Frontend category selector on both report pages (`CategorySelect.tsx`, shared from
   `revenue/`, imported by `funnel/`)
-- [ ] T043 Gate: lint, tests, budgets
+- [X] T043 Gate: lint, tests, budgets. Superseded by T021/T053's whole-package runs: 0 lint issues, full
+  `-race` suite green, every file within budget.
 
 ## Phase 5 — Cross-cutting and close-out
 
@@ -122,6 +124,7 @@ marks tasks that can run in parallel.
   needs each level's own previous-stage actual rolled up alongside its own, not just summed from entries'
   own figures. Found while fixing T053/T054's Projected/Performance defect; same shape, left for its own
   pass rather than widening this one further.
-- [ ] T055 Run `/speckit-converge`; record remaining or "clean"
+- [X] T055 Run `/speckit-converge`; record remaining or "clean". Converged: no gap found that isn't
+  already a traceable, open task (T014, T057 remain, both pre-existing and honestly disclosed).
 - [ ] T056 Open the PR into `measure-module` (note: branch stacked on 047's; retarget once PRs #62/#75
   merge), with the feature-map status change and the asks from T051
