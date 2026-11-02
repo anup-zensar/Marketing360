@@ -100,8 +100,28 @@ marks tasks that can run in parallel.
   naming it (FR-015, FR-004 x2, FR-008). FR-025 (no new permission) is proven in `internal/access`, outside
   this lane's files, not re-tested here. Comment budgets: trimmed `measure_revenue.go` (9 → 7),
   `measure-revenue.spec.ts` (9 → 3) and `cards_funnel_internal_test.go` (2 → 1) to fit. File sizes: every
-  file in scope was already well under 300 non-blank lines.
-- [ ] T054 Run `/speckit-analyze`; fix every CRITICAL before done
+  file in scope was already well under 300 non-blank lines. Writing SC-002's test (the ranked list's
+  ungrouped top-level totals must equal the report's own series totals) surfaced a real, pre-existing
+  defect worse than any single FR gap: `revenueFiguresOfActivities` and `funnelFiguresOfActivities` never
+  set `Projected` or `Performance` on any ranked entry at any level — both fields were silently nil/zero
+  for every row of both reports, so sorting by "projected" (FR-006) sorted nothing, and FR-012/FR-017's
+  promised per-entry figures never reached a reader. Fixed in `ranked_revenue.go`/`ranked_funnel.go` by
+  computing `Projected` via the same actual-or-projected split the cards use (`projection.SplitAmounts`/
+  `SplitCounts`), and deriving `Performance` once, after rollup, from `Projected ÷ Goal` — not summed
+  per-activity, since percentages don't sum. Pinned with `TestRankedRevenue_TopLevelTotalsMatchTheSeriesTotals_SC002`,
+  `TestRankedFunnel_EntriesCarryProjectedAndPerformance_FR012_FR017`, and two tightened e2e assertions
+  that would have failed before the fix. Per-entry **Conversion** (FR-017) is a known remaining gap of the
+  same shape — never set on any ranked entry — recorded as follow-up work, not fixed here, since a
+  correct rollup needs each level's own previous-stage actual, not just its own figures summed.
+- [X] T054 Run `/speckit-analyze`; fix every CRITICAL before done. No CRITICAL or HIGH findings. Two
+  MEDIUM/LOW gaps found and closed in the same pass: SC-002 had no test
+  (`TestRankedRevenue_TopLevelTotalsMatchTheSeriesTotals_SC002`, which caught the Projected/Performance
+  defect above) and SC-006 was only half-tested (added a `ModelChangedAt` assertion to the existing FR-012
+  test). T014's drill/group gap was reconfirmed as a disclosed, not hidden, gap.
+- [ ] T057 [P] Set `Conversion` on every ranked Funnel entry, not just the report's own cards (FR-017):
+  needs each level's own previous-stage actual rolled up alongside its own, not just summed from entries'
+  own figures. Found while fixing T053/T054's Projected/Performance defect; same shape, left for its own
+  pass rather than widening this one further.
 - [ ] T055 Run `/speckit-converge`; record remaining or "clean"
 - [ ] T056 Open the PR into `measure-module` (note: branch stacked on 047's; retarget once PRs #62/#75
   merge), with the feature-map status change and the asks from T051

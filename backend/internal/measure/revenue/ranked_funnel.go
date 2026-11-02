@@ -58,10 +58,14 @@ func buildFunnelRanked(in funnelRankedInput) FunnelRanked {
 	for _, e := range page {
 		group.Totals = addFunnelFigures(group.Totals, e.Figures)
 	}
+	group.Totals = withFunnelPerformance(group.Totals)
 	return FunnelRanked{Level: show, Sort: q.Sort, Order: q.Order, Group: GroupNone, Page: q.Page, Size: q.Size,
 		Total: total, Trail: []TrailStep{}, Groups: []FunnelGroup{group}}
 }
 
+// funnelFiguresOfActivities is each activity's own figures for the selected stage: Goal is the stage's
+// full plan-year projection, Actual every counted fact, and Projected the "actual or projected" total the
+// cards show, split at today (FR-004, FR-017).
 func funnelFiguresOfActivities(views []activityView, stage string, w window) map[string]FunnelFigures {
 	out := make(map[string]FunnelFigures, len(views))
 	for _, v := range views {
@@ -78,6 +82,8 @@ func funnelFiguresOfActivities(views []activityView, stage string, w window) map
 		}
 		actual := split.Actual
 		f.Actual = &actual
+		total := split.Actual + split.Projected
+		f.Projected = &total
 		out[v.node.ID] = f
 	}
 	return out
@@ -111,14 +117,25 @@ func rollUpFunnel(nodes []allwork.Node, below map[string][]string, ownActivity m
 
 func funnelEntryOf(id string, byID map[string]allwork.Node, below map[string][]string, figures map[string]FunnelFigures) FunnelEntry {
 	n := byID[id]
-	entry := FunnelEntry{ID: n.ID, Level: string(n.Level), Name: n.Name, PlanID: n.PlanID, Figures: figures[id]}
+	entry := FunnelEntry{ID: n.ID, Level: string(n.Level), Name: n.Name, PlanID: n.PlanID, Figures: withFunnelPerformance(figures[id])}
 	for _, childID := range below[id] {
 		child := byID[childID]
 		entry.Children = append(entry.Children, FunnelEntry{
-			ID: child.ID, Level: string(child.Level), Name: child.Name, PlanID: child.PlanID, Figures: figures[childID],
+			ID: child.ID, Level: string(child.Level), Name: child.Name, PlanID: child.PlanID,
+			Figures: withFunnelPerformance(figures[childID]),
 		})
 	}
 	return entry
+}
+
+// withFunnelPerformance derives Performance from Projected ÷ Goal (049-C15, 049-C16), the same formula the
+// cards use, so it stays correct whether f is one activity's own figures or a rolled-up total.
+func withFunnelPerformance(f FunnelFigures) FunnelFigures {
+	if f.Goal == nil {
+		return f
+	}
+	f.Performance = ratioCard(int64Of(f.Projected), *f.Goal, true).Value
+	return f
 }
 
 func addFunnelFigures(a, b FunnelFigures) FunnelFigures {

@@ -30,9 +30,8 @@ func TestFunnelReport_SelectsTheFirstAvailableStageAndCountsUncovered_FR015_049C
 	}
 }
 
-// TestFunnelReport_AModelThatDoesNotAllowTheStageIsUncovered proves FR-018: a plan whose activity sets its
-// own later stages, and never typed an MQL goal, shows "—" for MQL and is counted among the uncovered
-// plans — even while another plan's model covers that stage and the selector keeps it available.
+// Proves FR-018: a plan whose activity types only an INQ goal is uncovered for MQL, even while another
+// plan's model still offers it.
 func TestFunnelReport_AModelThatDoesNotAllowTheStageIsUncovered_FR018(t *testing.T) {
 	t.Parallel()
 	start, end := date.MustParse("2026-01-01"), date.MustParse("2026-12-31")
@@ -77,6 +76,56 @@ func TestRankedRevenue_SortsByProjectedByDefault(t *testing.T) {
 	}
 	if got.Groups[0].Entries[0].ID != "A-1" {
 		t.Errorf("entry id = %q, want A-1", got.Groups[0].Entries[0].ID)
+	}
+}
+
+// TestRankedRevenue_TopLevelTotalsMatchTheSeriesTotals proves SC-002: with no grouping, the ranked list's
+// one top-level group totals the same actual, projected and goal as the report's own cards, for the same
+// filter.
+func TestRankedRevenue_TopLevelTotalsMatchTheSeriesTotals_SC002(t *testing.T) {
+	t.Parallel()
+	sc := oneActivityScope()
+	goals := fakeGoals{"A-1": revenue.ActivityGoals{Model: lubricantsModel()}}
+	s := newFixtureWith(sc, goals, nil)
+
+	report, err := s.Report(t.Context(), priya, measure.Filter{})
+	if err != nil {
+		t.Fatalf("Report: %v", err)
+	}
+	ranked, err := s.RankedRevenue(t.Context(), priya, measure.Filter{Show: "activity"},
+		revenue.RankedQuery{Sort: revenue.SortProjectedRevenue, Order: revenue.OrderDesc, Size: 10, Page: 1})
+	if err != nil {
+		t.Fatalf("RankedRevenue: %v", err)
+	}
+	totals := ranked.Groups[0].Totals
+	if totals.Goal == nil || report.Cards.Goal.Value == nil || totals.Goal.Amount.Cents() != report.Cards.Goal.Value.Amount.Cents() {
+		t.Errorf("ranked goal total = %v, want the report's own goal card %v", totals.Goal, report.Cards.Goal.Value)
+	}
+	if totals.Projected == nil || report.Cards.Projected.Value == nil ||
+		totals.Projected.Amount.Cents() != report.Cards.Projected.Value.Amount.Cents() {
+		t.Errorf("ranked projected total = %v, want the report's own projected card %v", totals.Projected, report.Cards.Projected.Value)
+	}
+}
+
+// Pins a real defect found while closing T053's SC-002 gap: ranked rows never carried Projected or
+// Performance, so every one answered "—" for both regardless of real data.
+func TestRankedFunnel_EntriesCarryProjectedAndPerformance_FR012_FR017(t *testing.T) {
+	t.Parallel()
+	sc := oneActivityScope()
+	goals := fakeGoals{"A-1": revenue.ActivityGoals{Model: lubricantsModel()}}
+	s := newFixtureWith(sc, goals, nil)
+
+	got, err := s.RankedFunnel(t.Context(), priya, measure.Filter{Show: "activity"},
+		revenue.RankedQuery{Sort: revenue.SortProjected, Order: revenue.OrderDesc, Size: 10, Page: 1})
+	if err != nil {
+		t.Fatalf("RankedFunnel: %v", err)
+	}
+	entry := got.Groups[0].Entries[0]
+	if entry.Figures.Projected == nil {
+		t.Fatalf("entry projected = %+v, want a value: the activity has a goal and a model", entry.Figures)
+	}
+	if entry.Figures.Performance == nil {
+		t.Errorf("entry performance = %+v, want a value computed from projected ÷ goal", entry.Figures)
 	}
 }
 

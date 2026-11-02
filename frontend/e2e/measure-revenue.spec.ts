@@ -37,6 +37,7 @@ test('049 US1: the Revenue report shows cards, a chart and a ranked list against
   await expect(ranked).toBeVisible();
   const fleetCards = ranked.getByRole('row', { name: /Fleet cards/ });
   await expect(fleetCards).toContainText('$400,000.00');
+  await expect(fleetCards).toContainText('%');
 
   await expectNoAxeViolationsExceptOpenLinkTargetSize(page);
 });
@@ -58,6 +59,7 @@ test('049 US2: a funnel stage shows cards, a chart and conversion against goal',
   await expect(ranked).toBeVisible();
   const fleetCards = ranked.getByRole('row', { name: /Fleet cards/ });
   await expect(fleetCards).toContainText('60,000');
+  await expect(fleetCards).toContainText('%');
 
   await stageSelect.selectOption({ label: 'MQL' });
   await expect(ranked.getByRole('row', { name: /Fleet cards/ })).toContainText('2,000');

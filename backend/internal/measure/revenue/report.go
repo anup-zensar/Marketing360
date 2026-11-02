@@ -5,6 +5,7 @@ import (
 
 	"mapp/internal/measure"
 	"mapp/internal/platform/actor"
+	"mapp/internal/platform/date"
 )
 
 // RankedRevenue is the ranked list of entries sorted by actual or projected revenue (FR-006, FR-012).
@@ -15,8 +16,8 @@ func (s *Service) RankedRevenue(ctx context.Context, a actor.Actor, f measure.Fi
 		if err != nil {
 			return err
 		}
-		show := showLevel(f.Show)
-		out = revenueRanked(views, nodesForRanking(sc, views), show, q)
+		w := window{today: date.Today(s.now()), year: sc.Year}
+		out = revenueRanked(revenueRankedInput{views: views, nodes: nodesForRanking(sc, views), show: showLevel(f.Show), q: q, w: w})
 		return nil
 	})
 	return out, err

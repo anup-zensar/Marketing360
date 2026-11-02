@@ -32,12 +32,15 @@ func revenueReportFixture(t *testing.T) revenue.RevenueReport {
 	return got
 }
 
-func TestReport_NamesTheModelAndSplitsAtToday_FR012_FR010(t *testing.T) {
+func TestReport_NamesTheModelAndSplitsAtToday_FR012_FR010_SC006(t *testing.T) {
 	t.Parallel()
 	got := revenueReportFixture(t)
 
 	if got.Projection == nil || got.Projection.ModelName != "Lubricants 1.0" {
 		t.Fatalf("stamp = %+v, want the model named so a reviewer can reproduce the figure", got.Projection)
+	}
+	if got.Projection.ModelChangedAt != "2026-01-02T09:00:00Z" {
+		t.Errorf("modelChangedAt = %q, want the fixture's last change, so a reviewer knows the figure is current", got.Projection.ModelChangedAt)
 	}
 	if len(got.Periods) != 12 {
 		t.Fatalf("periods = %d, want 12 months by default", len(got.Periods))

@@ -10,13 +10,23 @@ import (
 	"mapp/internal/projection"
 )
 
+// revenueRankedInput groups revenueRanked's working parts so building it stays within the argument limit.
+type revenueRankedInput struct {
+	views []activityView
+	nodes []allwork.Node
+	show  string
+	q     RankedQuery
+	w     window
+}
+
 // revenueRanked builds one page of the Show level's entries, each with its children one level below
 // (FR-063), sorted and searched. Grouping and drill follow in a later pass (plan.md R5; tasks.md T014).
-func revenueRanked(views []activityView, nodes []allwork.Node, show string, q RankedQuery) RevenueRanked {
-	byID, below := nodeIndex(nodes)
-	own := revenueFiguresOfActivities(views)
-	totals := rollUpRevenue(nodes, below, own)
-	tops := searchByName(topLevelIDs(nodes, show), byID, q.Search)
+func revenueRanked(in revenueRankedInput) RevenueRanked {
+	byID, below := nodeIndex(in.nodes)
+	own := revenueFiguresOfActivities(in.views, in.w)
+	totals := rollUpRevenue(in.nodes, below, own)
+	tops := searchByName(topLevelIDs(in.nodes, in.show), byID, in.q.Search)
+	q := in.q
 
 	entries := make([]RevenueEntry, 0, len(tops))
 	for _, id := range tops {
@@ -30,7 +40,8 @@ func revenueRanked(views []activityView, nodes []allwork.Node, show string, q Ra
 	for _, e := range page {
 		group.Totals = addRevenueFigures(group.Totals, e.Figures)
 	}
-	return RevenueRanked{Level: show, Sort: q.Sort, Order: q.Order, Group: GroupNone, Page: q.Page, Size: q.Size,
+	group.Totals = withPerformance(group.Totals)
+	return RevenueRanked{Level: in.show, Sort: q.Sort, Order: q.Order, Group: GroupNone, Page: q.Page, Size: q.Size,
 		Total: total, Trail: []TrailStep{}, Groups: []RevenueGroup{group}}
 }
 
@@ -74,18 +85,21 @@ func searchByName(ids []string, byID map[string]allwork.Node, search string) []s
 
 func revenueEntryOf(id string, byID map[string]allwork.Node, below map[string][]string, figures map[string]RevenueFigures) RevenueEntry {
 	n := byID[id]
-	entry := RevenueEntry{ID: n.ID, Level: string(n.Level), Name: n.Name, PlanID: n.PlanID, Figures: figures[id]}
+	entry := RevenueEntry{ID: n.ID, Level: string(n.Level), Name: n.Name, PlanID: n.PlanID, Figures: withPerformance(figures[id])}
 	for _, childID := range below[id] {
 		child := byID[childID]
 		entry.Children = append(entry.Children, RevenueEntry{
-			ID: child.ID, Level: string(child.Level), Name: child.Name, PlanID: child.PlanID, Figures: figures[childID],
+			ID: child.ID, Level: string(child.Level), Name: child.Name, PlanID: child.PlanID,
+			Figures: withPerformance(figures[childID]),
 		})
 	}
 	return entry
 }
 
-// revenueFiguresOfActivities is each activity's own figures from its projection and counted facts.
-func revenueFiguresOfActivities(views []activityView) map[string]RevenueFigures {
+// revenueFiguresOfActivities is each activity's own figures from its projection and counted facts: Goal is
+// the full plan-year projection, Actual every counted fact, and Projected the same "actual or projected"
+// total the cards show, split at today (FR-004, FR-012).
+func revenueFiguresOfActivities(views []activityView, w window) map[string]RevenueFigures {
 	out := make(map[string]RevenueFigures, len(views))
 	for _, v := range views {
 		f := RevenueFigures{ActualCostReason: ReasonAttributionNotConfigured, ROIReason: ReasonAttributionNotConfigured}
@@ -97,9 +111,32 @@ func revenueFiguresOfActivities(views []activityView) map[string]RevenueFigures 
 			actual := sumMoney(v.facts.revenue)
 			f.Actual = &actual
 		}
+		split := projectionSplit(v, w)
+		if f.Actual != nil || v.projection.Present {
+			total := money.USD(split.Actual.Amount.Add(split.Projected.Amount))
+			f.Projected = &total
+		}
 		out[v.node.ID] = f
 	}
 	return out
+}
+
+func projectionSplit(v activityView, w window) projection.SplitMoney {
+	return projection.SplitAmounts(v.facts.revenue, v.projection.Revenue, w.today, w.year)
+}
+
+// withPerformance derives Performance from Projected ÷ Goal (049-C15, 049-C16), the same formula the
+// cards use, so it stays correct whether f is one activity's own figures or a rolled-up total.
+func withPerformance(f RevenueFigures) RevenueFigures {
+	if f.Goal == nil {
+		return f
+	}
+	var total money.Amount
+	if f.Projected != nil {
+		total = f.Projected.Amount
+	}
+	f.Performance = performanceOf(total, f.Goal.Amount, true).Value
+	return f
 }
 
 // rollUpRevenue sums every node's figures from its activity descendants, so a plan or campaign row shows
