@@ -126,5 +126,7 @@ marks tasks that can run in parallel.
   pass rather than widening this one further.
 - [X] T055 Run `/speckit-converge`; record remaining or "clean". Converged: no gap found that isn't
   already a traceable, open task (T014, T057 remain, both pre-existing and honestly disclosed).
-- [ ] T056 Open the PR into `measure-module` (note: branch stacked on 047's; retarget once PRs #62/#75
-  merge), with the feature-map status change and the asks from T051
+- [X] T056 Open the PR into `measure-module` (note: branch stacked on 047's; retarget once PRs #62/#75
+  merge), with the feature-map status change and the asks from T051. Opened as PR #82 against
+  `feature/047-projections` (047's own PR #75's base chain); retarget to `measure-module` once #62/#75
+  merge.
