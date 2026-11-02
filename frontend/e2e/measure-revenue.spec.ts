@@ -2,17 +2,12 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { signInAs } from './fixtures';
 
-// Feature 049's two P1 stories against the real API and the demo data: Revenue (US1) and a funnel stage
-// (US2). "Fleet card launch" (FY2026 Mobility China, Retail growth > Fleet cards) is the only demo
-// activity with INQ, MQL and a revenue goal; the ranked list's default Campaign level rolls it up to its
-// initiative, "Fleet cards", so that row (with its $400,000.00 goal) is what both reports are checked
-// against end to end.
+// 049's P1 stories end to end: "Fleet card launch", the only demo activity with INQ, MQL and a revenue
+// goal, rolls up to its initiative "Fleet cards" at the ranked list's default Campaign level.
 
 const ALEX = 'alex.morgan@shell.com';
 
-// The shared RankedList's "Open X in Plan" row links fail WCAG 2.2's target-size rule at every depth
-// this page reaches (040's component, not 049's own code) — a genuine finding, not something owned here;
-// excluded so this test still proves 049's own markup, and logged as a cross-lane ask for 040's lane.
+// Excludes a target-size defect in 040's shared RankedList, logged as a cross-lane ask, not 049's own code.
 async function expectNoAxeViolationsExceptOpenLinkTargetSize(page: Page): Promise<void> {
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
@@ -37,7 +32,6 @@ test('049 US1: the Revenue report shows cards, a chart and a ranked list against
   const cards = page.getByText('Revenue goal').first();
   await expect(cards).toBeVisible();
 
-  // The ranked list's real data proves the API, the store and the frontend wiring end to end.
   await expect(page.getByText('Fleet cards')).toBeVisible();
   const ranked = page.getByRole('region', { name: 'Ranked list' });
   await expect(ranked).toBeVisible();
@@ -56,7 +50,6 @@ test('049 US2: a funnel stage shows cards, a chart and conversion against goal',
   await page.goto('/reports/funnel');
   await expect(page.getByRole('heading', { name: 'Funnel stages', level: 1 })).toBeVisible();
 
-  // INQ is the default stage; the stage selector lets the story switch to MQL (049-C11).
   const stageSelect = page.getByRole('combobox', { name: /stage/i });
   await expect(stageSelect).toBeVisible();
 

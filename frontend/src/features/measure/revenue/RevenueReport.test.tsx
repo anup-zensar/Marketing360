@@ -43,6 +43,13 @@ describe('RevenueReport (049 US1)', () => {
     await expectNoAxeViolations();
   });
 
+  it('explains the goal in an info tip: the plan model, projection and what the list compares (FR-014)', async () => {
+    renderPage();
+
+    const cards = await screen.findByLabelText('Summary');
+    expect(within(cards).getByRole('button', { name: 'About Revenue goal' })).toBeInTheDocument();
+  });
+
   it('shows "—" with the reason when a card cannot be worked out, never a zero (FR-009)', async () => {
     renderPage({
       body: revenueReport({
@@ -60,7 +67,7 @@ describe('RevenueReport (049 US1)', () => {
     expect(within(cards).getByText('No data has arrived yet.')).toBeInTheDocument();
   });
 
-  it('charts goal, actual and projected by month with today marked, and lists every period in the table (047 FR-010)', async () => {
+  it('charts goal, actual and projected by month with today marked, and lists every period in the table (FR-004, 047 FR-010)', async () => {
     const { user } = renderPage();
 
     expect(await screen.findByRole('img', { name: /today is in/ })).toBeInTheDocument();

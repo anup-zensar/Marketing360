@@ -14,9 +14,8 @@ import (
 	"mapp/internal/stores"
 )
 
-// registerRevenue builds feature 049's one service and mounts its handler, then registers the Revenue
-// catalogue entry; registerFunnel (called next, app/measure.go) registers Funnel on a service of its own
-// (research R1 - one package, two reports) without mounting the handler again.
+// registerRevenue mounts feature 049's handler and registers the Revenue catalogue entry; registerFunnel
+// (app/measure.go) registers Funnel on a service of its own (research R1) without mounting it again.
 func registerRevenue(w *wiring, r *measure.Registry) error {
 	mount(w.signedIn, revenue.NewHandler(revenueService(w)))
 	return r.Register(revenue.NewRevenueReport(revenueService(w)))
@@ -37,8 +36,7 @@ func revenueService(w *wiring) *revenue.Service {
 }
 
 // revenueGoals answers 049's Goals port: each activity's plan model and "set later stages myself" flag, the
-// two inputs allwork.Node does not carry (research R3). The nodes already name each activity's plan, so
-// plans are read once for the whole report, not once per activity.
+// two inputs allwork.Node does not carry (research R3).
 type revenueGoals struct {
 	plans      stores.PlanStore
 	activities stores.ActivityStore
@@ -67,8 +65,8 @@ func (g revenueGoals) ActivityGoals(ctx context.Context, scope authz.Scope, node
 	return out, nil
 }
 
-// modelsByPlan reads every plan the activities belong to once, then every distinct model once: bounded by
-// the plans and models in view, never by the number of activities (SC-003).
+// modelsByPlan reads every plan, then every distinct model, once each: bounded by plans and models in view,
+// never by activity count (SC-003).
 func (g revenueGoals) modelsByPlan(ctx context.Context, planOf map[string]string) (map[string]projection.Model, error) {
 	planIDs := uniqueValues(planOf)
 	plans := make(map[string]plan.Plan, len(planIDs))

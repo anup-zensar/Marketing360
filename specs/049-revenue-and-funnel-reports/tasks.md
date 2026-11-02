@@ -90,7 +90,17 @@ marks tasks that can run in parallel.
   "no goal" even where one existed (`internal/measure/revenue/service.go`); (3) the Funnel Performance
   card returned an unrounded float (e.g. `4.037567567567567`) though its own comment says "a whole per
   cent" — rounded with `math.Round` and pinned with `TestRatioCard_RoundsToAWholePerCent_049C15`.
-- [ ] T053 Check every FR against a passing test named with it; comment budgets; file sizes
+- [X] T053 Check every FR against a passing test named with it; comment budgets; file sizes. Found and
+  fixed: FR-014 was wholly unbuilt (no info tip on the Revenue goal card) — implemented and tested; real
+  test gaps closed for FR-003 (a quarter sums its three months), FR-018 (a model that types only an INQ
+  goal is uncovered for MQL even while another plan's model still offers it), FR-022 (two activities
+  project separately then sum, not their INQ first), FR-023 on the Revenue side (`performanceOf` rounding,
+  mirroring Funnel's own test), and FR-024 (a fact in a currency with no rate is excluded from the total,
+  not zeroed into it). Retrofitted FR naming onto three tests that already proved a requirement without
+  naming it (FR-015, FR-004 x2, FR-008). FR-025 (no new permission) is proven in `internal/access`, outside
+  this lane's files, not re-tested here. Comment budgets: trimmed `measure_revenue.go` (9 → 7),
+  `measure-revenue.spec.ts` (9 → 3) and `cards_funnel_internal_test.go` (2 → 1) to fit. File sizes: every
+  file in scope was already well under 300 non-blank lines.
 - [ ] T054 Run `/speckit-analyze`; fix every CRITICAL before done
 - [ ] T055 Run `/speckit-converge`; record remaining or "clean"
 - [ ] T056 Open the PR into `measure-module` (note: branch stacked on 047's; retarget once PRs #62/#75

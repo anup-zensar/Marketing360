@@ -12,6 +12,7 @@ export function RevenueCards({ cards }: { cards: RevenueCardsData }) {
       <SummaryCard
         label="Revenue goal"
         value={cards.goal.value ? money(cards.goal.value) : reasonText(cards.goal.reason)}
+        tip="Each plan's model sets its stages, rates and velocity. A goal projects the later stages within the plan year, and this report compares actual and projected against it."
       />
       <SummaryCard
         label="Actual revenue"

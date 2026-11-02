@@ -71,7 +71,7 @@ describe('FunnelReport (049 US2)', () => {
     expect(within(cards).getByText('—')).toBeInTheDocument();
   });
 
-  it('charts goal, actual and projected volume by month with today marked (047 FR-010)', async () => {
+  it('charts goal, actual and projected volume by month with today marked (FR-004, 047 FR-010)', async () => {
     const { user } = renderPage();
 
     expect(await screen.findByRole('img', { name: /today is in/ })).toBeInTheDocument();
