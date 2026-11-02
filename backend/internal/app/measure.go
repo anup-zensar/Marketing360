@@ -33,7 +33,7 @@ func (w *wiring) measureArea() error {
 		}
 	}
 	mount(w.signedIn, measure.NewHandler(w.reports))
-	return nil
+	return w.attributionArea()
 }
 
 // reportPlans are the plans in the person's reports.view scope, read by the scoped plan store (039 research R2).

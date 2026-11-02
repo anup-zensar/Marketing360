@@ -34,16 +34,17 @@ type Organisation struct {
 }
 
 type Planning struct {
-	Plans      PlanStore
-	Campaigns  CampaignStore
-	Activities ActivityStore
-	LineItems  LineItemStore
-	Approvals  ApprovalStore
-	AllWork    AllWorkStore
-	Overspend  OverspendStore
-	Bulk       BulkStore
-	Workbook   WorkbookStore
-	Measure    MeasureStore
+	Plans       PlanStore
+	Campaigns   CampaignStore
+	Activities  ActivityStore
+	LineItems   LineItemStore
+	Approvals   ApprovalStore
+	AllWork     AllWorkStore
+	Overspend   OverspendStore
+	Bulk        BulkStore
+	Workbook    WorkbookStore
+	Measure     MeasureStore
+	Attribution AttributionStore
 }
 
 type Finance struct {
@@ -53,4 +54,5 @@ type Finance struct {
 
 	PurchaseRequests PurchaseRequestStore
 	Performance      PerformanceStore
+	Revenue          RevenueStore
 }

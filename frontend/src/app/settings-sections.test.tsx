@@ -114,6 +114,7 @@ describe('SettingsPage, the cards of other features (FR-001)', () => {
       'Purchase requests',
       'Overspend control',
       'Performance data',
+      'Attribution',
       'Roles and access',
     ]);
     const people = card('People');

@@ -4,7 +4,13 @@ export { SettingsPage } from './SettingsPage';
 export { ActivityCategoriesPage } from './activity-categories/ActivityCategoriesPage';
 export { ACTIVITY_CATEGORY_SETTINGS_SECTIONS } from './activity-categories/settings-sections';
 export { ActivityTypesPage } from './activity-types/ActivityTypesPage';
-export { useAttributeForm, useCurrencies, useFinanceBudgets, useModels } from './api';
+export {
+  useActivityCategories,
+  useAttributeForm,
+  useCurrencies,
+  useFinanceBudgets,
+  useModels,
+} from './api';
 export { CurrenciesPage } from './currencies/CurrenciesPage';
 export { ImportRatesPage } from './currencies/ImportRatesPage';
 export { FieldHelpPage as FieldHelpSettingsPage } from './field-help/FieldHelpPage';

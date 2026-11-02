@@ -218,6 +218,13 @@ ROI parts in `features/measure/shared/`, `e2e/attribution.spec.ts`.
 **Stories.** US1 choose the model and see credited revenue (P1) · US2 ROI with its basis named (P1) · US3 change
 the model and see every figure follow (P2). Common checklist.
 
+**Later (050-C1, 050-C2, decided 2026-11-01).** Not built by 050; kept here so they are not lost:
+- [ ] The Attribution view (client 020 FR-060): pick any model, credited revenue by activity, unattributed amount,
+  cross-model comparison and freshness, without changing the designated model.
+- [ ] The six weighted models of client 020 FR-056 (last non-direct, interaction weighted, half-life time decay,
+  W-shaped, full-path, custom) with their settings.
+- [ ] Credit grouped by a multi-select attribute split by each activity's performance split (client 020 FR-061).
+
 ## #MA · Wave A integration — lane A · 6 h · `wave-a`
 
 - [ ] Merge 040–045 into `measure-module`; apply reported contract fixes; `pnpm run api:types`
